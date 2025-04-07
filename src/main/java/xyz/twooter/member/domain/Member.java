@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "member")
 @Entity
+@Getter
 public class Member extends BaseTimeEntity {
 
 	@Id
@@ -44,6 +45,7 @@ public class Member extends BaseTimeEntity {
 			throw new InvalidValueException("비밀번호는 null일 수 없습니다.");
 		}
 
+		// TODO 정규식이 반복되므로 커스텀 애노테이션으로  검증하기
 		// 최소 8자 이상, 영문 대/소문자, 숫자, 특수문자 각 1개 이상 포함
 		String pattern = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?]).{8,}$";
 

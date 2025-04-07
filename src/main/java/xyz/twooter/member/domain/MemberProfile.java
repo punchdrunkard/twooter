@@ -7,8 +7,11 @@ import xyz.twooter.common.entity.BaseTimeEntity;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "member_profile")
+@Getter
 @Entity
 public class MemberProfile extends BaseTimeEntity {
+
+	public static final String DEFAULT_AVATAR_BASE = "https://avatar.iran.liara.run/username?username=";
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,8 +28,25 @@ public class MemberProfile extends BaseTimeEntity {
 	@Column(name = "avatar_path")
 	private String avatarPath;
 
+	@Builder
+	public MemberProfile(Member member, String nickname, String bio, String avatarPath) {
+		this.member = member;
+		this.nickname = nickname;
+		this.bio = bio;
+		this.avatarPath = avatarPath;
+	}
+
 	// TODO: 아직 금칙어 조항은 만들어지지 않음
 	// public static void validateNickName(){
 	//
 	// }
+
+	public static MemberProfile createDefault(Member member) {
+		return MemberProfile.builder()
+			.member(member)
+			.nickname(member.getHandle())
+			.avatarPath(DEFAULT_AVATAR_BASE + member.getHandle())
+			.bio("")
+			.build();
+	}
 }
