@@ -1,10 +1,8 @@
 package xyz.twooter.auth.presentation.dto.response;
 
-import xyz.twooter.auth.presentation.dto.MemberSummary;
+import xyz.twooter.member.presentation.dto.MemberSummary;
 
 public record SignUpInfoResponse(
-	String accessToken,
-	String refreshToken,
 	MemberSummary member
 ) {
 }
