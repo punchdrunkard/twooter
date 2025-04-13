@@ -16,6 +16,8 @@ public enum ErrorCode {
 	MESSAGE_NOT_READABLE(400, "C007", "Message Not Readable"),
 
 	// Domain
+	ILLEGAL_MEMBER_ID(401, "A001", "Illegal Member Id"),
+	EMAIL_ALREADY_EXIST(400, "A002", "이미 사용 중인 이메일 입니다."),
 	;
 
 	private final String code;
