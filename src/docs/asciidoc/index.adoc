@@ -1,3 +1,7 @@
+ifndef::snippets[]
+:snippets: ../../build/generated-snippets
+endif::[]
+
 = Twooter API Guide
 :doctype: book
 :source-highlighter: highlightjs
@@ -5,3 +9,9 @@
 :toclevels: 3
 :sectlinks:
 :sectnums: 2
+
+[[Auth-API]]
+== Auth API
+
+include::api/auth/auth.adoc[]
+

@@ -28,8 +28,8 @@ public class SignUpRequest {
 
 	@NotBlank(message = "핸들은 필수입니다.")
 	@Pattern(
-		regexp = "^[a-zA-Z0-9_]{4,15}$",
-		message = "핸들은 영문, 숫자, 밑줄(_)만 사용 가능하며 4~15자 사이여야 합니다."
+		regexp = "^[a-zA-Z0-9_]{4,50}$",
+		message = "핸들은 영문, 숫자, 밑줄(_)만 사용 가능하며 4~50자 사이여야 합니다."
 	)
 	String handle;
 

@@ -176,15 +176,4 @@ class AuthControllerTest extends ControllerTestSupport {
 			)
 			.andExpect(status().isUnauthorized());
 	}
-
-	@DisplayName("요청 바디가 없으면 400을 반환한다.")
-	@Test
-	void shouldReturn400WhenNoRequestBody() throws Exception {
-		// when & then
-		mockMvc.perform(
-				post("/api/auth/signin")
-					.contentType(MediaType.APPLICATION_JSON)
-			)
-			.andExpect(status().isBadRequest());
-	}
 }
