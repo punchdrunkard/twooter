@@ -8,6 +8,11 @@ spring:
     activate:
       on-profile: test
 
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
   jwt:
     secret: testSecretKeyForJWTGenerationInTestEnvironmentMustBeSecureLongEnoughToWorkWithHS256Algorithm
     access-token-validity: 1800000  # 30 minutes in milliseconds
@@ -44,4 +49,5 @@ spring:
           springframework:
             transaction:
               interceptor: TRACE
+
 
