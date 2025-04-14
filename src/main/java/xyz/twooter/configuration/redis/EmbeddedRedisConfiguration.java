@@ -1,4 +1,4 @@
-package xyz.twooter.configuration;
+package xyz.twooter.configuration.redis;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
