@@ -99,9 +99,9 @@ class MemberTest {
 		}
 
 		@Test
-		@DisplayName("핸들이 15자 초과면 예외 발생")
+		@DisplayName("핸들이 25자 초과면 예외 발생")
 		void shouldFailWhenHandleTooLong() {
-			assertThatThrownBy(() -> Member.validateHandle("abcdefghijklmnop"))
+			assertThatThrownBy(() -> Member.validateHandle("a".repeat(26)))
 				.isInstanceOf(InvalidValueException.class);
 		}
 

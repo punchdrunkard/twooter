@@ -2,12 +2,13 @@ package xyz.twooter.auth.presentation.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import xyz.twooter.member.domain.Member;
+import xyz.twooter.member.domain.ValidHandle;
+import xyz.twooter.member.domain.ValidPassword;
 
 @Builder
 @AllArgsConstructor
@@ -19,18 +20,10 @@ public class SignUpRequest {
 	@NotBlank(message = "이메일은 필수입니다.")
 	String email;
 
-	@NotBlank(message = "비밀번호는 필수입니다.")
-	@Pattern(
-		regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?]).{8,}$",
-		message = "비밀번호는 최소 8자 이상이며, 영문 대/소문자, 숫자, 특수문자를 각각 1개 이상 포함해야 합니다."
-	)
+	@ValidPassword
 	private String password;
 
-	@NotBlank(message = "핸들은 필수입니다.")
-	@Pattern(
-		regexp = "^[a-zA-Z0-9_]{4,50}$",
-		message = "핸들은 영문, 숫자, 밑줄(_)만 사용 가능하며 4~50자 사이여야 합니다."
-	)
+	@ValidHandle
 	String handle;
 
 	public static Member toEntity(SignUpRequest request) {

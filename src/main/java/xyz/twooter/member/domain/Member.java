@@ -21,6 +21,16 @@ import xyz.twooter.common.error.InvalidValueException;
 @Getter
 public class Member extends BaseTimeEntity {
 
+	public static final String HANDLE_PATTERN = "^[a-zA-Z0-9_]{4,25}$";
+	// 최소 8자 이상, 영문 대/소문자, 숫자, 특수문자 각 1개 이상 포함
+	public static final String PASSWORD_PATTERN = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@$!%*? &])[A-Za-z\\d@$!%*?&]{8,}$";
+
+	public static final String PASSWORD_MESSAGE =
+		"비밀번호는 최소 8자 이상이며, 영문 대/소문자, 숫자, 특수문자를 각각 1개 이상 포함해야 합니다.";
+
+	public static final String HANDLE_MESSAGE =
+		"핸들은 영문, 숫자, 밑줄(_)만 사용 가능하며 4~25자 사이여야 합니다.";
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -52,12 +62,8 @@ public class Member extends BaseTimeEntity {
 			throw new InvalidValueException("비밀번호는 null일 수 없습니다.");
 		}
 
-		// TODO 정규식이 반복되므로 커스텀 애노테이션으로  검증하기
-		// 최소 8자 이상, 영문 대/소문자, 숫자, 특수문자 각 1개 이상 포함
-		String pattern = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?]).{8,}$";
-
-		if (!password.matches(pattern)) {
-			throw new InvalidValueException("비밀번호는 최소 8자 이상이며, 영문 대/소문자, 숫자, 특수문자를 각각 1개 이상 포함해야 합니다.");
+		if (!password.matches(PASSWORD_PATTERN)) {
+			throw new InvalidValueException(PASSWORD_MESSAGE);
 		}
 	}
 
@@ -66,11 +72,8 @@ public class Member extends BaseTimeEntity {
 			throw new InvalidValueException("핸들은 null이거나 공백일 수 없습니다.");
 		}
 
-		// 영문/숫자/밑줄, 4~15자
-		String pattern = "^[a-zA-Z0-9_]{4,15}$";
-
-		if (!handle.matches(pattern)) {
-			throw new InvalidValueException("핸들은 영문, 숫자, 밑줄(_)만 사용 가능하며 4~15자 사이여야 합니다.");
+		if (!handle.matches(HANDLE_PATTERN)) {
+			throw new InvalidValueException(HANDLE_MESSAGE);
 		}
 	}
 
