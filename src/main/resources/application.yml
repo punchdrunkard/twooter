@@ -2,10 +2,7 @@ spring:
   profiles:
     active: local
 
-  # datasource 설정 => local 에서는 h2 인메모리
-
-
-
-
-
-
+  data:
+    redis:
+      host: localhost
+      port: 6379
