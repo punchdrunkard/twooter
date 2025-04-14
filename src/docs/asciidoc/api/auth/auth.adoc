@@ -1,0 +1,21 @@
+[[authentication]]
+
+=== 회원 가입
+include::{snippets}/auth-signup/http-request.adoc[]
+include::{snippets}/auth-signup/request-fields.adoc[]
+
+==== HTTP Response
+include::{snippets}/auth-signup/http-response.adoc[]
+include::{snippets}/auth-signup/response-fields.adoc[]
+
+
+=== 로그인
+
+==== HTTP Request
+include::{snippets}/auth-signin/http-request.adoc[]
+include::{snippets}/auth-signin/request-fields.adoc[]
+
+==== HTTP Response
+include::{snippets}/auth-signin/http-response.adoc[]
+include::{snippets}/auth-signin/response-fields.adoc[]
+

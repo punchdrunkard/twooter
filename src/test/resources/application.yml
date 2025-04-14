@@ -8,6 +8,11 @@ spring:
     activate:
       on-profile: test
 
+  jwt:
+    secret: testSecretKeyForJWTGenerationInTestEnvironmentMustBeSecureLongEnoughToWorkWithHS256Algorithm
+    access-token-validity: 1800000  # 30 minutes in milliseconds
+    refresh-token-validity: 604800000  # 7 days in milliseconds
+
   datasource:
     url: jdbc:h2:mem:test
     username: sa

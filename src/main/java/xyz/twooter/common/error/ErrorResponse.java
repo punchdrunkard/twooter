@@ -11,73 +11,40 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ErrorResponse {
 
 	private String message;
-	private List<FieldError> errors;
 	private String code;
-
-	private ErrorResponse(final ErrorCode code, final List<FieldError> errors) {
-		this.message = code.getMessage();
-		this.errors = errors;
-		this.code = code.getCode();
-	}
 
 	private ErrorResponse(final ErrorCode code) {
 		this.message = code.getMessage();
 		this.code = code.getCode();
-		this.errors = new ArrayList<>();
+	}
+
+	private ErrorResponse(final ErrorCode code, final String customMessage) {
+		this.message = customMessage;
+		this.code = code.getCode();
 	}
 
 	public static ErrorResponse of(final ErrorCode code, final BindingResult bindingResult) {
-		return new ErrorResponse(code, FieldError.of(bindingResult));
+		// 바인딩 에러의 경우 첫 번째 필드 오류 메시지를 사용
+		if (bindingResult.hasFieldErrors()) {
+			String errorMessage = bindingResult.getFieldError().getDefaultMessage();
+			return new ErrorResponse(code, errorMessage);
+		}
+		return new ErrorResponse(code);
 	}
 
 	public static ErrorResponse of(final ErrorCode code) {
 		return new ErrorResponse(code);
 	}
 
-	public static ErrorResponse of(final ErrorCode code, final List<FieldError> errors) {
-		return new ErrorResponse(code, errors);
-	}
-
 	public static ErrorResponse of(MethodArgumentTypeMismatchException e) {
-		final String value = e.getValue() == null ? "" : e.getValue().toString();
-		final List<ErrorResponse.FieldError> errors = ErrorResponse.FieldError.of(e.getName(), value, e.getErrorCode());
-		return new ErrorResponse(ErrorCode.INVALID_TYPE_VALUE, errors);
+		return new ErrorResponse(ErrorCode.INVALID_TYPE_VALUE,
+			String.format("'%s' 필드의 값 '%s'의 타입이 올바르지 않습니다.",
+				e.getName(),
+				e.getValue() == null ? "" : e.getValue().toString()));
 	}
-
-	@Getter
-	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	public static class FieldError {
-		private String field;
-		private String value;
-		private String reason;
-
-		private FieldError(final String field, final String value, final String reason) {
-			this.field = field;
-			this.value = value;
-			this.reason = reason;
-		}
-
-		public static List<FieldError> of(final String field, final String value, final String reason) {
-			List<FieldError> fieldErrors = new ArrayList<>();
-			fieldErrors.add(new FieldError(field, value, reason));
-			return fieldErrors;
-		}
-
-		private static List<FieldError> of(final BindingResult bindingResult) {
-			final List<org.springframework.validation.FieldError> fieldErrors = bindingResult.getFieldErrors();
-			return fieldErrors.stream()
-				.map(error -> new FieldError(
-					error.getField(),
-					error.getRejectedValue() == null ? "" : error.getRejectedValue().toString(),
-					error.getDefaultMessage()))
-				.collect(Collectors.toList());
-		}
-	}
-
 }
