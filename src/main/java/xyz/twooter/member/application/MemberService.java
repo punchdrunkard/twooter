@@ -12,6 +12,7 @@ import xyz.twooter.auth.domain.exception.IllegalMemberIdException;
 import xyz.twooter.auth.presentation.dto.request.SignUpRequest;
 import xyz.twooter.member.domain.Member;
 import xyz.twooter.member.domain.MemberProfile;
+import xyz.twooter.member.domain.exception.MemberNotFoundException;
 import xyz.twooter.member.domain.repository.MemberProfileRepository;
 import xyz.twooter.member.domain.repository.MemberRepository;
 import xyz.twooter.member.presentation.dto.MemberSummary;
@@ -44,9 +45,8 @@ public class MemberService {
 	public MemberSummary createMemberSummary(String handle) {
 		validateMember(handle);
 
-		Member member = memberRepository.findByHandle(handle);
-		MemberProfile memberProfile = memberProfileRepository.findById(member.getId())
-			.orElseThrow(IllegalMemberIdException::new);
+		Member member = memberRepository.findByHandle(handle).orElseThrow(MemberNotFoundException::new);
+		MemberProfile memberProfile = memberProfileRepository.findById(member.getId()).orElseThrow(MemberNotFoundException::new);
 
 		return MemberSummary.of(member, memberProfile);
 	}

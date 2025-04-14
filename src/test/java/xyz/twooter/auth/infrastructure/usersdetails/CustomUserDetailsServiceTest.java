@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.util.Optional;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -12,6 +14,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import xyz.twooter.member.domain.Member;
+import xyz.twooter.member.domain.exception.MemberNotFoundException;
 import xyz.twooter.member.domain.repository.MemberRepository;
 import xyz.twooter.support.MockTestSupport;
 
@@ -32,9 +35,8 @@ class CustomUserDetailsServiceTest extends MockTestSupport {
 			.handle(handle)
 			.password("StrongP@ssw0rd!")
 			.build();
-
-		when(memberRepository.existsByHandle(handle)).thenReturn(true);
-		when(memberRepository.findByHandle(handle)).thenReturn(member);
+		
+		when(memberRepository.findByHandle(handle)).thenReturn(Optional.ofNullable(member));
 
 		// when
 		UserDetails userDetails = userDetailsService.loadUserByUsername(handle);
@@ -52,10 +54,9 @@ class CustomUserDetailsServiceTest extends MockTestSupport {
 	void loadNonExistingUser() {
 		// given
 		String handle = "nonExistingUser";
-		when(memberRepository.existsByHandle(handle)).thenReturn(false);
 
 		// when & then
-		assertThrows(UsernameNotFoundException.class, () -> {
+		assertThrows(MemberNotFoundException.class, () -> {
 			userDetailsService.loadUserByUsername(handle);
 		});
 	}

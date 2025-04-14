@@ -25,6 +25,9 @@ public enum ErrorCode {
 	ILLEGAL_MEMBER_ID(401, "A001", "유효하지 않은 회원 ID입니다"),
 	EMAIL_ALREADY_EXIST(400, "A002", "이미 사용 중인 이메일입니다"),
 
+	// Member
+	MEMBER_NOT_FOUND(404, "M001", "해당 유저를 찾을 수 없습니다"),
+	
 	// Security (S로 시작하는 코드 사용)
 	AUTHENTICATION_FAILED(401, "S001", "인증에 실패했습니다"),
 	INVALID_CREDENTIALS(401, "S002", "아이디 또는 비밀번호가 일치하지 않습니다"),

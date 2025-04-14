@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import xyz.twooter.member.domain.Member;
+import xyz.twooter.member.domain.exception.MemberNotFoundException;
 import xyz.twooter.member.domain.repository.MemberRepository;
 
 @Service
@@ -19,10 +20,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 	@Override
 	@Transactional(readOnly = true)
 	public UserDetails loadUserByUsername(String handle) throws UsernameNotFoundException {
-		if (!memberRepository.existsByHandle(handle)) {
-			throw new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + handle);
-		}
-		Member member = memberRepository.findByHandle(handle);
+		Member member = memberRepository.findByHandle(handle).orElseThrow(MemberNotFoundException::new);
 		return new CustomUserDetails(member);
 	}
 }
