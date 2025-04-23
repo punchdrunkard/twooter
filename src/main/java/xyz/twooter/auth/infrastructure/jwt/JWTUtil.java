@@ -67,4 +67,37 @@ public class JWTUtil {
 			.getPayload()
 			.get(claimName, requiredType);
 	}
+
+	public long getRemainingTimeInMillis(String token) {
+		try {
+			Date expiration = Jwts.parser()
+				.verifyWith(secretKey)
+				.build()
+				.parseSignedClaims(token)
+				.getPayload()
+				.getExpiration();
+
+			long now = System.currentTimeMillis();
+			long expiryTime = expiration.getTime();
+
+			return Math.max(0, expiryTime - now);
+		} catch (ExpiredJwtException e) {
+			return 0; // 이미 만료된 토큰
+		} catch (Exception e) {
+			return 0; // 유효하지 않은 토큰
+		}
+	}
+
+	public boolean isValid(String token) {
+		try {
+			Jwts.parser()
+				.verifyWith(secretKey)
+				.build()
+				.parseSignedClaims(token);
+
+			return !isExpired(token);
+		} catch (Exception e) {
+			return false;
+		}
+	}
 }
