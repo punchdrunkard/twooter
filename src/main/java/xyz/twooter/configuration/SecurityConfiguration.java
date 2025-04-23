@@ -14,9 +14,12 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import lombok.RequiredArgsConstructor;
+import xyz.twooter.auth.application.TokenService;
+import xyz.twooter.auth.infrastructure.jwt.CustomAuthenticationEntryPoint;
 import xyz.twooter.auth.infrastructure.jwt.JWTFilter;
 import xyz.twooter.auth.infrastructure.jwt.JWTUtil;
 import xyz.twooter.auth.infrastructure.usersdetails.CustomUserDetailsService;
+import xyz.twooter.common.filter.ExceptionTranslationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -25,6 +28,8 @@ public class SecurityConfiguration {
 
 	private final JWTUtil jwtUtil;
 	private final CustomUserDetailsService userDetailsService;
+	private final CustomAuthenticationEntryPoint authenticationEntryPoint;
+	private final TokenService tokenService;
 
 	@Bean
 	public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
@@ -57,8 +62,11 @@ public class SecurityConfiguration {
 			.sessionManagement(session -> session
 				.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 			)
+			.exceptionHandling(e -> e.authenticationEntryPoint(authenticationEntryPoint))
 			// JWT 필터 추가
-			.addFilterBefore(new JWTFilter(jwtUtil, userDetailsService), UsernamePasswordAuthenticationFilter.class)
+			.addFilterBefore(new JWTFilter(jwtUtil, userDetailsService, tokenService),
+				UsernamePasswordAuthenticationFilter.class)
+			.addFilterBefore(new ExceptionTranslationFilter(), JWTFilter.class)
 			.build();
 	}
 }
