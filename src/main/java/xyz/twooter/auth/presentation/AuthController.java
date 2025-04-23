@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import xyz.twooter.auth.application.AuthService;
+import xyz.twooter.auth.domain.exception.InvalidTokenException;
 import xyz.twooter.auth.presentation.dto.request.SignInRequest;
 import xyz.twooter.auth.presentation.dto.request.SignUpRequest;
 import xyz.twooter.auth.presentation.dto.request.TokenReissueRequest;
@@ -47,16 +48,26 @@ public class AuthController {
 	@PostMapping("/logout")
 	public ResponseEntity<LogoutResponse> logout(HttpServletRequest request) {
 		// 요청 헤더에서 Authorization 토큰 추출
-		String authHeader = request.getHeader("Authorization");
-		String accessToken = "";
+		String accessToken = extractTokenFromHeader(request);
 
-		if (authHeader != null && authHeader.startsWith("Bearer ")) {
-			accessToken = authHeader.substring(7); // "Bearer " 제거
+		// 토큰이 비어있는 경우 체크
+		if (accessToken.isEmpty()) {
+			throw new InvalidTokenException();
 		}
 
 		// 로그아웃 처리
 		LogoutResponse response = authService.logout(accessToken);
 
 		return ResponseEntity.ok(response);
+	}
+
+	private String extractTokenFromHeader(HttpServletRequest request) {
+		String authHeader = request.getHeader("Authorization");
+
+		if (authHeader != null && authHeader.startsWith("Bearer ")) {
+			return authHeader.substring(7); // Remove "Bearer " prefix
+		}
+
+		return "";
 	}
 }
