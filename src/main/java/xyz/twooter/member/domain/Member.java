@@ -48,7 +48,6 @@ public class Member extends BaseTimeEntity {
 
 	@Builder
 	public Member(String email, String password, String handle) {
-		validatePassword(password);
 		validateHandle(handle);
 
 		this.email = email;
