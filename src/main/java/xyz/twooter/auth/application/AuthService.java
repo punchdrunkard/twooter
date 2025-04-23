@@ -91,6 +91,7 @@ public class AuthService {
 		try {
 			// 액세스 토큰이 유효한지 확인
 			if (!jwtUtil.isValid(accessToken)) {
+				SecurityContextHolder.clearContext();
 				return new LogoutResponse("unknown"); // 유효하지 않은 토큰이어도 로그아웃 성공으로 처리
 			}
 
