@@ -1,12 +1,10 @@
 package xyz.twooter.docs.auth;
 
 import static org.mockito.BDDMockito.*;
-import static org.mockito.Mockito.*;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.*;
-import static org.springframework.restdocs.payload.PayloadDocumentation.*;
-import static org.springframework.restdocs.request.RequestDocumentation.*;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import org.junit.jupiter.api.DisplayName;
@@ -67,8 +65,10 @@ public class AuthControllerDocsTest extends RestDocsSupport {
 				preprocessResponse(prettyPrint()),
 				requestFields(
 					fieldWithPath("email").type(JsonFieldType.STRING).description("사용자 이메일"),
-					fieldWithPath("password").type(JsonFieldType.STRING).description("사용자 비밀번호 (영문 대/소문자, 숫자, 특수문자 포함 8자 이상)"),
-					fieldWithPath("handle").type(JsonFieldType.STRING).description("사용자 핸들 (영문, 숫자, 밑줄(_) 사용 가능, 4~50자)")
+					fieldWithPath("password").type(JsonFieldType.STRING)
+						.description("사용자 비밀번호 (영문 대/소문자, 숫자, 특수문자 포함 8자 이상)"),
+					fieldWithPath("handle").type(JsonFieldType.STRING)
+						.description("사용자 핸들 (영문, 숫자, 밑줄(_) 사용 가능, 4~50자)")
 				),
 				responseFields(
 					fieldWithPath("member").type(JsonFieldType.OBJECT).description("회원 정보"),
@@ -118,7 +118,8 @@ public class AuthControllerDocsTest extends RestDocsSupport {
 				preprocessRequest(prettyPrint()),
 				preprocessResponse(prettyPrint()),
 				requestFields(
-					fieldWithPath("handle").type(JsonFieldType.STRING).description("사용자 핸들 (영문, 숫자, 밑줄(_) 사용 가능, 4~50자)"),
+					fieldWithPath("handle").type(JsonFieldType.STRING)
+						.description("사용자 핸들 (영문, 숫자, 밑줄(_) 사용 가능, 4~50자)"),
 					fieldWithPath("password").type(JsonFieldType.STRING).description("사용자 비밀번호")
 				),
 				responseFields(

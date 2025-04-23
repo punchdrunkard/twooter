@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import xyz.twooter.member.domain.Member;
 import xyz.twooter.member.domain.exception.MemberNotFoundException;
@@ -35,7 +34,7 @@ class CustomUserDetailsServiceTest extends MockTestSupport {
 			.handle(handle)
 			.password("StrongP@ssw0rd!")
 			.build();
-		
+
 		when(memberRepository.findByHandle(handle)).thenReturn(Optional.ofNullable(member));
 
 		// when
