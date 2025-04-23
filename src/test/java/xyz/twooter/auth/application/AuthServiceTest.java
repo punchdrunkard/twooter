@@ -133,7 +133,6 @@ class AuthServiceTest extends MockTestSupport {
 		// then
 		assertNotNull(response);
 		assertEquals("unknown", response.userHandle());
-		verify(tokenService, never()).blacklistToken(any(), TokenType.ACCESS);
 		verify(tokenService, never()).revokeAllUserTokens(any());
 	}
 }

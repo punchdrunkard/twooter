@@ -21,3 +21,27 @@ include::{snippets}/auth-signin/request-fields.adoc[]
 include::{snippets}/auth-signin/http-response.adoc[]
 include::{snippets}/auth-signin/response-fields.adoc[]
 
+=== 토큰 재발급
+
+==== HTTP Request
+
+include::{snippets}/auth-reissue/http-request.adoc[]
+include::{snippets}/auth-reissue/request-fields.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/auth-reissue/http-response.adoc[]
+include::{snippets}/auth-reissue/response-fields.adoc[]
+
+=== 로그아웃
+
+==== HTTP Request
+
+include::{snippets}/auth-logout/http-request.adoc[]
+include::{snippets}/auth-logout/request-headers.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/auth-logout/http-response.adoc[]
+include::{snippets}/auth-logout/response-fields.adoc[]
+
