@@ -18,6 +18,8 @@ import xyz.twooter.common.error.ErrorResponse;
 @Component
 public class ExceptionTranslationFilter extends OncePerRequestFilter {
 
+	private final ObjectMapper objectMapper = new ObjectMapper();
+
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 		throws ServletException, IOException {
@@ -31,9 +33,7 @@ public class ExceptionTranslationFilter extends OncePerRequestFilter {
 			response.setStatus(errorCode.getStatus());
 			response.setContentType("application/json;charset=UTF-8");
 
-			ErrorResponse errorResponse = ErrorResponse.of(errorCode);
-			ObjectMapper objectMapper = new ObjectMapper();
-			objectMapper.writeValue(response.getOutputStream(), errorResponse);
+			ErrorResponse errorResponse = ErrorResponse.of(errorCode);objectMapper.writeValue(response.getOutputStream(), errorResponse);
 		}
 	}
 }
