@@ -108,7 +108,7 @@ class AuthServiceTest extends MockTestSupport {
 		// given
 		when(jwtUtil.isValid(TEST_ACCESS_TOKEN)).thenReturn(true);
 		when(jwtUtil.getHandle(TEST_ACCESS_TOKEN)).thenReturn(TEST_HANDLE);
-		doNothing().when(tokenService).blacklistAccessToken(TEST_ACCESS_TOKEN);
+		doNothing().when(tokenService).blacklistToken(TEST_ACCESS_TOKEN, TokenType.ACCESS);
 		doNothing().when(tokenService).revokeAllUserTokens(TEST_HANDLE);
 
 		// when
@@ -117,7 +117,7 @@ class AuthServiceTest extends MockTestSupport {
 		// then
 		assertNotNull(response);
 		assertEquals(TEST_HANDLE, response.userHandle());
-		verify(tokenService).blacklistAccessToken(TEST_ACCESS_TOKEN);
+		verify(tokenService).blacklistToken(TEST_ACCESS_TOKEN, TokenType.ACCESS);
 		verify(tokenService).revokeAllUserTokens(TEST_HANDLE);
 	}
 
@@ -133,7 +133,7 @@ class AuthServiceTest extends MockTestSupport {
 		// then
 		assertNotNull(response);
 		assertEquals("unknown", response.userHandle());
-		verify(tokenService, never()).blacklistAccessToken(any());
+		verify(tokenService, never()).blacklistToken(any(), TokenType.ACCESS);
 		verify(tokenService, never()).revokeAllUserTokens(any());
 	}
 }
