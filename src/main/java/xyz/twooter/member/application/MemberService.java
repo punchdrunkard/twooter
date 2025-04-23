@@ -46,7 +46,8 @@ public class MemberService {
 		validateMember(handle);
 
 		Member member = memberRepository.findByHandle(handle).orElseThrow(MemberNotFoundException::new);
-		MemberProfile memberProfile = memberProfileRepository.findById(member.getId()).orElseThrow(MemberNotFoundException::new);
+		MemberProfile memberProfile = memberProfileRepository.findById(member.getId())
+			.orElseThrow(MemberNotFoundException::new);
 
 		return MemberSummary.of(member, memberProfile);
 	}

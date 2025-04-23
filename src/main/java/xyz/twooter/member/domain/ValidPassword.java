@@ -11,7 +11,6 @@ import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
-import xyz.twooter.member.domain.Member;
 
 @NotBlank(message = "비밀번호는 필수입니다.")
 @Pattern(regexp = Member.PASSWORD_PATTERN, message = Member.PASSWORD_MESSAGE)

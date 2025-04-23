@@ -19,7 +19,6 @@ public class CustomUserDetails implements UserDetails {
 		return member;
 	}
 
-
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
 		// 기본적으로 모든 사용자에게 "ROLE_USER" 권한 부여

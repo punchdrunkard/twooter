@@ -12,8 +12,11 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import xyz.twooter.auth.presentation.dto.request.SignInRequest;
 import xyz.twooter.auth.presentation.dto.request.SignUpRequest;
+import xyz.twooter.auth.presentation.dto.request.TokenReissueRequest;
+import xyz.twooter.auth.presentation.dto.response.LogoutResponse;
 import xyz.twooter.auth.presentation.dto.response.SignInResponse;
 import xyz.twooter.auth.presentation.dto.response.SignUpInfoResponse;
+import xyz.twooter.auth.presentation.dto.response.TokenReissueResponse;
 import xyz.twooter.member.presentation.dto.MemberSummary;
 import xyz.twooter.support.ControllerTestSupport;
 
@@ -173,6 +176,120 @@ class AuthControllerTest extends ControllerTestSupport {
 				post("/api/auth/signin")
 					.content(objectMapper.writeValueAsString(request))
 					.contentType(MediaType.APPLICATION_JSON)
+			)
+			.andExpect(status().isUnauthorized());
+	}
+
+	@DisplayName("토큰 재발급 성공 시 새로운 액세스 토큰과 리프레시 토큰을 반환한다.")
+	@Test
+	void reissueToken() throws Exception {
+		// given
+		TokenReissueRequest request = TokenReissueRequest.builder()
+			.refreshToken("old.refresh.token")
+			.build();
+
+		TokenReissueResponse response = new TokenReissueResponse(
+			"new.access.token",
+			"new.refresh.token"
+		);
+
+		given(authService.reissueToken(any(TokenReissueRequest.class))).willReturn(response);
+
+		// when & then
+		mockMvc.perform(
+				post("/api/auth/reissue")
+					.content(objectMapper.writeValueAsString(request))
+					.contentType(MediaType.APPLICATION_JSON)
+			)
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.accessToken").value("new.access.token"))
+			.andExpect(jsonPath("$.refreshToken").value("new.refresh.token"));
+	}
+
+	@DisplayName("유효하지 않은 리프레시 토큰으로 재발급 요청 시 401을 반환한다.")
+	@Test
+	void shouldReturn401WhenRefreshTokenInvalid() throws Exception {
+		// given
+		TokenReissueRequest request = TokenReissueRequest.builder()
+			.refreshToken("invalid.refresh.token")
+			.build();
+
+		given(authService.reissueToken(any(TokenReissueRequest.class)))
+			.willThrow(new BadCredentialsException("유효하지 않은 리프레시 토큰입니다."));
+
+		// when & then
+		mockMvc.perform(
+				post("/api/auth/reissue")
+					.content(objectMapper.writeValueAsString(request))
+					.contentType(MediaType.APPLICATION_JSON)
+			)
+			.andExpect(status().isUnauthorized());
+	}
+
+	@DisplayName("리프레시 토큰이 null이면 400을 반환한다.")
+	@Test
+	void shouldReturn400WhenRefreshTokenNull() throws Exception {
+		// given
+		TokenReissueRequest request = TokenReissueRequest.builder()
+			.refreshToken(null)
+			.build();
+
+		// when & then
+		mockMvc.perform(
+				post("/api/auth/reissue")
+					.content(objectMapper.writeValueAsString(request))
+					.contentType(MediaType.APPLICATION_JSON)
+			)
+			.andExpect(status().isBadRequest());
+	}
+
+	@DisplayName("로그아웃 성공 시 사용자 핸들을 포함한 응답을 반환한다.")
+	@Test
+	void logout() throws Exception {
+		// given
+		String accessToken = "test.access.token";
+		LogoutResponse response = new LogoutResponse("twooter_123");
+
+		given(authService.logout(accessToken)).willReturn(response);
+
+		// when & then
+		mockMvc.perform(
+				post("/api/auth/logout")
+					.header("Authorization", "Bearer " + accessToken)
+			)
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.userHandle").value("twooter_123"));
+	}
+
+	@DisplayName("Authorization 헤더 없이 로그아웃 요청 시에도 정상 처리된다.")
+	@Test
+	void logoutWithoutAuthHeader() throws Exception {
+		// given
+		LogoutResponse response = new LogoutResponse(null);
+
+		given(authService.logout("")).willReturn(response);
+
+		// when & then
+		mockMvc.perform(
+				post("/api/auth/logout")
+			)
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.userHandle").isEmpty());
+	}
+
+	@DisplayName("유효하지 않은 액세스 토큰으로 로그아웃 요청 시 401을 반환한다.")
+	@Test
+	void shouldReturn401WhenAccessTokenInvalidForLogout() throws Exception {
+		// given
+		String invalidAccessToken = "invalid.access.token";
+
+		given(authService.logout(invalidAccessToken))
+			.willThrow(new BadCredentialsException("유효하지 않은 액세스 토큰입니다."));
+
+		// when & then
+		mockMvc.perform(
+				post("/api/auth/logout")
+					.header("Authorization", "Bearer " + invalidAccessToken)
 			)
 			.andExpect(status().isUnauthorized());
 	}
