@@ -18,12 +18,11 @@ import xyz.twooter.support.IntegrationTestSupport;
 
 class RedisUtilTest extends IntegrationTestSupport {
 
-	@Autowired
-	private RedisUtil redisUtil;
-
 	private final String TEST_KEY = "test:key";
 	private final String TEST_VALUE = "test-value";
 	private final String TEST_HASH_KEY = "test:hash";
+	@Autowired
+	private RedisUtil redisUtil;
 
 	@BeforeEach
 	void setUp() {
