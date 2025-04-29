@@ -52,7 +52,7 @@ public class SecurityConfiguration {
 			.httpBasic(AbstractHttpConfigurer::disable)
 			// 경로별 인가 설정
 			.authorizeHttpRequests(auth -> auth
-				.requestMatchers("/h2-console/**", "/api/auth/**").permitAll()
+				.requestMatchers("/h2-console/**", "/api/auth/**", "/docs/**").permitAll()
 				.anyRequest().authenticated()
 			)
 			.headers(headers -> headers

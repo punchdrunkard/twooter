@@ -30,7 +30,7 @@ dependencies {
 
     // === Security ===
     implementation 'org.springframework.boot:spring-boot-starter-security'
-    
+
     // === JWT ===
     implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
     implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
@@ -81,17 +81,24 @@ asciidoctor {
     dependsOn test
 }
 
+// Clear previous docs before generating new ones
 asciidoctor.doFirst {
     delete file('src/main/resources/static/docs')
+    delete file('docs')
 }
 
+// Copy RestDocs to both locations: static resources and project root
 tasks.register('copyRestDocs', Copy) {
     dependsOn asciidoctor
     from file('build/docs/asciidoc')
     into file('src/main/resources/static/docs')
 }
 
-// build.gradle
+tasks.register('copyRestDocsToRoot', Copy) {
+    dependsOn asciidoctor
+    from file('build/docs/asciidoc')
+    into file('docs')
+}
 
 processResources.dependsOn('copySecret')
 
@@ -101,6 +108,14 @@ tasks.register('copySecret', Copy) {
     into 'src/main/resources'
 }
 
+// Ensure both copy tasks run when building
 build {
     dependsOn copyRestDocs
+    dependsOn copyRestDocsToRoot
+}
+
+// Add a bootJar dependency to ensure docs are generated before creating the final jar
+bootJar {
+    dependsOn copyRestDocs
+    dependsOn copyRestDocsToRoot
 }
