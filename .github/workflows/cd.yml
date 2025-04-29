@@ -1,0 +1,87 @@
+name: Build, Test & Deploy Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repository Checkout
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.ACTION_TOKEN }}
+          submodules: true
+
+      # 애플리케이션 빌드
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Build with Gradle
+        run: ./gradlew bootJar
+
+      # Docker 이미지 빌드 및 푸시
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Authenticate with Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and publish Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKER_REPO }}/twooter-web:latest,${{ secrets.DOCKER_REPO }}/twooter-web:${{ github.sha }}
+          cache-from: type=registry,ref=${{ secrets.DOCKER_REPO }}/twooter-web:buildcache
+          cache-to: type=registry,ref=${{ secrets.DOCKER_REPO }}/twooter-web:buildcache,mode=max
+
+      # GCP 배포 단계
+      - name: Authenticate with Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          install_components: 'gcloud'
+
+      - name: Deploy application to GCP instance
+        id: deploy
+        run: |
+          gcloud compute ssh ${{ secrets.USERNAME }}@${{ secrets.INSTANCE_NAME }} \
+            --zone ${{ secrets.GCP_ZONE }} \
+            --project ${{ secrets.GCP_PROJECT_ID }} \
+            --command "
+              # sudo를 사용하여 스크립트를 bash로 실행
+              sudo bash ./deploy.sh
+
+              # 미사용 Docker 이미지 정리
+              sudo docker image prune -f
+            " \
+            --ssh-flag="-o ConnectTimeout=30"
+
+      - name: Verify deployment status
+        if: always()
+        run: |
+          if [ "${{ steps.deploy.outcome }}" == "success" ]; then
+            echo "✅ Deployment completed successfully!"
+          else
+            echo "❌ Deployment failed. Check logs for details."
+          fi
