@@ -17,6 +17,7 @@ import xyz.twooter.auth.presentation.dto.response.LogoutResponse;
 import xyz.twooter.auth.presentation.dto.response.SignInResponse;
 import xyz.twooter.auth.presentation.dto.response.SignUpInfoResponse;
 import xyz.twooter.auth.presentation.dto.response.TokenReissueResponse;
+import xyz.twooter.common.error.ErrorCode;
 import xyz.twooter.member.presentation.dto.MemberSummary;
 import xyz.twooter.support.ControllerTestSupport;
 
@@ -261,20 +262,27 @@ class AuthControllerTest extends ControllerTestSupport {
 			.andExpect(jsonPath("$.userHandle").value("twooter_123"));
 	}
 
-	@DisplayName("Authorization 헤더 없이 로그아웃 요청 시에도 정상 처리된다.")
+	@DisplayName("Authorization 헤더 없이 로그아웃 요청 시 에러가 발생한다.")
 	@Test
 	void logoutWithoutAuthHeader() throws Exception {
-		// given
-		LogoutResponse response = new LogoutResponse(null);
-
-		given(authService.logout("")).willReturn(response);
-
-		// when & then
+		// given & when & then
 		mockMvc.perform(
 				post("/api/auth/logout")
 			)
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.userHandle").isEmpty());
+			.andExpect(status().isUnauthorized())
+			.andExpect(jsonPath("$.code").value(ErrorCode.MISSING_AUTHORIZATION_HEADER.getCode()));
+	}
+
+	@DisplayName("토큰이 Bearer 로 시작하지 않으면 에러를 반환한다.")
+	@Test
+	void logoutWithoutBearerPrefix() throws Exception {
+		// given & when & then
+		mockMvc.perform(
+				post("/api/auth/logout")
+					.header("Authorization", "accessToken")
+			)
+			.andExpect(status().isUnauthorized())
+			.andExpect(jsonPath("$.code").value(ErrorCode.INVALID_TOKEN_FORMAT.getCode()));
 	}
 
 	@DisplayName("유효하지 않은 액세스 토큰으로 로그아웃 요청 시 401을 반환한다.")

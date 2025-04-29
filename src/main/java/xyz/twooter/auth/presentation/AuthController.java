@@ -12,6 +12,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import xyz.twooter.auth.application.AuthService;
 import xyz.twooter.auth.domain.exception.InvalidTokenException;
+import xyz.twooter.auth.domain.exception.InvalidTokenFormatException;
+import xyz.twooter.auth.domain.exception.MissingAuthorizationHeaderException;
 import xyz.twooter.auth.presentation.dto.request.SignInRequest;
 import xyz.twooter.auth.presentation.dto.request.SignUpRequest;
 import xyz.twooter.auth.presentation.dto.request.TokenReissueRequest;
@@ -64,10 +66,22 @@ public class AuthController {
 	private String extractTokenFromHeader(HttpServletRequest request) {
 		String authHeader = request.getHeader("Authorization");
 
-		if (authHeader != null && authHeader.startsWith("Bearer ")) {
-			return authHeader.substring(7); // Remove "Bearer " prefix
-		}
+		validateAuthorizationHeaderExists(authHeader);
+		validateBearerTokenFormat(authHeader);
 
-		return "";
+		return authHeader.substring(7);
+
+	}
+
+	private void validateAuthorizationHeaderExists(String authHeader) {
+		if (authHeader == null) {
+			throw new MissingAuthorizationHeaderException();
+		}
+	}
+
+	private void validateBearerTokenFormat(String authHeader) {
+		if (!authHeader.startsWith("Bearer ")) {
+			throw new InvalidTokenFormatException();
+		}
 	}
 }

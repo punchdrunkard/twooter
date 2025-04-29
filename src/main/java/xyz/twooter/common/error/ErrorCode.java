@@ -24,6 +24,8 @@ public enum ErrorCode {
 	// Auth
 	ILLEGAL_MEMBER_ID(401, "A001", "유효하지 않은 회원 ID입니다"),
 	EMAIL_ALREADY_EXIST(400, "A002", "이미 사용 중인 이메일입니다"),
+	MISSING_AUTHORIZATION_HEADER(401, "A003", "인증 헤더가 누락되었습니다"),
+	INVALID_TOKEN_FORMAT(401, "A004", "유효하지 않은 토큰 형식입니다"),
 
 	// Member
 	MEMBER_NOT_FOUND(404, "M001", "해당 유저를 찾을 수 없습니다"),
