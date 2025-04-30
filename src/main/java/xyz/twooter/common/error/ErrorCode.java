@@ -30,6 +30,9 @@ public enum ErrorCode {
 	// Member
 	MEMBER_NOT_FOUND(404, "M001", "해당 유저를 찾을 수 없습니다"),
 
+	// POST
+	EMPTY_POST(400, "P001", "텍스트 내용이나 미디어 파일 중 하나 이상을 첨부해야 합니다."),
+
 	// Security (S로 시작하는 코드 사용)
 	AUTHENTICATION_FAILED(401, "S001", "인증에 실패했습니다"),
 	INVALID_CREDENTIALS(401, "S002", "아이디 또는 비밀번호가 일치하지 않습니다"),
