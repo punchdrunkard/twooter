@@ -9,6 +9,6 @@ import lombok.Getter;
 @AllArgsConstructor
 public class MediaSimpleResponse {
 
-	Long mediaId;
-	String mediaUrl;
+	private Long mediaId;
+	private String mediaUrl;
 }
