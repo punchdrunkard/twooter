@@ -5,7 +5,6 @@ import java.util.List;
 
 import lombok.Builder;
 import lombok.Getter;
-import xyz.twooter.media.domain.Media;
 import xyz.twooter.media.presentation.response.MediaSimpleResponse;
 import xyz.twooter.member.presentation.dto.MemberSummaryResponse;
 import xyz.twooter.post.domain.Post;
@@ -19,11 +18,12 @@ public class PostCreateResponse {
 	private MediaSimpleResponse[] media;
 	private LocalDateTime createdAt;
 
-	public static PostCreateResponse of(Post post, MemberSummaryResponse memberSummaryResponse, List<Media> mediaList) {
+	public static PostCreateResponse of(Post post, MemberSummaryResponse memberSummaryResponse,
+		List<MediaSimpleResponse> mediaList) {
 		MediaSimpleResponse[] mediaResponses = mediaList.stream()
 			.map(media -> MediaSimpleResponse.builder()
-				.mediaId(media.getId())
-				.mediaUrl(media.getPath())  // 또는 .getUrl() 등 실제 경로
+				.mediaId(media.getMediaId())
+				.mediaUrl(media.getMediaUrl())  // 또는 .getUrl() 등 실제 경로
 				.build())
 			.toArray(MediaSimpleResponse[]::new);
 
