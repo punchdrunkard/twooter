@@ -47,7 +47,8 @@ class AuthControllerTest extends ControllerTestSupport {
 		// when & then
 		mockMvc.perform(
 				post("/api/auth/signup")
-
+					.content(objectMapper.writeValueAsString(request))
+					.contentType(MediaType.APPLICATION_JSON)
 			)
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.member.email").value("user@example.com"))

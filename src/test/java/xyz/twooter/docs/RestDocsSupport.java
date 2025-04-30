@@ -7,25 +7,19 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import xyz.twooter.support.ControllerTestSupport;
 
 @ExtendWith(RestDocumentationExtension.class)
 @Disabled
-public abstract class RestDocsSupport {
-
-	protected MockMvc mockMvc;
-	protected ObjectMapper objectMapper = new ObjectMapper();
+public abstract class RestDocsSupport extends ControllerTestSupport {
 
 	@BeforeEach
-	void setUp(RestDocumentationContextProvider provider) {
-		this.mockMvc = MockMvcBuilders.standaloneSetup(initController())
+	void setUp(WebApplicationContext context, RestDocumentationContextProvider provider) {
+		this.mockMvc = MockMvcBuilders.webAppContextSetup(context)
 			.apply(documentationConfiguration(provider))
 			.build();
 	}
-
-	protected abstract Object initController();
-
 }

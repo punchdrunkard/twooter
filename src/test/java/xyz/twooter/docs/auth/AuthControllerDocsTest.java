@@ -13,8 +13,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.JsonFieldType;
 
-import xyz.twooter.auth.application.AuthService;
-import xyz.twooter.auth.presentation.AuthController;
 import xyz.twooter.auth.presentation.dto.request.SignInRequest;
 import xyz.twooter.auth.presentation.dto.request.SignUpRequest;
 import xyz.twooter.auth.presentation.dto.request.TokenReissueRequest;
@@ -25,14 +23,7 @@ import xyz.twooter.auth.presentation.dto.response.TokenReissueResponse;
 import xyz.twooter.docs.RestDocsSupport;
 import xyz.twooter.member.presentation.dto.MemberSummaryResponse;
 
-public class AuthControllerDocsTest extends RestDocsSupport {
-
-	private final AuthService authService = mock(AuthService.class);
-
-	@Override
-	protected Object initController() {
-		return new AuthController(authService);
-	}
+class AuthControllerDocsTest extends RestDocsSupport {
 
 	@DisplayName("회원가입 API")
 	@Test
