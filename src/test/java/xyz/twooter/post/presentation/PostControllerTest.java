@@ -75,6 +75,46 @@ class PostControllerTest extends ControllerTestSupport {
 			.andExpect(status().isBadRequest());
 	}
 
+	@DisplayName("포스트 내용이 500자를 초과하면 에러가 발생한다.")
+	@Test
+	void shouldFailWhenContentExceedsLimit() throws Exception {
+		// given
+		String longContent = "a".repeat(501); // 501자
+		PostCreateRequest request = PostCreateRequest.builder()
+			.content(longContent)
+			.media(null)
+			.build();
+
+		// when // then
+		mockMvc.perform(
+				post("/api/posts")
+					.content(objectMapper.writeValueAsString(request))
+					.contentType(MediaType.APPLICATION_JSON)
+			)
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.message").exists()); // 에러 메시지 존재 여부
+	}
+
+	@DisplayName("미디어 ID가 4개를 초과하면 에러가 발생한다.")
+	@Test
+	void shouldFailWhenTooManyMediaIdsProvided() throws Exception {
+		// given
+		Long[] tooManyMediaIds = {1L, 2L, 3L, 4L, 5L}; // 5개
+		PostCreateRequest request = PostCreateRequest.builder()
+			.content("정상적인 내용입니다.")
+			.media(tooManyMediaIds)
+			.build();
+
+		// when // then
+		mockMvc.perform(
+				post("/api/posts")
+					.content(objectMapper.writeValueAsString(request))
+					.contentType(MediaType.APPLICATION_JSON)
+			)
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.message").exists());
+	}
+
 	// === 헬퍼 메서드 ===
 
 	private PostCreateRequest createPostRequestWithContentOnly() {

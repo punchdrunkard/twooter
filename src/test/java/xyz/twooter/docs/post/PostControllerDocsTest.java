@@ -59,9 +59,9 @@ class PostControllerDocsTest extends RestDocsSupport {
 				preprocessResponse(prettyPrint()),
 				requestFields(
 					fieldWithPath("content").type(JsonFieldType.STRING)
-						.description("포스트 내용 (미디어가 없는 경우 필수)"),
+						.description("포스트 내용 (미디어가 없는 경우 필수, 최대 500자)"),
 					fieldWithPath("media").type(JsonFieldType.ARRAY).optional()
-						.description("첨부된 미디어 파일 ID 목록 (내용이 비어있는 경우 필수)")
+						.description("첨부된 미디어 파일 ID 목록 (내용이 비어있는 경우 필수, 최대 4개)")
 				),
 				responseFields(
 					fieldWithPath("id").type(JsonFieldType.NUMBER)
