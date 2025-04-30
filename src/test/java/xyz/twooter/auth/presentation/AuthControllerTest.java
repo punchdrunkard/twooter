@@ -18,7 +18,7 @@ import xyz.twooter.auth.presentation.dto.response.SignInResponse;
 import xyz.twooter.auth.presentation.dto.response.SignUpInfoResponse;
 import xyz.twooter.auth.presentation.dto.response.TokenReissueResponse;
 import xyz.twooter.common.error.ErrorCode;
-import xyz.twooter.member.presentation.dto.MemberSummary;
+import xyz.twooter.member.presentation.dto.MemberSummaryResponse;
 import xyz.twooter.support.ControllerTestSupport;
 
 class AuthControllerTest extends ControllerTestSupport {
@@ -34,7 +34,7 @@ class AuthControllerTest extends ControllerTestSupport {
 			.build();
 
 		SignUpInfoResponse response = new SignUpInfoResponse(
-			new MemberSummary(
+			new MemberSummaryResponse(
 				"user@example.com",
 				"twooter_123",
 				"닉네임 기본값",
@@ -109,7 +109,7 @@ class AuthControllerTest extends ControllerTestSupport {
 			.password("StrongP@ssw0rd!")
 			.build();
 
-		MemberSummary memberSummary = MemberSummary.builder()
+		MemberSummaryResponse memberSummaryResponse = MemberSummaryResponse.builder()
 			.email("user@example.com")
 			.handle("twooter_123")
 			.nickname("닉네임 기본값")
@@ -119,7 +119,7 @@ class AuthControllerTest extends ControllerTestSupport {
 		SignInResponse response = new SignInResponse(
 			"test.access.token",
 			"test.refresh.token",
-			memberSummary
+			memberSummaryResponse
 		);
 
 		given(authService.signIn(any(SignInRequest.class))).willReturn(response);

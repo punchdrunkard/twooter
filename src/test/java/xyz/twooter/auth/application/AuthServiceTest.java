@@ -22,7 +22,7 @@ import xyz.twooter.auth.presentation.dto.response.LogoutResponse;
 import xyz.twooter.auth.presentation.dto.response.SignInResponse;
 import xyz.twooter.auth.presentation.dto.response.TokenReissueResponse;
 import xyz.twooter.member.application.MemberService;
-import xyz.twooter.member.presentation.dto.MemberSummary;
+import xyz.twooter.member.presentation.dto.MemberSummaryResponse;
 import xyz.twooter.support.MockTestSupport;
 
 class AuthServiceTest extends MockTestSupport {
@@ -59,7 +59,7 @@ class AuthServiceTest extends MockTestSupport {
 	void shouldIssueTokensWhenValidCredentialsProvided() {
 		// given
 		SignInRequest request = new SignInRequest(TEST_HANDLE, TEST_PASSWORD);
-		MemberSummary memberSummary = new MemberSummary(TEST_EMAIL, TEST_HANDLE, "테스트 사용자", "test@example.com");
+		MemberSummaryResponse memberSummaryResponse = new MemberSummaryResponse(TEST_EMAIL, TEST_HANDLE, "테스트 사용자", "test@example.com");
 
 		when(authenticationManagerBuilder.getObject()).thenReturn(authenticationManager);
 		when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
@@ -68,7 +68,7 @@ class AuthServiceTest extends MockTestSupport {
 			jwtUtil.createJwt(eq(TEST_HANDLE), eq(TokenType.ACCESS), anyLong()))
 			.thenReturn(TEST_ACCESS_TOKEN);
 		when(tokenService.createRefreshToken(TEST_HANDLE)).thenReturn(TEST_REFRESH_TOKEN);
-		when(memberService.createMemberSummary(TEST_HANDLE)).thenReturn(memberSummary);
+		when(memberService.createMemberSummary(TEST_HANDLE)).thenReturn(memberSummaryResponse);
 
 		// when
 		SignInResponse response = authService.signIn(request);

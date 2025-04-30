@@ -1,0 +1,14 @@
+[[post]]
+
+
+=== 글 작성
+
+==== HTTP Request
+
+include::{snippets}/post-create/http-request.adoc[]
+include::{snippets}/post-create/request-fields.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/post-create/http-response.adoc[]
+include::{snippets}/post-create/response-fields.adoc[]

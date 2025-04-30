@@ -19,7 +19,7 @@ import xyz.twooter.auth.presentation.dto.response.SignInResponse;
 import xyz.twooter.auth.presentation.dto.response.SignUpInfoResponse;
 import xyz.twooter.auth.presentation.dto.response.TokenReissueResponse;
 import xyz.twooter.member.application.MemberService;
-import xyz.twooter.member.presentation.dto.MemberSummary;
+import xyz.twooter.member.presentation.dto.MemberSummaryResponse;
 
 @Service
 @RequiredArgsConstructor
@@ -38,7 +38,7 @@ public class AuthService {
 	private Long refreshTokenValidity;
 
 	public SignUpInfoResponse signUp(SignUpRequest request) {
-		MemberSummary member = memberService.createMember(request);
+		MemberSummaryResponse member = memberService.createMember(request);
 		return new SignUpInfoResponse(member);
 	}
 
@@ -57,10 +57,10 @@ public class AuthService {
 		String refreshToken = tokenService.createRefreshToken(request.getHandle());
 
 		// 사용자 정보 조회
-		MemberSummary memberSummary = memberService.createMemberSummary(request.getHandle());
+		MemberSummaryResponse memberSummaryResponse = memberService.createMemberSummary(request.getHandle());
 
 		// 리턴
-		return new SignInResponse(accessToken, refreshToken, memberSummary);
+		return new SignInResponse(accessToken, refreshToken, memberSummaryResponse);
 	}
 
 	@Transactional

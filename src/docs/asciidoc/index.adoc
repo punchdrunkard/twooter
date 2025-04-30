@@ -15,3 +15,7 @@ endif::[]
 
 include::api/auth/auth.adoc[]
 
+[[Post-API]]
+== Post API
+
+include::api/post/post.adoc[]

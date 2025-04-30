@@ -30,6 +30,11 @@ public enum ErrorCode {
 	// Member
 	MEMBER_NOT_FOUND(404, "M001", "해당 유저를 찾을 수 없습니다"),
 
+	// POST
+
+	// Media
+	INVALID_MEDIA_KEY(400, "M001", "해당 키의 미디어가 존재하지 않습니다."),
+
 	// Security (S로 시작하는 코드 사용)
 	AUTHENTICATION_FAILED(401, "S001", "인증에 실패했습니다"),
 	INVALID_CREDENTIALS(401, "S002", "아이디 또는 비밀번호가 일치하지 않습니다"),
