@@ -10,10 +10,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "image")
+@Table(name = "media")
 @Entity
 @Getter
-public class Image {
+public class Media {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

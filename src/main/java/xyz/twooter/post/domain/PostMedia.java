@@ -18,7 +18,7 @@ import xyz.twooter.common.entity.BaseCreateTimeEntity;
 @Table(name = "post_image")
 @Entity
 @Getter
-public class PostImage extends BaseCreateTimeEntity {
+public class PostMedia extends BaseCreateTimeEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,7 +35,7 @@ public class PostImage extends BaseCreateTimeEntity {
 	private Integer displayOrder = 0;
 
 	@Builder
-	public PostImage(Post post, Long imageId, Integer displayOrder) {
+	public PostMedia(Post post, Long imageId, Integer displayOrder) {
 		this.post = post;
 		this.imageId = imageId;
 		this.displayOrder = displayOrder;
