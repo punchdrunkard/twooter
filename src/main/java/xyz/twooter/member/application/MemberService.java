@@ -49,7 +49,7 @@ public class MemberService {
 		MemberProfile memberProfile = memberProfileRepository.findById(member.getId())
 			.orElseThrow(MemberNotFoundException::new);
 
-		return MemberSummaryResponse.of(member, memberProfile);
+		return member.toSummary(memberProfile);
 	}
 
 	public MemberSummaryResponse createMemberSummary(Member member) {
@@ -59,7 +59,7 @@ public class MemberService {
 		MemberProfile memberProfile = memberProfileRepository.findById(member.getId())
 			.orElseThrow(IllegalMemberIdException::new);
 
-		return MemberSummaryResponse.of(foundMember, memberProfile);
+		return foundMember.toSummary(memberProfile);
 	}
 
 	public void checkDuplicateEmail(String email) {
