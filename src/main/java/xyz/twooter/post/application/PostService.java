@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import xyz.twooter.media.domain.Media;
+import xyz.twooter.media.domain.exception.InvalidMediaException;
 import xyz.twooter.media.domain.repository.MediaRepository;
 import xyz.twooter.member.application.MemberService;
 import xyz.twooter.member.domain.Member;
@@ -50,6 +51,9 @@ public class PostService {
 			.orElse(List.of());
 
 		List<Media> mediaList = mediaRepository.findAllByIdIn(mediaIds);
+		if (!mediaIds.isEmpty() && mediaList.size() != mediaIds.size()) {
+			throw new InvalidMediaException();
+		}
 
 		List<PostMedia> mappings = mediaIds.stream()
 			.map(mediaId -> new PostMedia(post, mediaId))
@@ -58,5 +62,4 @@ public class PostService {
 
 		return PostCreateResponse.of(post, memberSummary, mediaList);
 	}
-
 }
