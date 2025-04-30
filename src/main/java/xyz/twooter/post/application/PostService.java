@@ -27,32 +27,42 @@ public class PostService {
 	private final PostRepository postRepository;
 	private final PostMediaRepository postMediaRepository;
 
-	// 파사드를 쓸 수 있을까 ?
 	private final MemberService memberService;
 	private final MediaService mediaService;
 
 	@Transactional
 	public PostCreateResponse createPost(PostCreateRequest request, Member member) {
+
+		Post post = createAndSavePost(request, member);
+		MemberSummaryResponse authorSummary = memberService.createMemberSummary(member);
+		List<Long> mediaIds = extractMediaIds(request);
+		List<MediaSimpleResponse> mediaResponses = mediaService.getMediaListFromId(mediaIds);
+		savePostMediaMappings(post, mediaIds);
+
+		return PostCreateResponse.of(post, authorSummary, mediaResponses);
+	}
+
+	private Post createAndSavePost(PostCreateRequest request, Member member) {
 		Post post = Post.builder()
 			.author(member)
 			.content(request.getContent())
 			.build();
-		postRepository.save(post);
+		return postRepository.save(post);
+	}
 
-		MemberSummaryResponse memberSummary = memberService.createMemberSummary(member);
-
-		// mediaId가 null이면 빈 리스트 처리
-		List<Long> mediaIds = Optional.ofNullable(request.getMedia())
+	private List<Long> extractMediaIds(PostCreateRequest request) {
+		return Optional.ofNullable(request.getMedia())
 			.map(List::of)
 			.orElse(List.of());
+	}
 
-		List<MediaSimpleResponse> mediaList = mediaService.getMediaListFromId(mediaIds);
+	private void savePostMediaMappings(Post post, List<Long> mediaIds) {
+		if (mediaIds.isEmpty())
+			return;
 
 		List<PostMedia> mappings = mediaIds.stream()
 			.map(mediaId -> new PostMedia(post, mediaId))
 			.toList();
 		postMediaRepository.saveAll(mappings);
-
-		return PostCreateResponse.of(post, memberSummary, mediaList);
 	}
 }
