@@ -6,7 +6,7 @@ import xyz.twooter.member.domain.Member;
 import xyz.twooter.member.domain.MemberProfile;
 
 @Getter
-public class MemberSummary {
+public class MemberSummaryResponse {
 
 	private final String email;
 	private final String handle;
@@ -14,15 +14,15 @@ public class MemberSummary {
 	private final String avatarPath;
 
 	@Builder
-	public MemberSummary(String email, String handle, String nickname, String avatarPath) {
+	public MemberSummaryResponse(String email, String handle, String nickname, String avatarPath) {
 		this.email = email;
 		this.handle = handle;
 		this.nickname = nickname;
 		this.avatarPath = avatarPath;
 	}
 
-	public static MemberSummary of(Member member, MemberProfile profile) {
-		return MemberSummary.builder()
+	public static MemberSummaryResponse of(Member member, MemberProfile profile) {
+		return MemberSummaryResponse.builder()
 			.email(member.getEmail())
 			.handle(member.getHandle())
 			.nickname(profile.getNickname())

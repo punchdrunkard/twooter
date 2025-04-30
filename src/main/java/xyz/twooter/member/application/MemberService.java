@@ -15,7 +15,7 @@ import xyz.twooter.member.domain.MemberProfile;
 import xyz.twooter.member.domain.exception.MemberNotFoundException;
 import xyz.twooter.member.domain.repository.MemberProfileRepository;
 import xyz.twooter.member.domain.repository.MemberRepository;
-import xyz.twooter.member.presentation.dto.MemberSummary;
+import xyz.twooter.member.presentation.dto.MemberSummaryResponse;
 
 @Service
 @RequiredArgsConstructor
@@ -27,7 +27,7 @@ public class MemberService {
 	private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
 	@Transactional
-	public MemberSummary createMember(SignUpRequest request) {
+	public MemberSummaryResponse createMember(SignUpRequest request) {
 		checkDuplicateEmail(request.getEmail());
 
 		Member member = Member.builder()
@@ -39,27 +39,27 @@ public class MemberService {
 		memberRepository.save(member);
 		MemberProfile memberProfile = memberProfileRepository.save(MemberProfile.createDefault(member));
 
-		return MemberSummary.of(member, memberProfile);
+		return MemberSummaryResponse.of(member, memberProfile);
 	}
 
-	public MemberSummary createMemberSummary(String handle) {
+	public MemberSummaryResponse createMemberSummary(String handle) {
 		validateMember(handle);
 
 		Member member = memberRepository.findByHandle(handle).orElseThrow(MemberNotFoundException::new);
 		MemberProfile memberProfile = memberProfileRepository.findById(member.getId())
 			.orElseThrow(MemberNotFoundException::new);
 
-		return MemberSummary.of(member, memberProfile);
+		return MemberSummaryResponse.of(member, memberProfile);
 	}
 
-	public MemberSummary createMemberSummary(Member member) {
+	public MemberSummaryResponse createMemberSummary(Member member) {
 		Member foundMember = memberRepository.findById(member.getId())
 			.orElseThrow(IllegalMemberIdException::new);
 
 		MemberProfile memberProfile = memberProfileRepository.findById(member.getId())
 			.orElseThrow(IllegalMemberIdException::new);
 
-		return MemberSummary.of(foundMember, memberProfile);
+		return MemberSummaryResponse.of(foundMember, memberProfile);
 	}
 
 	public void checkDuplicateEmail(String email) {

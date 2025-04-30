@@ -23,7 +23,7 @@ import xyz.twooter.auth.presentation.dto.response.SignInResponse;
 import xyz.twooter.auth.presentation.dto.response.SignUpInfoResponse;
 import xyz.twooter.auth.presentation.dto.response.TokenReissueResponse;
 import xyz.twooter.docs.RestDocsSupport;
-import xyz.twooter.member.presentation.dto.MemberSummary;
+import xyz.twooter.member.presentation.dto.MemberSummaryResponse;
 
 public class AuthControllerDocsTest extends RestDocsSupport {
 
@@ -45,7 +45,7 @@ public class AuthControllerDocsTest extends RestDocsSupport {
 			.build();
 
 		SignUpInfoResponse response = new SignUpInfoResponse(
-			new MemberSummary(
+			new MemberSummaryResponse(
 				"user@example.com",
 				"twooter_123",
 				"twooter_123",
@@ -93,7 +93,7 @@ public class AuthControllerDocsTest extends RestDocsSupport {
 			.password("StrongP@ssw0rd!")
 			.build();
 
-		MemberSummary memberSummary = MemberSummary.builder()
+		MemberSummaryResponse memberSummaryResponse = MemberSummaryResponse.builder()
 			.email("user@example.com")
 			.handle("twooter_123")
 			.nickname("twooter_123")
@@ -103,7 +103,7 @@ public class AuthControllerDocsTest extends RestDocsSupport {
 		SignInResponse response = new SignInResponse(
 			"eyJhbGciOiJIUzI1NiJ9.eyJoYW5kbGUiOiJ0d29vdGVyXzEyMyIsInRva2VuVHlwZSI6IkFDQ0VTUyIsImlhdCI6MTcxMjMyMzIzMiwiZXhwIjoxNzEyMzI1MDMyfQ.exampleToken",
 			"eyJhbGciOiJIUzI1NiJ9.eyJoYW5kbGUiOiJ0d29vdGVyXzEyMyIsInRva2VuVHlwZSI6IlJFRlJFU0giLCJpYXQiOjE3MTIzMjMyMzIsImV4cCI6MTcxMjkyODAzMn0.refreshExampleToken",
-			memberSummary
+			memberSummaryResponse
 		);
 
 		given(authService.signIn(any())).willReturn(response);

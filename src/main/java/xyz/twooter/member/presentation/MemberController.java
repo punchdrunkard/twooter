@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 import xyz.twooter.auth.infrastructure.annotation.CurrentMember;
 import xyz.twooter.member.application.MemberService;
 import xyz.twooter.member.domain.Member;
-import xyz.twooter.member.presentation.dto.MemberSummary;
+import xyz.twooter.member.presentation.dto.MemberSummaryResponse;
 
 @RestController
 @RequestMapping("/api/members")
@@ -20,7 +20,7 @@ public class MemberController {
 	private final MemberService memberService;
 
 	@GetMapping("/me")
-	public ResponseEntity<MemberSummary> getMyInfo(@CurrentMember Member member) {
+	public ResponseEntity<MemberSummaryResponse> getMyInfo(@CurrentMember Member member) {
 		return ResponseEntity.status(HttpStatus.OK).body(memberService.createMemberSummary(member.getHandle()));
 	}
 }
