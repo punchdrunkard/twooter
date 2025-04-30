@@ -10,6 +10,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import xyz.twooter.common.entity.BaseTimeEntity;
 import xyz.twooter.member.domain.Member;
@@ -23,6 +25,7 @@ import xyz.twooter.member.domain.Member;
 	}
 )
 @Entity
+@Getter
 public class Post extends BaseTimeEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,4 +47,13 @@ public class Post extends BaseTimeEntity {
 
 	@Column(name = "view_count", nullable = false)
 	private Long viewCount = 0L;
+
+	@Builder
+	public Post(Member author, String content, Post parentPost, Post quotedPost, Long viewCount) {
+		this.author = author;
+		this.content = content;
+		this.parentPost = parentPost;
+		this.quotedPost = quotedPost;
+		this.viewCount = viewCount == null ? 0L : viewCount;
+	}
 }

@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 import xyz.twooter.common.entity.BaseCreateTimeEntity;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "post_image")
+@Table(name = "post_media")
 @Entity
 @Getter
 public class PostMedia extends BaseCreateTimeEntity {
@@ -28,16 +28,12 @@ public class PostMedia extends BaseCreateTimeEntity {
 	@JoinColumn(name = "post_id", nullable = false)
 	private Post post;
 
-	@Column(name = "image_id", nullable = false)
-	private Long imageId;
-
-	@Column(name = "display_order", nullable = false)
-	private Integer displayOrder = 0;
+	@Column(name = "media_id", nullable = false)
+	private Long mediaId;
 
 	@Builder
-	public PostMedia(Post post, Long imageId, Integer displayOrder) {
+	public PostMedia(Post post, Long mediaId) {
 		this.post = post;
-		this.imageId = imageId;
-		this.displayOrder = displayOrder;
+		this.mediaId = mediaId;
 	}
 }
