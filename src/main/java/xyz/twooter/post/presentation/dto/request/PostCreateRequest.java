@@ -3,9 +3,11 @@ package xyz.twooter.post.presentation.dto.request;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Getter;
+import xyz.twooter.post.domain.validation.ValidPostContent;
 
 @Builder
 @Getter
+@ValidPostContent
 public class PostCreateRequest {
 
 	@Size(max = 500, message = "포스트 내용은 500자 이하로 입력해주세요.")

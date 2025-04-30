@@ -11,7 +11,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
-import xyz.twooter.common.error.ErrorCode;
 import xyz.twooter.media.presentation.response.MediaSimpleResponse;
 import xyz.twooter.post.presentation.dto.request.PostCreateRequest;
 import xyz.twooter.post.presentation.dto.response.PostCreateResponse;
@@ -73,8 +72,7 @@ class PostControllerTest extends ControllerTestSupport {
 					.content(objectMapper.writeValueAsString(request))
 					.contentType(MediaType.APPLICATION_JSON)
 			)
-			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath("$.code").value(ErrorCode.EMPTY_POST.getCode()));
+			.andExpect(status().isBadRequest());
 	}
 
 	@DisplayName("포스트 내용이 500자를 초과하면 에러가 발생한다.")

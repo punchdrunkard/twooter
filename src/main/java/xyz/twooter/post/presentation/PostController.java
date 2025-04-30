@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import xyz.twooter.auth.infrastructure.annotation.CurrentMember;
 import xyz.twooter.member.domain.Member;
 import xyz.twooter.post.application.PostService;
-import xyz.twooter.post.domain.exception.EmptyPostException;
 import xyz.twooter.post.presentation.dto.request.PostCreateRequest;
 import xyz.twooter.post.presentation.dto.response.PostCreateResponse;
 
@@ -28,8 +27,6 @@ public class PostController {
 	@PostMapping
 	public ResponseEntity<PostCreateResponse> createPost(@RequestBody @Valid PostCreateRequest request,
 		@CurrentMember Member member) {
-
-		validatePost(request);
 		PostCreateResponse response = postService.createPost(request, member);
 
 		URI location = ServletUriComponentsBuilder
@@ -41,12 +38,4 @@ public class PostController {
 			.created(location)
 			.body(response);
 	}
-
-	private static void validatePost(PostCreateRequest request) {
-		if ((request.getContent() == null || request.getContent().isBlank()) && (request.getMedia() == null
-			|| request.getMedia().length == 0)) {
-			throw new EmptyPostException();
-		}
-	}
-
 }
