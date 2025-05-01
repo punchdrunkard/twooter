@@ -19,3 +19,8 @@ include::api/auth/auth.adoc[]
 == Post API
 
 include::api/post/post.adoc[]
+
+[[Media-API]]
+== Post API
+
+include::api/media/media.adoc[]
