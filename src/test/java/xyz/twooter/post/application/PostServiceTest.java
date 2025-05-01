@@ -22,7 +22,7 @@ import xyz.twooter.post.domain.repository.PostRepository;
 import xyz.twooter.post.presentation.dto.request.PostCreateRequest;
 import xyz.twooter.post.presentation.dto.response.PostCreateResponse;
 import xyz.twooter.support.IntegrationTestSupport;
-class PostServiceIntegrationTest extends IntegrationTestSupport {
+class PostServiceTest extends IntegrationTestSupport {
 
 	@Autowired
 	private PostService postService;
@@ -42,7 +42,7 @@ class PostServiceIntegrationTest extends IntegrationTestSupport {
 
 		@Test
 		@DisplayName("미디어 없이 포스트를 생성할 수 있다.")
-		void shouldCreatePostWithoutMedia() {
+		void createPost_shouldCreatePostWithoutMedia() {
 			// given
 			Member member = saveTestMember();
 			saveTestProfile(member);
@@ -66,7 +66,7 @@ class PostServiceIntegrationTest extends IntegrationTestSupport {
 
 		@Test
 		@DisplayName("미디어를 포함한 포스트를 생성할 수 있다.")
-		void shouldCreatePostWithMedia() {
+		void createPost_shouldCreatePostWithMedia() {
 			// given
 			Member member = saveTestMember();
 			saveTestProfile(member);
