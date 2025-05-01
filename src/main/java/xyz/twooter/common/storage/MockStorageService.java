@@ -9,6 +9,6 @@ public class MockStorageService implements StorageService {
 
 	@Override
 	public String generateUploadUrl(String objectPath, String contentType) {
-		return "https://localhost:8080/upload/" + objectPath;
+		return "http://localhost:8080/upload/" + objectPath;
 	}
 }
