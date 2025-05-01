@@ -37,6 +37,7 @@ public class AuthService {
 	@Value("${spring.jwt.refresh-token-validity}")
 	private Long refreshTokenValidity;
 
+	@Transactional
 	public SignUpInfoResponse signUp(SignUpRequest request) {
 		MemberSummaryResponse member = memberService.createMember(request);
 		return new SignUpInfoResponse(member);
