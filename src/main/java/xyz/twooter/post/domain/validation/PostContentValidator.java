@@ -1,8 +1,9 @@
 package xyz.twooter.post.domain.validation;
 
+import org.springframework.util.StringUtils;
+
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import org.springframework.util.StringUtils;
 import xyz.twooter.post.presentation.dto.request.PostCreateRequest;
 
 public class PostContentValidator implements ConstraintValidator<ValidPostContent, PostCreateRequest> {
