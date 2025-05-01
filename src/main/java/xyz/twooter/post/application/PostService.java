@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import xyz.twooter.media.application.MediaService;
-import xyz.twooter.media.presentation.response.MediaSimpleResponse;
+import xyz.twooter.media.presentation.dto.response.MediaSimpleResponse;
 import xyz.twooter.member.application.MemberService;
 import xyz.twooter.member.domain.Member;
 import xyz.twooter.member.presentation.dto.MemberSummaryResponse;

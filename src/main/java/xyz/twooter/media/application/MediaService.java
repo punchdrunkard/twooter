@@ -12,7 +12,7 @@ import xyz.twooter.media.domain.Media;
 import xyz.twooter.media.domain.exception.InvalidMediaException;
 import xyz.twooter.media.domain.repository.MediaRepository;
 import xyz.twooter.media.presentation.dto.request.SignedUrlResponse;
-import xyz.twooter.media.presentation.response.MediaSimpleResponse;
+import xyz.twooter.media.presentation.dto.response.MediaSimpleResponse;
 
 @Service
 @RequiredArgsConstructor

@@ -19,7 +19,7 @@ import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.restdocs.payload.JsonFieldType;
 
 import xyz.twooter.docs.RestDocsSupport;
-import xyz.twooter.media.presentation.response.MediaSimpleResponse;
+import xyz.twooter.media.presentation.dto.response.MediaSimpleResponse;
 import xyz.twooter.member.presentation.dto.MemberSummaryResponse;
 import xyz.twooter.post.presentation.dto.request.PostCreateRequest;
 import xyz.twooter.post.presentation.dto.response.PostCreateResponse;
