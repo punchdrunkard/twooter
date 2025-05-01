@@ -1,15 +1,18 @@
 package xyz.twooter.media.application;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import xyz.twooter.common.storage.StorageService;
 import xyz.twooter.media.domain.Media;
 import xyz.twooter.media.domain.exception.InvalidMediaException;
 import xyz.twooter.media.domain.repository.MediaRepository;
-import xyz.twooter.media.presentation.response.MediaSimpleResponse;
+import xyz.twooter.media.presentation.dto.request.SignedUrlResponse;
+import xyz.twooter.media.presentation.dto.response.MediaSimpleResponse;
 
 @Service
 @RequiredArgsConstructor
@@ -17,6 +20,7 @@ import xyz.twooter.media.presentation.response.MediaSimpleResponse;
 public class MediaService {
 
 	private final MediaRepository mediaRepository;
+	private final StorageService storageService;
 
 	public List<MediaSimpleResponse> getMediaListFromId(List<Long> mediaIds) {
 		if (mediaIds.isEmpty())
@@ -30,5 +34,11 @@ public class MediaService {
 		return mediaList.stream()
 			.map(MediaSimpleResponse::of)
 			.toList();
+	}
+
+	public SignedUrlResponse generateUploadUrl(String filename, String contentType) {
+		String objectPath = "media/" + UUID.randomUUID() + "_" + filename;
+		String signedUrl = storageService.generateUploadUrl(objectPath, contentType);
+		return new SignedUrlResponse(signedUrl);
 	}
 }

@@ -25,7 +25,7 @@ class AuthControllerTest extends ControllerTestSupport {
 
 	@DisplayName("회원가입 성공 시, 해당 유저의 정보를 반환한다.")
 	@Test
-	void singup() throws Exception {
+	void signup() throws Exception {
 		// given
 		SignUpRequest request = SignUpRequest.builder()
 			.email("user@example.com")

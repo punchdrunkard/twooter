@@ -1,4 +1,4 @@
-package xyz.twooter.common.util;
+package xyz.twooter.common.infrastructure.redis;
 
 import java.util.List;
 import java.util.Map;

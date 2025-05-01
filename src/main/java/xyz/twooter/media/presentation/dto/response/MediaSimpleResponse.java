@@ -1,4 +1,4 @@
-package xyz.twooter.media.presentation.response;
+package xyz.twooter.media.presentation.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

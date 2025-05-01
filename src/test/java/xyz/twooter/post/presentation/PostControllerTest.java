@@ -11,7 +11,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
-import xyz.twooter.media.presentation.response.MediaSimpleResponse;
+import xyz.twooter.media.presentation.dto.response.MediaSimpleResponse;
 import xyz.twooter.post.presentation.dto.request.PostCreateRequest;
 import xyz.twooter.post.presentation.dto.response.PostCreateResponse;
 import xyz.twooter.support.ControllerTestSupport;
