@@ -1,4 +1,4 @@
-package xyz.twooter.configuration.redis;
+package xyz.twooter.common.infrastructure.redis;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

@@ -14,6 +14,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import xyz.twooter.common.infrastructure.redis.RedisUtil;
 import xyz.twooter.support.IntegrationTestSupport;
 
 class RedisUtilTest extends IntegrationTestSupport {

@@ -14,7 +14,7 @@ import xyz.twooter.auth.domain.RefreshToken;
 import xyz.twooter.auth.domain.TokenType;
 import xyz.twooter.auth.domain.exception.InvalidTokenException;
 import xyz.twooter.auth.infrastructure.jwt.JWTUtil;
-import xyz.twooter.common.util.RedisUtil;
+import xyz.twooter.common.infrastructure.redis.RedisUtil;
 
 @Slf4j
 @Service
