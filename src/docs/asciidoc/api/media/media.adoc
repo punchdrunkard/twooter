@@ -1,0 +1,13 @@
+[[media]]
+=== Upload URL 발급
+
+==== HTTP Request
+
+include::{snippets}/media-get-upload-url/http-request.adoc[]
+include::{snippets}/media-get-upload-url/query-parameters.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/media-get-upload-url/http-response.adoc[]
+include::{snippets}/media-get-upload-url/response-fields.adoc[]
+

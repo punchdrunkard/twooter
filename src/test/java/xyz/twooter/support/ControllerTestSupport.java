@@ -11,13 +11,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import xyz.twooter.auth.application.AuthService;
 import xyz.twooter.auth.presentation.AuthController;
 import xyz.twooter.config.TestSecurityConfiguration;
+import xyz.twooter.media.application.MediaService;
+import xyz.twooter.media.presentation.MediaController;
 import xyz.twooter.post.application.PostService;
 import xyz.twooter.post.presentation.PostController;
 
 @WebMvcTest(controllers = {
 	// TODO 사용할 컨트롤러
 	AuthController.class,
-	PostController.class
+	PostController.class,
+	MediaController.class
 })
 @Import(TestSecurityConfiguration.class)
 public abstract class ControllerTestSupport {
@@ -33,4 +36,7 @@ public abstract class ControllerTestSupport {
 
 	@MockitoBean
 	protected PostService postService;
+
+	@MockitoBean
+	protected MediaService mediaService;
 }
