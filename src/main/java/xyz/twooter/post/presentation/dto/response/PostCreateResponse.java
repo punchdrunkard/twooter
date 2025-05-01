@@ -32,7 +32,7 @@ public class PostCreateResponse {
 			.content(post.getContent())
 			.author(memberSummaryResponse)
 			.media(mediaResponses)
-			.createdAt(post.getCreatedTime())
+			.createdAt(post.getCreatedAt())
 			.build();
 	}
 }
