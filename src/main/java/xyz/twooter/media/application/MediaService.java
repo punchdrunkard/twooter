@@ -2,6 +2,7 @@ package xyz.twooter.media.application;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,18 @@ public class MediaService {
 
 	private final MediaRepository mediaRepository;
 	private final StorageService storageService;
+
+	@Transactional
+	public List<Long> saveMedia(List<String> mediaUrls) {
+		List<Media> entities = mediaUrls.stream()
+			.map(Media::new)
+			.collect(Collectors.toList());
+
+		return mediaRepository.saveAll(entities)
+			.stream()
+			.map(Media::getId)
+			.collect(Collectors.toList());
+	}
 
 	public List<MediaSimpleResponse> getMediaListFromId(List<Long> mediaIds) {
 		if (mediaIds.isEmpty())

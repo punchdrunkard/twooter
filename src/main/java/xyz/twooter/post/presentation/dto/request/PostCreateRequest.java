@@ -14,5 +14,5 @@ public class PostCreateRequest {
 	private String content;
 
 	@Size(max = 4, message = "미디어는 최대 4개까지만 첨부할 수 있습니다.")
-	private Long[] media;
+	private String[] media;
 }

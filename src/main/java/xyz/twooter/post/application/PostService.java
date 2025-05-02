@@ -1,5 +1,6 @@
 package xyz.twooter.post.application;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,13 +33,17 @@ public class PostService {
 
 	@Transactional
 	public PostCreateResponse createPost(PostCreateRequest request, Member member) {
-
 		Post post = createAndSavePost(request, member);
 		MemberSummaryResponse authorSummary = memberService.createMemberSummary(member);
-		List<Long> mediaIds = extractMediaIds(request);
-		List<MediaSimpleResponse> mediaResponses = mediaService.getMediaListFromId(mediaIds);
+
+		String[] mediaArray = request.getMedia();
+		List<String> mediaUrls = (mediaArray != null) ?
+			Arrays.asList(mediaArray) : List.of();
+
+		List<Long> mediaIds = mediaService.saveMedia(mediaUrls);
 		savePostMediaMappings(post, mediaIds);
 
+		List<MediaSimpleResponse> mediaResponses = mediaService.getMediaListFromId(mediaIds);
 		return PostCreateResponse.of(post, authorSummary, mediaResponses);
 	}
 
@@ -48,12 +53,6 @@ public class PostService {
 			.content(request.getContent())
 			.build();
 		return postRepository.save(post);
-	}
-
-	private List<Long> extractMediaIds(PostCreateRequest request) {
-		return Optional.ofNullable(request.getMedia())
-			.map(List::of)
-			.orElse(List.of());
 	}
 
 	private void savePostMediaMappings(Post post, List<Long> mediaIds) {
