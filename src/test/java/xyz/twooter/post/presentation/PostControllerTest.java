@@ -95,14 +95,15 @@ class PostControllerTest extends ControllerTestSupport {
 			.andExpect(jsonPath("$.message").exists()); // 에러 메시지 존재 여부
 	}
 
-	@DisplayName("미디어 ID가 4개를 초과하면 에러가 발생한다.")
+	@DisplayName("미디어 URL이 4개를 초과하면 에러가 발생한다.")
 	@Test
 	void shouldFailWhenTooManyMediaIdsProvided() throws Exception {
 		// given
-		Long[] tooManyMediaIds = {1L, 2L, 3L, 4L, 5L}; // 5개
+		String[] tooManyUrls = {"url1", "url2", "url3", "url4", "url5"}; // 5개
+
 		PostCreateRequest request = PostCreateRequest.builder()
 			.content("정상적인 내용입니다.")
-			.media(tooManyMediaIds)
+			.media(tooManyUrls)
 			.build();
 
 		// when // then
@@ -127,7 +128,7 @@ class PostControllerTest extends ControllerTestSupport {
 	private PostCreateRequest createPostRequestWithMedia() {
 		return PostCreateRequest.builder()
 			.content(POST_CONTENT)
-			.media(new Long[] {101L, 102L})
+			.media(new String[] {"url1", "url2"})
 			.build();
 	}
 

@@ -2,6 +2,7 @@ package xyz.twooter.post.application;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.DisplayName;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import xyz.twooter.media.domain.Media;
 import xyz.twooter.media.domain.repository.MediaRepository;
+import xyz.twooter.media.presentation.dto.response.MediaSimpleResponse;
 import xyz.twooter.member.domain.Member;
 import xyz.twooter.member.domain.MemberProfile;
 import xyz.twooter.member.domain.repository.MemberProfileRepository;
@@ -22,6 +24,7 @@ import xyz.twooter.post.domain.repository.PostRepository;
 import xyz.twooter.post.presentation.dto.request.PostCreateRequest;
 import xyz.twooter.post.presentation.dto.response.PostCreateResponse;
 import xyz.twooter.support.IntegrationTestSupport;
+
 class PostServiceTest extends IntegrationTestSupport {
 
 	@Autowired
@@ -69,24 +72,21 @@ class PostServiceTest extends IntegrationTestSupport {
 		void createPost_shouldCreatePostWithMedia() {
 			// given
 			Member member = saveTestMember();
+			String[] urls = {"media1.jpg", "media2.jpg"};
 			saveTestProfile(member);
-
-			Media media1 = mediaRepository.save(createMedia("media1.jpg"));
-			Media media2 = mediaRepository.save(createMedia("media2.jpg"));
 
 			PostCreateRequest request = PostCreateRequest.builder()
 				.content("미디어 포함 포스트입니다.")
-				.media(new Long[] {media1.getId(), media2.getId()})
+				.media(urls)
 				.build();
 
 			// when
 			PostCreateResponse response = postService.createPost(request, member);
 
 			// then
+			List<String> savedUrls = Arrays.stream(response.getMedia()).map(MediaSimpleResponse::getMediaUrl).toList();
+			assertThat(savedUrls).containsAll(Arrays.asList(urls));
 			assertThat(response.getMedia()).hasSize(2);
-			assertThat(response.getMedia()[0].getMediaId()).isEqualTo(media1.getId());
-			assertThat(response.getMedia()[1].getMediaId()).isEqualTo(media2.getId());
-
 			List<PostMedia> mappings = postMediaRepository.findAll();
 			assertThat(mappings).hasSize(2);
 		}

@@ -61,7 +61,7 @@ class PostControllerDocsTest extends RestDocsSupport {
 					fieldWithPath("content").type(JsonFieldType.STRING)
 						.description("포스트 내용 (미디어가 없는 경우 필수, 최대 500자)"),
 					fieldWithPath("media").type(JsonFieldType.ARRAY).optional()
-						.description("첨부된 미디어 파일 ID 목록 (내용이 비어있는 경우 필수, 최대 4개)")
+						.description("첨부된 미디어 파일 URL (내용이 비어있는 경우 필수, 최대 4개), 파일 업로드 API를 이용해, 업로드 후 링크를 첨부")
 				),
 				responseFields(
 					fieldWithPath("id").type(JsonFieldType.NUMBER)
@@ -106,7 +106,7 @@ class PostControllerDocsTest extends RestDocsSupport {
 	private PostCreateRequest givenPostCreateRequest() {
 		return PostCreateRequest.builder()
 			.content("트우터에 올릴 새로운 포스트 내용입니다. #첫글 #환영")
-			.media(new Long[] {101L, 102L})
+			.media(new String[] {"https://cdn.twooter.xyz/media/101.jpg", "https://cdn.twooter.xyz/media/102.jpg"})
 			.build();
 	}
 

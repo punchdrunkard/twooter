@@ -3,6 +3,7 @@ package xyz.twooter.media.application;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.util.List;
 import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.DisplayName;
@@ -11,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
 import xyz.twooter.common.storage.StorageService;
+import xyz.twooter.media.domain.Media;
 import xyz.twooter.media.domain.repository.MediaRepository;
 import xyz.twooter.media.presentation.dto.request.SignedUrlResponse;
 import xyz.twooter.support.MockTestSupport;
