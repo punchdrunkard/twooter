@@ -1,5 +1,5 @@
 [[media]]
-=== Upload URL 발급
+=== 파일 Upload URL 발급
 
 ==== HTTP Request
 
