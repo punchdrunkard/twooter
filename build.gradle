@@ -65,7 +65,6 @@ dependencies {
 
     // === Migration ===
     implementation 'org.flywaydb:flyway-core'
-    runtimeOnly 'mysql:mysql-connector-java'
 }
 
 ext {
@@ -102,12 +101,6 @@ tasks.register('copyRestDocs', Copy) {
     into file('src/main/resources/static/docs')
 }
 
-tasks.register('copyRestDocsToRoot', Copy) {
-    dependsOn asciidoctor
-    from file('build/docs/asciidoc')
-    into file('docs')
-}
-
 processResources.dependsOn('copySecret')
 
 tasks.register('copySecret', Copy) {
@@ -119,11 +112,9 @@ tasks.register('copySecret', Copy) {
 // Ensure both copy tasks run when building
 build {
     dependsOn copyRestDocs
-    dependsOn copyRestDocsToRoot
 }
 
 // Add a bootJar dependency to ensure docs are generated before creating the final jar
 bootJar {
     dependsOn copyRestDocs
-    dependsOn copyRestDocsToRoot
 }
