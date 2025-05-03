@@ -63,8 +63,9 @@ dependencies {
     implementation platform('com.google.cloud:libraries-bom:26.59.0')
     implementation 'com.google.cloud:google-cloud-storage'
 
-    // === Migration ===
+    // === Flyway ===
     implementation 'org.flywaydb:flyway-core'
+    implementation 'org.flywaydb:flyway-mysql'
 }
 
 ext {
