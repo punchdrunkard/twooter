@@ -62,6 +62,10 @@ dependencies {
     // === GCP ===
     implementation platform('com.google.cloud:libraries-bom:26.59.0')
     implementation 'com.google.cloud:google-cloud-storage'
+
+    // === Migration ===
+    implementation 'org.flywaydb:flyway-core'
+    runtimeOnly 'mysql:mysql-connector-java'
 }
 
 ext {
