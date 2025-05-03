@@ -4,12 +4,14 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import xyz.twooter.common.entity.BaseCreateTimeEntity;
 import xyz.twooter.member.domain.Member;
@@ -17,12 +19,17 @@ import xyz.twooter.member.domain.Member;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(
-	name = "post_like",
+	name = "repost",
 	uniqueConstraints = {
-		@UniqueConstraint(name = "uk_post_like_post_member", columnNames = {"post_id", "member_id"})
+		@UniqueConstraint(name = "uk_repost_post_member", columnNames = {"post_id", "member_id"})
+	},
+	indexes = {
+		@Index(name = "idx_repost_post_id", columnList = "post_id"),
+		@Index(name = "idx_repost_member_id", columnList = "member_id")
 	}
 )
-public class PostLike extends BaseCreateTimeEntity {
+@Getter
+public class Repost extends BaseCreateTimeEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,7 +44,7 @@ public class PostLike extends BaseCreateTimeEntity {
 	private Member member;
 
 	@Builder
-	public PostLike(Post post, Member member) {
+	public Repost(Post post, Member member) {
 		this.post = post;
 		this.member = member;
 	}

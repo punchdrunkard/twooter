@@ -2,6 +2,7 @@ package xyz.twooter.member.domain;
 
 import java.time.LocalDateTime;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -37,10 +38,12 @@ public class Member extends BaseTimeEntity {
 	private Long id;
 
 	@Email
+	@Column(unique = true)
 	private String email;
 
 	private String password;
 
+	@Column(unique = true)
 	private String handle;
 
 	private boolean isDeleted;

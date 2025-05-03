@@ -29,11 +29,13 @@ public class MemberProfile extends BaseTimeEntity {
 	private Long id;
 
 	@OneToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "member_id", nullable = false)
+	@JoinColumn(name = "member_id", nullable = false, unique = true)
 	private Member member;
 
 	@NotNull
 	private String nickname;
+
+	@Column(length = 1000)
 	private String bio;
 
 	@Column(name = "avatar_path")
