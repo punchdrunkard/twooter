@@ -59,6 +59,7 @@ public class PostService {
 			return PostResponse.deletedPost(postId);
 		}
 
+		post.incrementViewCount();
 		MemberBasic memberBasicInfo = memberService.getMemberBasic(post.getAuthorId());
 		List<MediaEntity> mediaEntities = mediaService.getMediaByPostId(postId);
 
@@ -70,6 +71,7 @@ public class PostService {
 			.isLiked(postLikeService.isLikedByMember(postId, member.getId()))
 			.repostCount(repostService.getRepostCount(postId))
 			.isReposted(repostService.isRepostedByMember(postId, member.getId()))
+			.viewCount(post.getViewCount())
 			.mediaEntities(mediaEntities)
 			.createdAt(post.getCreatedAt())
 			.isDeleted(false)

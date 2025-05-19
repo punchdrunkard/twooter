@@ -57,6 +57,11 @@ public class Post extends BaseTimeEntity {
 		this.isDeleted = true;
 	}
 
+	public Long incrementViewCount() {
+		this.viewCount++;
+		return this.viewCount;
+	}
+
 	@Builder
 	public Post(Long authorId, String content, Post parentPost, Post quotedPost, Long viewCount) {
 		this.authorId = authorId;

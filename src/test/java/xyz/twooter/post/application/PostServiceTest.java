@@ -198,6 +198,85 @@ class PostServiceTest extends IntegrationTestSupport {
 					"https://cdn.twooter.xyz/test2.jpg"
 				);
 		}
+
+		@DisplayName("성공 - 포스트를 조회하면 조회수가 증가한다.")
+		@Test
+		void shouldIncrementViewCountWhenPostIsRetrieved() {
+			// given
+			Member author = saveTestMember();
+			saveTestProfile(author);
+
+			Post post = Post.builder()
+				.authorId(author.getId())
+				.content("조회수 테스트 포스트입니다.")
+				.viewCount(0L)
+				.build();
+
+			postRepository.save(post);
+			Long initialViewCount = post.getViewCount();
+
+			// when
+			PostResponse response = postService.getPost(post.getId(), author);
+
+			// then
+			assertThat(response.getViewCount()).isEqualTo(initialViewCount + 1);
+
+			// DB에서 다시 조회하여 실제로 저장되었는지 확인
+			Post updatedPost = postRepository.findById(post.getId()).orElseThrow();
+			assertThat(updatedPost.getViewCount()).isEqualTo(initialViewCount + 1);
+		}
+
+		@DisplayName("성공 - 같은 포스트를 여러 번 조회하면 조회수가 누적해서 증가한다.")
+		@Test
+		void shouldAccumulateViewCountWhenPostIsRetrievedMultipleTimes() {
+			// given
+			Member author = saveTestMember();
+			saveTestProfile(author);
+
+			Post post = Post.builder()
+				.authorId(author.getId())
+				.content("조회수 누적 테스트 포스트입니다.")
+				.viewCount(5L) // 초기 조회수 5
+				.build();
+
+			postRepository.save(post);
+			Long initialViewCount = post.getViewCount();
+
+			// when
+			postService.getPost(post.getId(), author); // 첫 번째 조회
+			postService.getPost(post.getId(), author); // 두 번째 조회
+			PostResponse response = postService.getPost(post.getId(), author); // 세 번째 조회
+
+			// then
+			assertThat(response.getViewCount()).isEqualTo(initialViewCount + 3);
+			Post updatedPost = postRepository.findById(post.getId()).orElseThrow();
+			assertThat(updatedPost.getViewCount()).isEqualTo(initialViewCount + 3);
+		}
+
+		@DisplayName("성공 - 삭제된 포스트는 조회해도 조회수가 증가하지 않는다.")
+		@Test
+		void shouldNotIncrementViewCountWhenDeletedPostIsRetrieved() {
+			// given
+			Member author = saveTestMember();
+
+			Post post = Post.builder()
+				.authorId(author.getId())
+				.content("삭제된 포스트 조회수 테스트입니다.")
+				.viewCount(10L)
+				.build();
+
+			postRepository.save(post);
+			post.softDelete(); // 포스트 삭제 처리
+			Long initialViewCount = post.getViewCount();
+
+			// when
+			PostResponse response = postService.getPost(post.getId(), author);
+
+			// then
+			assertThat(response.isDeleted()).isTrue();
+			Post updatedPost = postRepository.findById(post.getId()).orElseThrow();
+			assertThat(updatedPost.getViewCount()).isEqualTo(initialViewCount);
+		}
 	}
 
 	// === 헬퍼 ===
