@@ -7,6 +7,7 @@ import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.*;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.time.LocalDateTime;
@@ -20,9 +21,12 @@ import org.springframework.restdocs.payload.JsonFieldType;
 
 import xyz.twooter.docs.RestDocsSupport;
 import xyz.twooter.media.presentation.dto.response.MediaSimpleResponse;
-import xyz.twooter.member.presentation.dto.MemberSummaryResponse;
+import xyz.twooter.member.presentation.dto.response.MemberSummaryResponse;
 import xyz.twooter.post.presentation.dto.request.PostCreateRequest;
+import xyz.twooter.post.presentation.dto.response.AuthorEntity;
+import xyz.twooter.post.presentation.dto.response.MediaEntity;
 import xyz.twooter.post.presentation.dto.response.PostCreateResponse;
+import xyz.twooter.post.presentation.dto.response.PostResponse;
 import xyz.twooter.support.security.WithMockCustomUser;
 
 @WithMockCustomUser
@@ -30,8 +34,8 @@ class PostControllerDocsTest extends RestDocsSupport {
 
 	final MemberSummaryResponse TEST_MEMBER_SUMMARY = MemberSummaryResponse.builder()
 		.email("test@test.com")
-		.handle("testUser")
-		.nickname("테스트 사용자")
+		.handle("table_cleaner")
+		.nickname("테이블 청소 마스터")
 		.avatarPath("https://cdn.twooter.xyz/media/avatar")
 		.build();
 
@@ -83,8 +87,61 @@ class PostControllerDocsTest extends RestDocsSupport {
 			));
 	}
 
-	// === 필드 문서화 메서드 ===
+	@DisplayName("포스트 조회 API")
+	@Test
+	void getPost() throws Exception {
+		// given
+		Long postId = 1L;
+		PostResponse response = givenPostResponse();
 
+		given(postService.getPost(anyLong(), any())).willReturn(response);
+
+		// when & then
+		mockMvc.perform(
+				get("/api/posts")
+					.param("postId", String.valueOf(postId))
+			)
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.content").value(response.getContent()))
+			.andExpect(jsonPath("$.likeCount").value(response.getLikeCount()))
+			.andExpect(jsonPath("$.media").isArray())
+			.andDo(document("post-get",
+				preprocessRequest(prettyPrint()),
+				preprocessResponse(prettyPrint()),
+				queryParameters(
+					parameterWithName("postId").description("조회할 포스트 ID")
+				),
+				responseFields(
+					fieldWithPath("content").type(JsonFieldType.STRING)
+						.description("포스트 내용"),
+					fieldWithPath("author").type(JsonFieldType.OBJECT)
+						.description("포스트 작성자 정보"),
+					fieldWithPath("likeCount").type(JsonFieldType.NUMBER)
+						.description("좋아요 수"),
+					// isLiked가 아닌 liked로 변경
+					fieldWithPath("liked").type(JsonFieldType.BOOLEAN)
+						.description("현재 사용자의 좋아요 여부"),
+					fieldWithPath("repostCount").type(JsonFieldType.NUMBER)
+						.description("리포스트 수"),
+					// isReposted가 아닌 reposted로 변경
+					fieldWithPath("reposted").type(JsonFieldType.BOOLEAN)
+						.description("현재 사용자의 리포스트 여부"),
+					// isBookmarked가 아닌 bookmarked로 변경
+					fieldWithPath("bookmarked").type(JsonFieldType.BOOLEAN)
+						.description("현재 사용자의 북마크 여부"),
+					fieldWithPath("viewCount").type(JsonFieldType.NUMBER)
+						.description("조회수"),
+					fieldWithPath("media").type(JsonFieldType.ARRAY)
+						.description("첨부된 미디어 정보 목록"),
+					fieldWithPath("createdAt").type(JsonFieldType.STRING)
+						.description("포스트 생성 시간")
+				)
+					.andWithPrefix("author.", authorEntityFields())
+					.andWithPrefix("media[].", mediaEntityFields())
+			));
+	}
+
+	// === 필드 문서화 메서드 ===
 	private List<FieldDescriptor> authorFields() {
 		return List.of(
 			fieldWithPath("email").type(JsonFieldType.STRING).description("작성자 이메일"),
@@ -98,6 +155,21 @@ class PostControllerDocsTest extends RestDocsSupport {
 		return List.of(
 			fieldWithPath("mediaId").type(JsonFieldType.NUMBER).description("미디어 ID"),
 			fieldWithPath("mediaUrl").type(JsonFieldType.STRING).description("미디어 접근 URL")
+		);
+	}
+
+	private List<FieldDescriptor> authorEntityFields() {
+		return List.of(
+			fieldWithPath("nickName").type(JsonFieldType.STRING).description("작성자 닉네임"),
+			fieldWithPath("avatar").type(JsonFieldType.STRING).description("작성자 아바타 URL"),
+			fieldWithPath("handle").type(JsonFieldType.STRING).description("작성자 핸들")
+		);
+	}
+
+	private List<FieldDescriptor> mediaEntityFields() {
+		return List.of(
+			fieldWithPath("id").type(JsonFieldType.NUMBER).description("미디어 ID"),
+			fieldWithPath("path").type(JsonFieldType.STRING).description("미디어 경로 URL")
 		);
 	}
 
@@ -127,6 +199,40 @@ class PostControllerDocsTest extends RestDocsSupport {
 			.content("트우터에 올릴 새로운 포스트 내용입니다. #첫글 #환영")
 			.author(TEST_MEMBER_SUMMARY)
 			.media(mediaResponses)
+			.createdAt(LocalDateTime.of(2025, 5, 5, 0, 0))
+			.build();
+	}
+
+	private PostResponse givenPostResponse() {
+		AuthorEntity author = AuthorEntity.builder()
+			.nickName("테이블 청소 마스터")
+			.handle("table_cleaner")
+			.avatar(
+				"https://cdn.twooter.xyz/media/avatar")
+			.build();
+
+		MediaEntity media1 = MediaEntity.builder()
+			.id(101L)
+			.path("https://cdn.twooter.xyz/media/101.jpg")
+			.build();
+
+		MediaEntity media2 = MediaEntity.builder()
+			.id(101L)
+			.path("https://cdn.twooter.xyz/media/102.jpg")
+			.build();
+
+		List<MediaEntity> mediaList = List.of(media1, media2);
+
+		return PostResponse.builder()
+			.author(author)
+			.content("새 책상을 정리하다가 유용해 보이는 오래된 자료를 발견해서 이메일로 보냅니다.")
+			.likeCount(15L)
+			.isLiked(true)
+			.repostCount(3L)
+			.isReposted(false)
+			.isBookmarked(true)
+			.viewCount(42L)
+			.media(mediaList)
 			.createdAt(LocalDateTime.of(2025, 5, 5, 0, 0))
 			.build();
 	}
