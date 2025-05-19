@@ -48,7 +48,7 @@ public class MemberService {
 			MemberNotFoundException::new
 		);
 
-		MemberProfile memberProfile = memberProfileRepository.findById(member.getId())
+		MemberProfile memberProfile = memberProfileRepository.findByMemberId(member.getId())
 			.orElseThrow(MemberNotFoundException::new);
 
 		return member.toBasicInfo(memberProfile);
@@ -58,7 +58,7 @@ public class MemberService {
 		validateMember(handle);
 
 		Member member = memberRepository.findByHandle(handle).orElseThrow(MemberNotFoundException::new);
-		MemberProfile memberProfile = memberProfileRepository.findById(member.getId())
+		MemberProfile memberProfile = memberProfileRepository.findByMemberId(member.getId())
 			.orElseThrow(MemberNotFoundException::new);
 
 		return member.toSummary(memberProfile);
@@ -68,7 +68,7 @@ public class MemberService {
 		Member foundMember = memberRepository.findById(member.getId())
 			.orElseThrow(IllegalMemberIdException::new);
 
-		MemberProfile memberProfile = memberProfileRepository.findById(member.getId())
+		MemberProfile memberProfile = memberProfileRepository.findByMemberId(member.getId())
 			.orElseThrow(IllegalMemberIdException::new);
 
 		return foundMember.toSummary(memberProfile);
