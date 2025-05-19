@@ -36,12 +36,12 @@ class AuthControllerDocsTest extends RestDocsSupport {
 			.build();
 
 		SignUpInfoResponse response = new SignUpInfoResponse(
-			new MemberSummaryResponse(
-				"user@example.com",
-				"twooter_123",
-				"twooter_123",
-				"testpath"
-			)
+			MemberSummaryResponse.builder()
+				.avatarPath("testpath")
+				.handle("twooter_123")
+				.email("user@example.com")
+				.nickname("테이블 청소 마스터")
+				.build()
 		);
 
 		given(authService.signUp(any())).willReturn(response);
