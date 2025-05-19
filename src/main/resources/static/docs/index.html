@@ -492,7 +492,9 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 <li><a href="#_글_조회">2.2. 글 조회</a>
 <ul class="sectlevel3">
-<li><a href="#_response_fields_6">2.2.1. Response Fields</a></li>
+<li><a href="#_http_request_5">2.2.1. HTTP Request</a></li>
+<li><a href="#_http_response_6">2.2.2. HTTP Response</a></li>
+<li><a href="#_response_fields_6">2.2.3. Response Fields</a></li>
 </ul>
 </li>
 </ul>
@@ -501,8 +503,8 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <ul class="sectlevel2">
 <li><a href="#media">3.1. 파일 Upload URL 발급</a>
 <ul class="sectlevel3">
-<li><a href="#_http_request_5">3.1.1. HTTP Request</a></li>
-<li><a href="#_http_response_6">3.1.2. HTTP Response</a></li>
+<li><a href="#_http_request_6">3.1.1. HTTP Request</a></li>
+<li><a href="#_http_response_7">3.1.2. HTTP Response</a></li>
 <li><a href="#_response_fields_7">3.1.3. Response Fields</a></li>
 </ul>
 </li>
@@ -576,14 +578,14 @@ Host: localhost:8080
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
 Content-Type: application/json
-Content-Length: 148
+Content-Length: 163
 
 {
   "member" : {
-    "email" : "user@example.com",
     "handle" : "twooter_123",
-    "nickname" : "twooter_123",
-    "avatarPath" : "testpath"
+    "nickname" : "테이블 청소 마스터",
+    "avatarPath" : "testpath",
+    "email" : "user@example.com"
   }
 }</code></pre>
 </div>
@@ -704,10 +706,10 @@ Content-Length: 481
   "accessToken" : "eyJhbGciOiJIUzI1NiJ9.eyJoYW5kbGUiOiJ0d29vdGVyXzEyMyIsInRva2VuVHlwZSI6IkFDQ0VTUyIsImlhdCI6MTcxMjMyMzIzMiwiZXhwIjoxNzEyMzI1MDMyfQ.exampleToken",
   "refreshToken" : "eyJhbGciOiJIUzI1NiJ9.eyJoYW5kbGUiOiJ0d29vdGVyXzEyMyIsInRva2VuVHlwZSI6IlJFRlJFU0giLCJpYXQiOjE3MTIzMjMyMzIsImV4cCI6MTcxMjkyODAzMn0.refreshExampleToken",
   "member" : {
-    "email" : "user@example.com",
     "handle" : "twooter_123",
     "nickname" : "twooter_123",
-    "avatarPath" : "testpath"
+    "avatarPath" : "testpath",
+    "email" : "user@example.com"
   }
 }</code></pre>
 </div>
@@ -1012,10 +1014,10 @@ Content-Length: 517
   "id" : 1,
   "content" : "트우터에 올릴 새로운 포스트 내용입니다. #첫글 #환영",
   "author" : {
-    "email" : "test@test.com",
     "handle" : "table_cleaner",
     "nickname" : "테이블 청소 마스터",
-    "avatarPath" : "https://cdn.twooter.xyz/media/avatar"
+    "avatarPath" : "https://cdn.twooter.xyz/media/avatar",
+    "email" : "test@test.com"
   },
   "media" : [ {
     "mediaId" : 101,
@@ -1119,6 +1121,14 @@ Content-Length: 517
 </div>
 <div class="sect2">
 <h3 id="_글_조회"><a class="link" href="#_글_조회">2.2. 글 조회</a></h3>
+<div class="sect3">
+<h4 id="_http_request_5"><a class="link" href="#_http_request_5">2.2.1. HTTP Request</a></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /api/posts?postId=1 HTTP/1.1
+Host: localhost:8080</code></pre>
+</div>
+</div>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
 <col style="width: 50%;">
@@ -1137,23 +1147,27 @@ Content-Length: 517
 </tr>
 </tbody>
 </table>
+</div>
+<div class="sect3">
+<h4 id="_http_response_6"><a class="link" href="#_http_response_6">2.2.2. HTTP Response</a></h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
 Content-Type: application/json
-Content-Length: 613
+Content-Length: 635
 
 {
+  "id" : 1,
   "author" : {
-    "nickName" : "테이블 청소 마스터",
     "handle" : "table_cleaner",
-    "avatar" : "https://cdn.twooter.xyz/media/avatar"
+    "nickname" : "테이블 청소 마스터",
+    "avatarPath" : "https://cdn.twooter.xyz/media/avatar"
   },
   "content" : "새 책상을 정리하다가 유용해 보이는 오래된 자료를 발견해서 이메일로 보냅니다.",
   "likeCount" : 15,
   "repostCount" : 3,
   "viewCount" : 42,
-  "media" : [ {
+  "mediaEntities" : [ {
     "id" : 101,
     "path" : "https://cdn.twooter.xyz/media/101.jpg"
   }, {
@@ -1161,14 +1175,15 @@ Content-Length: 613
     "path" : "https://cdn.twooter.xyz/media/102.jpg"
   } ],
   "createdAt" : "2025-05-05T00:00:00",
-  "bookmarked" : true,
   "liked" : true,
-  "reposted" : false
+  "reposted" : false,
+  "deleted" : false
 }</code></pre>
 </div>
 </div>
+</div>
 <div class="sect3">
-<h4 id="_response_fields_6"><a class="link" href="#_response_fields_6">2.2.1. Response Fields</a></h4>
+<h4 id="_response_fields_6"><a class="link" href="#_response_fields_6">2.2.3. Response Fields</a></h4>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
 <col style="width: 25%;">
@@ -1185,6 +1200,12 @@ Content-Length: 613
 </tr>
 </thead>
 <tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>id</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">포스트 Id</p></td>
+</tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>content</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
@@ -1222,19 +1243,13 @@ Content-Length: 613
 <td class="tableblock halign-left valign-top"><p class="tableblock">현재 사용자의 리포스트 여부</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>bookmarked</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Boolean</code></p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">현재 사용자의 북마크 여부</p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>viewCount</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">조회수</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>media</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>mediaEntities</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>Array</code></p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">첨부된 미디어 정보 목록</p></td>
@@ -1246,13 +1261,19 @@ Content-Length: 613
 <td class="tableblock halign-left valign-top"><p class="tableblock">포스트 생성 시간</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>author.nickName</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>deleted</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Boolean</code></p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">삭제 여부</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>author.nickname</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">작성자 닉네임</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>author.avatar</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>author.avatarPath</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">작성자 아바타 URL</p></td>
@@ -1264,13 +1285,13 @@ Content-Length: 613
 <td class="tableblock halign-left valign-top"><p class="tableblock">작성자 핸들</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>media[].id</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>mediaEntities[].id</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">미디어 ID</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>media[].path</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>mediaEntities[].path</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">미디어 경로 URL</p></td>
@@ -1287,7 +1308,7 @@ Content-Length: 613
 <div class="sect2">
 <h3 id="media"><a class="link" href="#media">3.1. 파일 Upload URL 발급</a></h3>
 <div class="sect3">
-<h4 id="_http_request_5"><a class="link" href="#_http_request_5">3.1.1. HTTP Request</a></h4>
+<h4 id="_http_request_6"><a class="link" href="#_http_request_6">3.1.1. HTTP Request</a></h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /api/media/upload-url?filename=test.jpg&amp;contentType=image%2Fjpeg HTTP/1.1
@@ -1318,7 +1339,7 @@ Host: localhost:8080</code></pre>
 </table>
 </div>
 <div class="sect3">
-<h4 id="_http_response_6"><a class="link" href="#_http_response_6">3.1.2. HTTP Response</a></h4>
+<h4 id="_http_response_7"><a class="link" href="#_http_response_7">3.1.2. HTTP Response</a></h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK

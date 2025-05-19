@@ -21,9 +21,9 @@ import org.springframework.restdocs.payload.JsonFieldType;
 
 import xyz.twooter.docs.RestDocsSupport;
 import xyz.twooter.media.presentation.dto.response.MediaSimpleResponse;
+import xyz.twooter.member.presentation.dto.response.MemberBasic;
 import xyz.twooter.member.presentation.dto.response.MemberSummaryResponse;
 import xyz.twooter.post.presentation.dto.request.PostCreateRequest;
-import xyz.twooter.post.presentation.dto.response.AuthorEntity;
 import xyz.twooter.post.presentation.dto.response.MediaEntity;
 import xyz.twooter.post.presentation.dto.response.PostCreateResponse;
 import xyz.twooter.post.presentation.dto.response.PostResponse;
@@ -92,7 +92,7 @@ class PostControllerDocsTest extends RestDocsSupport {
 	void getPost() throws Exception {
 		// given
 		Long postId = 1L;
-		PostResponse response = givenPostResponse();
+		PostResponse response = givenPostResponse(postId);
 
 		given(postService.getPost(anyLong(), any())).willReturn(response);
 
@@ -104,7 +104,7 @@ class PostControllerDocsTest extends RestDocsSupport {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.content").value(response.getContent()))
 			.andExpect(jsonPath("$.likeCount").value(response.getLikeCount()))
-			.andExpect(jsonPath("$.media").isArray())
+			.andExpect(jsonPath("$.mediaEntities").isArray())
 			.andDo(document("post-get",
 				preprocessRequest(prettyPrint()),
 				preprocessResponse(prettyPrint()),
@@ -112,32 +112,31 @@ class PostControllerDocsTest extends RestDocsSupport {
 					parameterWithName("postId").description("조회할 포스트 ID")
 				),
 				responseFields(
+					fieldWithPath("id").type(JsonFieldType.NUMBER)
+						.description("포스트 Id"),
 					fieldWithPath("content").type(JsonFieldType.STRING)
 						.description("포스트 내용"),
 					fieldWithPath("author").type(JsonFieldType.OBJECT)
 						.description("포스트 작성자 정보"),
 					fieldWithPath("likeCount").type(JsonFieldType.NUMBER)
 						.description("좋아요 수"),
-					// isLiked가 아닌 liked로 변경
 					fieldWithPath("liked").type(JsonFieldType.BOOLEAN)
 						.description("현재 사용자의 좋아요 여부"),
 					fieldWithPath("repostCount").type(JsonFieldType.NUMBER)
 						.description("리포스트 수"),
-					// isReposted가 아닌 reposted로 변경
 					fieldWithPath("reposted").type(JsonFieldType.BOOLEAN)
 						.description("현재 사용자의 리포스트 여부"),
-					// isBookmarked가 아닌 bookmarked로 변경
-					fieldWithPath("bookmarked").type(JsonFieldType.BOOLEAN)
-						.description("현재 사용자의 북마크 여부"),
 					fieldWithPath("viewCount").type(JsonFieldType.NUMBER)
 						.description("조회수"),
-					fieldWithPath("media").type(JsonFieldType.ARRAY)
+					fieldWithPath("mediaEntities").type(JsonFieldType.ARRAY)
 						.description("첨부된 미디어 정보 목록"),
 					fieldWithPath("createdAt").type(JsonFieldType.STRING)
-						.description("포스트 생성 시간")
+						.description("포스트 생성 시간"),
+					fieldWithPath("deleted").type(JsonFieldType.BOOLEAN)
+						.description("삭제 여부")
 				)
 					.andWithPrefix("author.", authorEntityFields())
-					.andWithPrefix("media[].", mediaEntityFields())
+					.andWithPrefix("mediaEntities[].", mediaEntityFields())
 			));
 	}
 
@@ -160,8 +159,8 @@ class PostControllerDocsTest extends RestDocsSupport {
 
 	private List<FieldDescriptor> authorEntityFields() {
 		return List.of(
-			fieldWithPath("nickName").type(JsonFieldType.STRING).description("작성자 닉네임"),
-			fieldWithPath("avatar").type(JsonFieldType.STRING).description("작성자 아바타 URL"),
+			fieldWithPath("nickname").type(JsonFieldType.STRING).description("작성자 닉네임"),
+			fieldWithPath("avatarPath").type(JsonFieldType.STRING).description("작성자 아바타 URL"),
 			fieldWithPath("handle").type(JsonFieldType.STRING).description("작성자 핸들")
 		);
 	}
@@ -203,11 +202,11 @@ class PostControllerDocsTest extends RestDocsSupport {
 			.build();
 	}
 
-	private PostResponse givenPostResponse() {
-		AuthorEntity author = AuthorEntity.builder()
-			.nickName("테이블 청소 마스터")
+	private PostResponse givenPostResponse(Long postId) {
+		MemberBasic author = MemberBasic.builder()
+			.nickname("테이블 청소 마스터")
 			.handle("table_cleaner")
-			.avatar(
+			.avatarPath(
 				"https://cdn.twooter.xyz/media/avatar")
 			.build();
 
@@ -224,15 +223,15 @@ class PostControllerDocsTest extends RestDocsSupport {
 		List<MediaEntity> mediaList = List.of(media1, media2);
 
 		return PostResponse.builder()
+			.id(postId)
 			.author(author)
 			.content("새 책상을 정리하다가 유용해 보이는 오래된 자료를 발견해서 이메일로 보냅니다.")
 			.likeCount(15L)
 			.isLiked(true)
 			.repostCount(3L)
 			.isReposted(false)
-			.isBookmarked(true)
 			.viewCount(42L)
-			.media(mediaList)
+			.mediaEntities(mediaList)
 			.createdAt(LocalDateTime.of(2025, 5, 5, 0, 0))
 			.build();
 	}

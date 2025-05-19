@@ -14,8 +14,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
 import xyz.twooter.media.presentation.dto.response.MediaSimpleResponse;
+import xyz.twooter.member.presentation.dto.response.MemberBasic;
 import xyz.twooter.post.presentation.dto.request.PostCreateRequest;
-import xyz.twooter.post.presentation.dto.response.AuthorEntity;
 import xyz.twooter.post.presentation.dto.response.MediaEntity;
 import xyz.twooter.post.presentation.dto.response.PostCreateResponse;
 import xyz.twooter.post.presentation.dto.response.PostResponse;
@@ -141,7 +141,7 @@ class PostControllerTest extends ControllerTestSupport {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.content").value(response.getContent()))
 				.andExpect(jsonPath("$.likeCount").value(response.getLikeCount()))
-				.andExpect(jsonPath("$.media").isArray());
+				.andExpect(jsonPath("$.mediaEntities").isArray());
 		}
 
 		@Test
@@ -205,10 +205,10 @@ class PostControllerTest extends ControllerTestSupport {
 	}
 
 	private PostResponse createPostResponse() {
-		AuthorEntity author = AuthorEntity.builder()
-			.nickName("테이블 청소 마스터")
+		MemberBasic author = MemberBasic.builder()
+			.nickname("테이블 청소 마스터")
 			.handle("table_cleaner")
-			.avatar("https://cdn.twooter.xyz/media/avatar")
+			.avatarPath("https://cdn.twooter.xyz/media/avatar")
 			.build();
 
 		List<MediaEntity> mediaList = List.of(
@@ -223,9 +223,8 @@ class PostControllerTest extends ControllerTestSupport {
 			.isLiked(true)
 			.repostCount(3L)
 			.isReposted(false)
-			.isBookmarked(true)
 			.viewCount(42L)
-			.media(mediaList)
+			.mediaEntities(mediaList)
 			.createdAt(TEST_DATE)
 			.build();
 	}
