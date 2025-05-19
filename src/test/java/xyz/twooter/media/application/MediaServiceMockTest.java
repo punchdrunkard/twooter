@@ -49,7 +49,7 @@ class MediaServiceMockTest extends MockTestSupport {
 
 		// storageService.generateUploadUrl이 호출되었는지 확인하고,
 		// 첫 번째 인자(objectPath)가 정규표현식 패턴과 일치하는지 확인
-		verify(storageService).generateUploadUrl(org.mockito.ArgumentMatchers.argThat(
+		verify(storageService).generateUploadUrl(argThat(
 			argument -> uuidPattern.matcher(argument).matches()
 		), eq(contentType));
 	}
