@@ -19,7 +19,7 @@ import xyz.twooter.auth.presentation.dto.response.SignInResponse;
 import xyz.twooter.auth.presentation.dto.response.SignUpInfoResponse;
 import xyz.twooter.auth.presentation.dto.response.TokenReissueResponse;
 import xyz.twooter.member.application.MemberService;
-import xyz.twooter.member.presentation.dto.MemberSummaryResponse;
+import xyz.twooter.member.presentation.dto.response.MemberSummaryResponse;
 
 @Service
 @RequiredArgsConstructor

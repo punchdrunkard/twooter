@@ -1,4 +1,4 @@
-package xyz.twooter.member.presentation.dto;
+package xyz.twooter.member.presentation.dto.response;
 
 import lombok.Builder;
 import lombok.Getter;

@@ -15,7 +15,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import xyz.twooter.common.entity.BaseTimeEntity;
 import xyz.twooter.common.error.InvalidValueException;
-import xyz.twooter.member.presentation.dto.MemberSummaryResponse;
+import xyz.twooter.member.presentation.dto.response.MemberSummaryResponse;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "member")

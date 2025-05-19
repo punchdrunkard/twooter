@@ -15,7 +15,7 @@ import xyz.twooter.member.domain.MemberProfile;
 import xyz.twooter.member.domain.exception.MemberNotFoundException;
 import xyz.twooter.member.domain.repository.MemberProfileRepository;
 import xyz.twooter.member.domain.repository.MemberRepository;
-import xyz.twooter.member.presentation.dto.MemberSummaryResponse;
+import xyz.twooter.member.presentation.dto.response.MemberSummaryResponse;
 
 @Service
 @RequiredArgsConstructor

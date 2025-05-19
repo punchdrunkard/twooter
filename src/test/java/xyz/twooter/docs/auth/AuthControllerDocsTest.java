@@ -21,7 +21,7 @@ import xyz.twooter.auth.presentation.dto.response.SignInResponse;
 import xyz.twooter.auth.presentation.dto.response.SignUpInfoResponse;
 import xyz.twooter.auth.presentation.dto.response.TokenReissueResponse;
 import xyz.twooter.docs.RestDocsSupport;
-import xyz.twooter.member.presentation.dto.MemberSummaryResponse;
+import xyz.twooter.member.presentation.dto.response.MemberSummaryResponse;
 
 class AuthControllerDocsTest extends RestDocsSupport {
 

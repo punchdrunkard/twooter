@@ -22,7 +22,7 @@ import xyz.twooter.auth.presentation.dto.response.LogoutResponse;
 import xyz.twooter.auth.presentation.dto.response.SignInResponse;
 import xyz.twooter.auth.presentation.dto.response.TokenReissueResponse;
 import xyz.twooter.member.application.MemberService;
-import xyz.twooter.member.presentation.dto.MemberSummaryResponse;
+import xyz.twooter.member.presentation.dto.response.MemberSummaryResponse;
 import xyz.twooter.support.MockTestSupport;
 
 class AuthServiceTest extends MockTestSupport {

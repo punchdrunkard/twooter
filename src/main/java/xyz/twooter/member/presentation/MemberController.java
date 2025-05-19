@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 import xyz.twooter.auth.infrastructure.annotation.CurrentMember;
 import xyz.twooter.member.application.MemberService;
 import xyz.twooter.member.domain.Member;
-import xyz.twooter.member.presentation.dto.MemberSummaryResponse;
+import xyz.twooter.member.presentation.dto.response.MemberSummaryResponse;
 
 @RestController
 @RequestMapping("/api/members")

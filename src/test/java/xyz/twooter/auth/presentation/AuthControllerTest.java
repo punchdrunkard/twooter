@@ -18,7 +18,7 @@ import xyz.twooter.auth.presentation.dto.response.SignInResponse;
 import xyz.twooter.auth.presentation.dto.response.SignUpInfoResponse;
 import xyz.twooter.auth.presentation.dto.response.TokenReissueResponse;
 import xyz.twooter.common.error.ErrorCode;
-import xyz.twooter.member.presentation.dto.MemberSummaryResponse;
+import xyz.twooter.member.presentation.dto.response.MemberSummaryResponse;
 import xyz.twooter.support.ControllerTestSupport;
 
 class AuthControllerTest extends ControllerTestSupport {

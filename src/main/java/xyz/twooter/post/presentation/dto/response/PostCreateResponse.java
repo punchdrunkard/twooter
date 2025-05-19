@@ -6,7 +6,7 @@ import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 import xyz.twooter.media.presentation.dto.response.MediaSimpleResponse;
-import xyz.twooter.member.presentation.dto.MemberSummaryResponse;
+import xyz.twooter.member.presentation.dto.response.MemberSummaryResponse;
 import xyz.twooter.post.domain.Post;
 
 @Builder
