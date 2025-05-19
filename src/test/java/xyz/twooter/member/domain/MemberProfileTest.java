@@ -21,7 +21,7 @@ class MemberProfileTest {
 		MemberProfile profile = MemberProfile.createDefault(member);
 
 		// then
-		assertThat(profile.getMember()).isEqualTo(member);
+		assertThat(profile.getMemberId()).isEqualTo(member.getId());
 		assertThat(profile.getNickname()).isEqualTo("twooter_123");
 		assertThat(profile.getBio()).isEmpty();
 		assertThat(profile.getAvatarPath())
