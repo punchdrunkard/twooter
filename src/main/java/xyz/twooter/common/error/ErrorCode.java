@@ -11,12 +11,12 @@ public enum ErrorCode {
 	 */
 	INVALID_INPUT_VALUE(400, "C001", "입력값이 올바르지 않습니다"),
 	METHOD_NOT_ALLOWED(405, "C002", "지원하지 않는 HTTP 메소드입니다"),
-	ENTITY_NOT_FOUND(400, "C003", "요청한 리소스를 찾을 수 없습니다"),
+	ENTITY_NOT_FOUND(404, "C003", "요청한 리소스를 찾을 수 없습니다"),
 	INTERNAL_SERVER_ERROR(500, "C004", "서버 내부 오류가 발생했습니다"),
 	INVALID_TYPE_VALUE(400, "C005", "타입이 올바르지 않습니다"),
 	HANDLE_ACCESS_DENIED(403, "C006", "접근이 거부되었습니다"),
 	MESSAGE_NOT_READABLE(400, "C007", "요청 메시지를 처리할 수 없습니다"),
-
+	MISSING_PARAMETER(400, "C008", "필수 파라미터가 누락되었습니다"),
 	/**
 	 * Domain
 	 */

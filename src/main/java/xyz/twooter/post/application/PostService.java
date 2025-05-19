@@ -2,7 +2,6 @@ package xyz.twooter.post.application;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,13 +11,14 @@ import xyz.twooter.media.application.MediaService;
 import xyz.twooter.media.presentation.dto.response.MediaSimpleResponse;
 import xyz.twooter.member.application.MemberService;
 import xyz.twooter.member.domain.Member;
-import xyz.twooter.member.presentation.dto.MemberSummaryResponse;
+import xyz.twooter.member.presentation.dto.response.MemberSummaryResponse;
 import xyz.twooter.post.domain.Post;
 import xyz.twooter.post.domain.PostMedia;
 import xyz.twooter.post.domain.repository.PostMediaRepository;
 import xyz.twooter.post.domain.repository.PostRepository;
 import xyz.twooter.post.presentation.dto.request.PostCreateRequest;
 import xyz.twooter.post.presentation.dto.response.PostCreateResponse;
+import xyz.twooter.post.presentation.dto.response.PostResponse;
 
 @Service
 @Transactional(readOnly = true)
@@ -47,6 +47,10 @@ public class PostService {
 		return PostCreateResponse.of(post, authorSummary, mediaResponses);
 	}
 
+	public PostResponse getPost(Long postId, Member member) {
+		return null;
+	}
+
 	private Post createAndSavePost(PostCreateRequest request, Member member) {
 		Post post = Post.builder()
 			.author(member)
@@ -64,4 +68,5 @@ public class PostService {
 			.toList();
 		postMediaRepository.saveAll(mappings);
 	}
+
 }

@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,7 +14,10 @@ import org.springframework.http.MediaType;
 
 import xyz.twooter.media.presentation.dto.response.MediaSimpleResponse;
 import xyz.twooter.post.presentation.dto.request.PostCreateRequest;
+import xyz.twooter.post.presentation.dto.response.AuthorEntity;
+import xyz.twooter.post.presentation.dto.response.MediaEntity;
 import xyz.twooter.post.presentation.dto.response.PostCreateResponse;
+import xyz.twooter.post.presentation.dto.response.PostResponse;
 import xyz.twooter.support.ControllerTestSupport;
 import xyz.twooter.support.security.WithMockCustomUser;
 
@@ -116,6 +120,47 @@ class PostControllerTest extends ControllerTestSupport {
 			.andExpect(jsonPath("$.message").exists());
 	}
 
+	@DisplayName("포스트 ID로 조회 성공")
+	@Test
+	void shouldGetPostById() throws Exception {
+		// given
+		Long postId = 1L;
+		PostResponse response = createPostResponse();
+
+		given(postService.getPost(anyLong(), any())).willReturn(response);
+
+		// when & then
+		mockMvc.perform(
+				get("/api/posts")
+					.param("postId", String.valueOf(postId))
+			)
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.content").value(response.getContent()))
+			.andExpect(jsonPath("$.likeCount").value(response.getLikeCount()))
+			.andExpect(jsonPath("$.media").isArray());
+	}
+
+	@DisplayName("postId 파라미터가 없으면 400 응답")
+	@Test
+	void shouldReturn400WhenPostIdMissing() throws Exception {
+		// when & then
+		mockMvc.perform(
+				get("/api/posts")
+			)
+			.andExpect(status().isBadRequest());
+	}
+
+	@DisplayName("postId 파라미터가 숫자가 아니면 400 응답")
+	@Test
+	void shouldReturn400WhenPostIdNotNumber() throws Exception {
+		// when & then
+		mockMvc.perform(
+				get("/api/posts")
+					.param("postId", "not-a-number")
+			)
+			.andExpect(status().isBadRequest());
+	}
+	
 	// === 헬퍼 메서드 ===
 
 	private PostCreateRequest createPostRequestWithContentOnly() {
@@ -157,6 +202,39 @@ class PostControllerTest extends ControllerTestSupport {
 			.id(1L)
 			.content(POST_CONTENT)
 			.media(mediaResponses)
+			.createdAt(TEST_DATE)
+			.build();
+	}
+
+	private PostResponse createPostResponse() {
+		AuthorEntity author = AuthorEntity.builder()
+			.nickName("테이블 청소 마스터")
+			.handle("table_cleaner")
+			.avatar("https://cdn.twooter.xyz/media/avatar")
+			.build();
+
+		MediaEntity media1 = MediaEntity.builder()
+			.id(101L)
+			.path("https://cdn.twooter.xyz/media/101.jpg")
+			.build();
+
+		MediaEntity media2 = MediaEntity.builder()
+			.id(102L)
+			.path("https://cdn.twooter.xyz/media/102.jpg")
+			.build();
+
+		List<MediaEntity> mediaList = List.of(media1, media2);
+
+		return PostResponse.builder()
+			.author(author)
+			.content(POST_CONTENT)
+			.likeCount(15L)
+			.isLiked(true)
+			.repostCount(3L)
+			.isReposted(false)
+			.isBookmarked(true)
+			.viewCount(42L)
+			.media(mediaList)
 			.createdAt(TEST_DATE)
 			.build();
 	}
