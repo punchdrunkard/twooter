@@ -2,12 +2,9 @@ package xyz.twooter.member.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
@@ -28,9 +25,8 @@ public class MemberProfile extends BaseTimeEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@OneToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "member_id", nullable = false, unique = true)
-	private Member member;
+	@Column(name = "member_id", nullable = false, unique = true)
+	private Long memberId;
 
 	@NotNull
 	private String nickname;
@@ -42,8 +38,8 @@ public class MemberProfile extends BaseTimeEntity {
 	private String avatarPath;
 
 	@Builder
-	public MemberProfile(Member member, String nickname, String bio, String avatarPath) {
-		this.member = member;
+	public MemberProfile(Long memberId, String nickname, String bio, String avatarPath) {
+		this.memberId = memberId;
 		this.nickname = nickname;
 		this.bio = bio;
 		this.avatarPath = avatarPath;
@@ -56,7 +52,7 @@ public class MemberProfile extends BaseTimeEntity {
 
 	public static MemberProfile createDefault(Member member) {
 		return MemberProfile.builder()
-			.member(member)
+			.memberId(member.getId())
 			.nickname(member.getHandle())
 			.avatarPath(DEFAULT_AVATAR_BASE + member.getHandle())
 			.bio("")

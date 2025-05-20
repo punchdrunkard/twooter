@@ -15,7 +15,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import xyz.twooter.common.entity.BaseTimeEntity;
 import xyz.twooter.common.error.InvalidValueException;
-import xyz.twooter.member.presentation.dto.MemberSummaryResponse;
+import xyz.twooter.member.presentation.dto.response.MemberBasic;
+import xyz.twooter.member.presentation.dto.response.MemberSummaryResponse;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "member")
@@ -82,5 +83,9 @@ public class Member extends BaseTimeEntity {
 
 	public MemberSummaryResponse toSummary(MemberProfile profile) {
 		return MemberSummaryResponse.of(this, profile);
+	}
+
+	public MemberBasic toBasicInfo(MemberProfile profile) {
+		return MemberBasic.of(this, profile);
 	}
 }

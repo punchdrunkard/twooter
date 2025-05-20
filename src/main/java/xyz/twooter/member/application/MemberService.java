@@ -15,7 +15,8 @@ import xyz.twooter.member.domain.MemberProfile;
 import xyz.twooter.member.domain.exception.MemberNotFoundException;
 import xyz.twooter.member.domain.repository.MemberProfileRepository;
 import xyz.twooter.member.domain.repository.MemberRepository;
-import xyz.twooter.member.presentation.dto.MemberSummaryResponse;
+import xyz.twooter.member.presentation.dto.response.MemberBasic;
+import xyz.twooter.member.presentation.dto.response.MemberSummaryResponse;
 
 @Service
 @RequiredArgsConstructor
@@ -42,11 +43,22 @@ public class MemberService {
 		return MemberSummaryResponse.of(member, memberProfile);
 	}
 
+	public MemberBasic getMemberBasic(Long memberId) {
+		Member member = memberRepository.findById(memberId).orElseThrow(
+			MemberNotFoundException::new
+		);
+
+		MemberProfile memberProfile = memberProfileRepository.findByMemberId(member.getId())
+			.orElseThrow(MemberNotFoundException::new);
+
+		return member.toBasicInfo(memberProfile);
+	}
+
 	public MemberSummaryResponse createMemberSummary(String handle) {
 		validateMember(handle);
 
 		Member member = memberRepository.findByHandle(handle).orElseThrow(MemberNotFoundException::new);
-		MemberProfile memberProfile = memberProfileRepository.findById(member.getId())
+		MemberProfile memberProfile = memberProfileRepository.findByMemberId(member.getId())
 			.orElseThrow(MemberNotFoundException::new);
 
 		return member.toSummary(memberProfile);
@@ -56,7 +68,7 @@ public class MemberService {
 		Member foundMember = memberRepository.findById(member.getId())
 			.orElseThrow(IllegalMemberIdException::new);
 
-		MemberProfile memberProfile = memberProfileRepository.findById(member.getId())
+		MemberProfile memberProfile = memberProfileRepository.findByMemberId(member.getId())
 			.orElseThrow(IllegalMemberIdException::new);
 
 		return foundMember.toSummary(memberProfile);

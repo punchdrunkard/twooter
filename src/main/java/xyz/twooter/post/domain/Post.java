@@ -13,7 +13,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import xyz.twooter.common.entity.BaseTimeEntity;
-import xyz.twooter.member.domain.Member;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "post")
@@ -24,9 +23,8 @@ public class Post extends BaseTimeEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@ManyToOne
-	@JoinColumn(name = "author_id", nullable = false)
-	private Member author;
+	@Column(name = "author_id", nullable = false)
+	private Long authorId;
 
 	private String content;
 
@@ -44,9 +42,29 @@ public class Post extends BaseTimeEntity {
 	@Column(name = "is_deleted", nullable = false)
 	private Boolean isDeleted = false;
 
+	public String getDisplayContent() {
+		if (Boolean.TRUE.equals(this.isDeleted)) {
+			return null;
+		}
+		return this.content;
+	}
+
+	public boolean isDeleted() {
+		return Boolean.TRUE.equals(this.isDeleted);
+	}
+
+	public void softDelete() {
+		this.isDeleted = true;
+	}
+
+	public Long incrementViewCount() {
+		this.viewCount++;
+		return this.viewCount;
+	}
+
 	@Builder
-	public Post(Member author, String content, Post parentPost, Post quotedPost, Long viewCount) {
-		this.author = author;
+	public Post(Long authorId, String content, Post parentPost, Post quotedPost, Long viewCount) {
+		this.authorId = authorId;
 		this.content = content;
 		this.parentPost = parentPost;
 		this.quotedPost = quotedPost;

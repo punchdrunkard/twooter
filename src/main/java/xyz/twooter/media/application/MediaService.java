@@ -2,7 +2,6 @@ package xyz.twooter.media.application;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +13,7 @@ import xyz.twooter.media.domain.exception.InvalidMediaException;
 import xyz.twooter.media.domain.repository.MediaRepository;
 import xyz.twooter.media.presentation.dto.request.SignedUrlResponse;
 import xyz.twooter.media.presentation.dto.response.MediaSimpleResponse;
+import xyz.twooter.post.presentation.dto.response.MediaEntity;
 
 @Service
 @RequiredArgsConstructor
@@ -23,16 +23,22 @@ public class MediaService {
 	private final MediaRepository mediaRepository;
 	private final StorageService storageService;
 
+	public List<MediaEntity> getMediaByPostId(Long postId) {
+		return mediaRepository.findMediaByPostId(postId).stream()
+			.map(MediaEntity::fromEntity)
+			.toList();
+	}
+
 	@Transactional
 	public List<Long> saveMedia(List<String> mediaUrls) {
 		List<Media> entities = mediaUrls.stream()
 			.map(Media::new)
-			.collect(Collectors.toList());
+			.toList();
 
 		return mediaRepository.saveAll(entities)
 			.stream()
 			.map(Media::getId)
-			.collect(Collectors.toList());
+			.toList();
 	}
 
 	public List<MediaSimpleResponse> getMediaListFromId(List<Long> mediaIds) {

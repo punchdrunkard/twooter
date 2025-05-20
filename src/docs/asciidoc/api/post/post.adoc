@@ -1,6 +1,4 @@
 [[post]]
-
-
 === 글 작성
 
 ==== HTTP Request
@@ -12,3 +10,15 @@ include::{snippets}/post-create/request-fields.adoc[]
 
 include::{snippets}/post-create/http-response.adoc[]
 include::{snippets}/post-create/response-fields.adoc[]
+
+=== 글 조회
+
+==== HTTP Request
+
+include::{snippets}/post-get/http-request.adoc[]
+include::{snippets}/post-get/query-parameters.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/post-get/http-response.adoc[]
+include::{snippets}/post-get/response-fields.adoc[]

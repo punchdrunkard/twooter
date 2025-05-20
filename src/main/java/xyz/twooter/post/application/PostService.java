@@ -2,7 +2,6 @@ package xyz.twooter.post.application;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,13 +11,17 @@ import xyz.twooter.media.application.MediaService;
 import xyz.twooter.media.presentation.dto.response.MediaSimpleResponse;
 import xyz.twooter.member.application.MemberService;
 import xyz.twooter.member.domain.Member;
-import xyz.twooter.member.presentation.dto.MemberSummaryResponse;
+import xyz.twooter.member.presentation.dto.response.MemberBasic;
+import xyz.twooter.member.presentation.dto.response.MemberSummaryResponse;
 import xyz.twooter.post.domain.Post;
 import xyz.twooter.post.domain.PostMedia;
+import xyz.twooter.post.domain.exception.PostNotFoundException;
 import xyz.twooter.post.domain.repository.PostMediaRepository;
 import xyz.twooter.post.domain.repository.PostRepository;
 import xyz.twooter.post.presentation.dto.request.PostCreateRequest;
+import xyz.twooter.post.presentation.dto.response.MediaEntity;
 import xyz.twooter.post.presentation.dto.response.PostCreateResponse;
+import xyz.twooter.post.presentation.dto.response.PostResponse;
 
 @Service
 @Transactional(readOnly = true)
@@ -30,6 +33,8 @@ public class PostService {
 
 	private final MemberService memberService;
 	private final MediaService mediaService;
+	private final PostLikeService postLikeService;
+	private final RepostService repostService;
 
 	@Transactional
 	public PostCreateResponse createPost(PostCreateRequest request, Member member) {
@@ -47,9 +52,35 @@ public class PostService {
 		return PostCreateResponse.of(post, authorSummary, mediaResponses);
 	}
 
+	public PostResponse getPost(Long postId, Member member) {
+		Post post = postRepository.findById(postId).orElseThrow(PostNotFoundException::new);
+
+		if (post.isDeleted()) {
+			return PostResponse.deletedPost(postId);
+		}
+
+		post.incrementViewCount();
+		MemberBasic memberBasicInfo = memberService.getMemberBasic(post.getAuthorId());
+		List<MediaEntity> mediaEntities = mediaService.getMediaByPostId(postId);
+
+		return PostResponse.builder()
+			.id(post.getId())
+			.author(memberBasicInfo)
+			.content(post.getContent())
+			.likeCount(postLikeService.getLikeCount(postId))
+			.isLiked(postLikeService.isLikedByMember(postId, member.getId()))
+			.repostCount(repostService.getRepostCount(postId))
+			.isReposted(repostService.isRepostedByMember(postId, member.getId()))
+			.viewCount(post.getViewCount())
+			.mediaEntities(mediaEntities)
+			.createdAt(post.getCreatedAt())
+			.isDeleted(false)
+			.build();
+	}
+
 	private Post createAndSavePost(PostCreateRequest request, Member member) {
 		Post post = Post.builder()
-			.author(member)
+			.authorId(member.getId())
 			.content(request.getContent())
 			.build();
 		return postRepository.save(post);
@@ -60,8 +91,9 @@ public class PostService {
 			return;
 
 		List<PostMedia> mappings = mediaIds.stream()
-			.map(mediaId -> new PostMedia(post, mediaId))
+			.map(mediaId -> new PostMedia(post.getId(), mediaId))
 			.toList();
 		postMediaRepository.saveAll(mappings);
 	}
+
 }

@@ -21,7 +21,7 @@ import xyz.twooter.auth.presentation.dto.response.SignInResponse;
 import xyz.twooter.auth.presentation.dto.response.SignUpInfoResponse;
 import xyz.twooter.auth.presentation.dto.response.TokenReissueResponse;
 import xyz.twooter.docs.RestDocsSupport;
-import xyz.twooter.member.presentation.dto.MemberSummaryResponse;
+import xyz.twooter.member.presentation.dto.response.MemberSummaryResponse;
 
 class AuthControllerDocsTest extends RestDocsSupport {
 
@@ -36,12 +36,12 @@ class AuthControllerDocsTest extends RestDocsSupport {
 			.build();
 
 		SignUpInfoResponse response = new SignUpInfoResponse(
-			new MemberSummaryResponse(
-				"user@example.com",
-				"twooter_123",
-				"twooter_123",
-				"testpath"
-			)
+			MemberSummaryResponse.builder()
+				.avatarPath("testpath")
+				.handle("twooter_123")
+				.email("user@example.com")
+				.nickname("테이블 청소 마스터")
+				.build()
 		);
 
 		given(authService.signUp(any())).willReturn(response);

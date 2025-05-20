@@ -22,13 +22,15 @@ import xyz.twooter.auth.presentation.dto.response.LogoutResponse;
 import xyz.twooter.auth.presentation.dto.response.SignInResponse;
 import xyz.twooter.auth.presentation.dto.response.TokenReissueResponse;
 import xyz.twooter.member.application.MemberService;
-import xyz.twooter.member.presentation.dto.MemberSummaryResponse;
+import xyz.twooter.member.presentation.dto.response.MemberSummaryResponse;
 import xyz.twooter.support.MockTestSupport;
 
 class AuthServiceTest extends MockTestSupport {
 	private final String TEST_HANDLE = "testUser";
 	private final String TEST_PASSWORD = "password123";
 	private final String TEST_EMAIL = "test@email.com";
+	private final String TEST_AVATAR_PATH = "https://cdn.twooter.xyz/media/avatar";
+	private final String TEST_NICKNAME = "테이블 청소 마스터";
 	private final String TEST_ACCESS_TOKEN = "access.token.test";
 	private final String TEST_REFRESH_TOKEN = "refresh.token.test";
 	private final String NEW_ACCESS_TOKEN = "new.access.token";
@@ -59,7 +61,7 @@ class AuthServiceTest extends MockTestSupport {
 	void shouldIssueTokensWhenValidCredentialsProvided() {
 		// given
 		SignInRequest request = new SignInRequest(TEST_HANDLE, TEST_PASSWORD);
-		MemberSummaryResponse memberSummaryResponse = new MemberSummaryResponse(TEST_EMAIL, TEST_HANDLE, "테스트 사용자", "test@example.com");
+		MemberSummaryResponse memberSummaryResponse = new MemberSummaryResponse(TEST_HANDLE, TEST_NICKNAME, TEST_AVATAR_PATH, TEST_EMAIL);
 
 		when(authenticationManagerBuilder.getObject()).thenReturn(authenticationManager);
 		when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
@@ -77,7 +79,7 @@ class AuthServiceTest extends MockTestSupport {
 		assertNotNull(response);
 		assertEquals(TEST_ACCESS_TOKEN, response.accessToken());
 		assertEquals(TEST_REFRESH_TOKEN, response.refreshToken());
-		assertEquals(TEST_HANDLE, response.member().getHandle());
+		assertEquals(TEST_HANDLE, response.member().getBasicInfo().getHandle());
 		verify(tokenService).createRefreshToken(TEST_HANDLE);
 	}
 
