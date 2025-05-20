@@ -112,4 +112,64 @@ class MemberTest {
 				.isInstanceOf(InvalidValueException.class);
 		}
 	}
+
+	@Nested
+	@DisplayName("Default Member 생성")
+	class CreateDefaultMemberTest {
+		@Test
+		@DisplayName("기본 회원이 올바르게 생성된다")
+		void shouldCreateDefaultMember() {
+			// given
+			String email = "test@example.com";
+			String password = "SecureP@ss123";
+			String handle = "test_handle";
+
+			// when
+			Member member = Member.createDefaultMember(email, password, handle);
+
+			// then
+			assertThat(member.getEmail()).isEqualTo(email);
+			assertThat(member.getPassword()).isEqualTo(password);
+			assertThat(member.getHandle()).isEqualTo(handle);
+			assertThat(member.getNickname()).isEqualTo(handle);
+			assertThat(member.getBio()).isEqualTo("");
+			assertThat(member.getAvatarPath()).isEqualTo(Member.DEFAULT_AVATAR_BASE + handle);
+			assertThat(member.isDeleted()).isFalse();
+		}
+
+		@Test
+		@DisplayName("기본 회원 생성 시 닉네임은 핸들과 동일하다")
+		void nicknameShouldEqualToHandle() {
+			// given
+			String handle = "custom_handle";
+
+			// when
+			Member member = Member.createDefaultMember("email@test.com", "ValidP@ss123", handle);
+
+			// then
+			assertThat(member.getNickname()).isEqualTo(handle);
+		}
+
+		@Test
+		@DisplayName("기본 회원 생성 시 bio는 빈 문자열로 설정된다")
+		void bioShouldBeEmptyString() {
+			// when
+			Member member = Member.createDefaultMember("bio@test.com", "ValidP@ss123", "bio_test");
+
+			// then
+			assertThat(member.getBio()).isEqualTo("");
+			assertThat(member.getBio()).isNotNull();
+			assertThat(member.getBio()).isEmpty();
+		}
+
+		@Test
+		@DisplayName("기본 회원 생성 시 삭제 상태는 false로 설정된다")
+		void isDeletedShouldBeFalse() {
+			// when
+			Member member = Member.createDefaultMember("delete@test.com", "ValidP@ss123", "delete_test");
+
+			// then
+			assertThat(member.isDeleted()).isFalse();
+		}
+	}
 }

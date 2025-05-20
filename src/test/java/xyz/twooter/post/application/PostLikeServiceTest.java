@@ -108,10 +108,7 @@ class PostLikeServiceTest extends IntegrationTestSupport {
 	// === 헬퍼 ===
 
 	private Member saveTestMember(String handle, String email) {
-		Member member = Member.builder()
-			.handle(handle)
-			.email(email)
-			.build();
+		Member member = Member.createDefaultMember(email, "password", handle);
 		return memberRepository.save(member);
 	}
 
