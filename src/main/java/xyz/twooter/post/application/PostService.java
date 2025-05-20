@@ -90,7 +90,6 @@ public class PostService {
 		if (mediaIds.isEmpty())
 			return;
 
-		// 수정이 필요한 부분
 		List<PostMedia> mappings = mediaIds.stream()
 			.map(mediaId -> new PostMedia(post.getId(), mediaId))
 			.toList();
