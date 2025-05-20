@@ -9,14 +9,13 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import xyz.twooter.common.entity.BaseTimeEntity;
 import xyz.twooter.common.error.InvalidValueException;
-import xyz.twooter.member.presentation.dto.response.MemberBasic;
-import xyz.twooter.member.presentation.dto.response.MemberSummaryResponse;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "member")
@@ -34,6 +33,8 @@ public class Member extends BaseTimeEntity {
 	public static final String HANDLE_MESSAGE =
 		"핸들은 영문, 숫자, 밑줄(_)만 사용 가능하며 4~25자 사이여야 합니다.";
 
+	public static final String DEFAULT_AVATAR_BASE = "https://avatar.iran.liara.run/username?username=";
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -47,18 +48,42 @@ public class Member extends BaseTimeEntity {
 	@Column(unique = true)
 	private String handle;
 
+	@NotNull
+	private String nickname;
+
+	@Column(length = 1000)
+	private String bio;
+
+	@Column(name = "avatar_path", length = 1000)
+	private String avatarPath;
+
 	private boolean isDeleted;
 
 	private LocalDateTime deletedAt;
 
 	@Builder
-	public Member(String email, String password, String handle) {
-		validateHandle(handle);
-
+	public Member(Long id, String email, String password, String handle, String nickname, String bio, String avatarPath,
+		boolean isDeleted) {
+		this.id = id;
 		this.email = email;
 		this.password = password;
 		this.handle = handle;
-		this.isDeleted = false;
+		this.nickname = nickname;
+		this.bio = bio;
+		this.avatarPath = avatarPath;
+		this.isDeleted = isDeleted;
+	}
+
+	public static Member createDefaultMember(String email, String password, String handle) {
+		return Member.builder()
+			.email(email)
+			.password(password)
+			.handle(handle)
+			.nickname(handle)
+			.avatarPath(DEFAULT_AVATAR_BASE + handle)
+			.bio("")
+			.isDeleted(false)
+			.build();
 	}
 
 	public static void validatePassword(String password) {
@@ -79,13 +104,5 @@ public class Member extends BaseTimeEntity {
 		if (!handle.matches(HANDLE_PATTERN)) {
 			throw new InvalidValueException(HANDLE_MESSAGE);
 		}
-	}
-
-	public MemberSummaryResponse toSummary(MemberProfile profile) {
-		return MemberSummaryResponse.of(this, profile);
-	}
-
-	public MemberBasic toBasicInfo(MemberProfile profile) {
-		return MemberBasic.of(this, profile);
 	}
 }

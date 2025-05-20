@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.Builder;
 import lombok.Getter;
 import xyz.twooter.member.domain.Member;
-import xyz.twooter.member.domain.MemberProfile;
 
 @Getter
 public class MemberSummaryResponse {
@@ -30,8 +29,8 @@ public class MemberSummaryResponse {
 		this.email = email;
 	}
 
-	public static MemberSummaryResponse of(Member member, MemberProfile profile) {
-		MemberBasic basicInfo = MemberBasic.of(member, profile);
+	public static MemberSummaryResponse of(Member member) {
+		MemberBasic basicInfo = MemberBasic.of(member);
 		return new MemberSummaryResponse(basicInfo, member.getEmail());
 	}
 }

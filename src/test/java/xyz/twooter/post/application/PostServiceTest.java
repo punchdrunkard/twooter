@@ -16,8 +16,6 @@ import xyz.twooter.media.domain.Media;
 import xyz.twooter.media.domain.repository.MediaRepository;
 import xyz.twooter.media.presentation.dto.response.MediaSimpleResponse;
 import xyz.twooter.member.domain.Member;
-import xyz.twooter.member.domain.MemberProfile;
-import xyz.twooter.member.domain.repository.MemberProfileRepository;
 import xyz.twooter.member.domain.repository.MemberRepository;
 import xyz.twooter.post.domain.Post;
 import xyz.twooter.post.domain.PostMedia;
@@ -36,8 +34,6 @@ class PostServiceTest extends IntegrationTestSupport {
 	@Autowired
 	private MemberRepository memberRepository;
 	@Autowired
-	private MemberProfileRepository memberProfileRepository;
-	@Autowired
 	private PostRepository postRepository;
 	@Autowired
 	private PostMediaRepository postMediaRepository;
@@ -50,7 +46,6 @@ class PostServiceTest extends IntegrationTestSupport {
 		postMediaRepository.deleteAll();
 		mediaRepository.deleteAll();
 		postRepository.deleteAll();
-		memberProfileRepository.deleteAll();
 		memberRepository.deleteAll();
 	}
 
@@ -62,7 +57,6 @@ class PostServiceTest extends IntegrationTestSupport {
 		void shouldCreatePostWithoutMedia() {
 			// given
 			Member member = saveTestMember();
-			saveTestProfile(member);
 
 			PostCreateRequest request = PostCreateRequest.builder()
 				.content("텍스트 포스트입니다.")
@@ -87,7 +81,6 @@ class PostServiceTest extends IntegrationTestSupport {
 			// given
 			Member member = saveTestMember();
 			String[] urls = {"media1.jpg", "media2.jpg"};
-			saveTestProfile(member);
 
 			PostCreateRequest request = PostCreateRequest.builder()
 				.content("미디어 포함 포스트입니다.")
@@ -146,7 +139,6 @@ class PostServiceTest extends IntegrationTestSupport {
 		void shouldReturnCorrectPostInfoWhenValidPostIdIsGiven() {
 			// given
 			Member author = saveTestMember();
-			saveTestProfile(author);
 
 			Post post = Post.builder()
 				.authorId(author.getId())
@@ -171,7 +163,6 @@ class PostServiceTest extends IntegrationTestSupport {
 		void shouldReturnPostWithMediaWhenPostHasMedia() {
 			// given
 			Member author = saveTestMember();
-			saveTestProfile(author);
 
 			Post post = Post.builder()
 				.authorId(author.getId())
@@ -204,7 +195,6 @@ class PostServiceTest extends IntegrationTestSupport {
 		void shouldIncrementViewCountWhenPostIsRetrieved() {
 			// given
 			Member author = saveTestMember();
-			saveTestProfile(author);
 
 			Post post = Post.builder()
 				.authorId(author.getId())
@@ -231,7 +221,6 @@ class PostServiceTest extends IntegrationTestSupport {
 		void shouldAccumulateViewCountWhenPostIsRetrievedMultipleTimes() {
 			// given
 			Member author = saveTestMember();
-			saveTestProfile(author);
 
 			Post post = Post.builder()
 				.authorId(author.getId())
@@ -282,21 +271,8 @@ class PostServiceTest extends IntegrationTestSupport {
 	// === 헬퍼 ===
 
 	private Member saveTestMember() {
-		Member member = Member.builder()
-			.email("test@twooter.com")
-			.handle("tester")
-			.build();
+		Member member = Member.createDefaultMember("test@test.test", "password", "tester");
 		return memberRepository.save(member);
-	}
-
-	private void saveTestProfile(Member member) {
-		MemberProfile profile = MemberProfile.builder()
-			.memberId(member.getId())
-			.bio("소개입니다.")
-			.nickname("테스터")
-			.avatarPath("https://cdn.twooter.xyz/avatar.png")
-			.build();
-		memberProfileRepository.save(profile);
 	}
 
 	private Media createMedia(String path) {
