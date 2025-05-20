@@ -32,6 +32,6 @@ public class MemberSummaryResponse {
 
 	public static MemberSummaryResponse of(Member member, MemberProfile profile) {
 		MemberBasic basicInfo = MemberBasic.of(member, profile);
-		return new MemberSummaryResponse(basicInfo, builder().email);
+		return new MemberSummaryResponse(basicInfo, member.getEmail());
 	}
 }
