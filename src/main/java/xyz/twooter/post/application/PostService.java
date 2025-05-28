@@ -18,6 +18,7 @@ import xyz.twooter.post.domain.PostMedia;
 import xyz.twooter.post.domain.exception.PostNotFoundException;
 import xyz.twooter.post.domain.repository.PostMediaRepository;
 import xyz.twooter.post.domain.repository.PostRepository;
+import xyz.twooter.post.presentation.dto.projection.PostDetailProjection;
 import xyz.twooter.post.presentation.dto.request.PostCreateRequest;
 import xyz.twooter.post.presentation.dto.response.MediaEntity;
 import xyz.twooter.post.presentation.dto.response.PostCreateResponse;
@@ -53,29 +54,36 @@ public class PostService {
 	}
 
 	public PostResponse getPost(Long postId, Member member) {
-		Post post = postRepository.findById(postId).orElseThrow(PostNotFoundException::new);
 
-		if (post.isDeleted()) {
+		Long memberId = member == null ? null : member.getId();
+		PostDetailProjection projection = postRepository.findPostDetailById(postId, memberId)
+			.orElseThrow(PostNotFoundException::new);
+
+		if (projection.getIsDeleted()) {
 			return PostResponse.deletedPost(postId);
 		}
 
-		post.incrementViewCount();
-		MemberBasic memberBasicInfo = memberService.getMemberBasic(post.getAuthorId());
 		List<MediaEntity> mediaEntities = mediaService.getMediaByPostId(postId);
 
 		return PostResponse.builder()
-			.id(post.getId())
-			.author(memberBasicInfo)
-			.content(post.getContent())
-			.likeCount(postLikeService.getLikeCount(postId))
-			.isLiked(postLikeService.isLikedByMember(postId, member.getId()))
-			.repostCount(repostService.getRepostCount(postId))
-			.isReposted(repostService.isRepostedByMember(postId, member.getId()))
-			.viewCount(post.getViewCount())
+			.id(projection.getId())
+			.author(new MemberBasic(projection.getAuthorHandle(), projection.getAuthorNickname(),
+				projection.getAuthorAvatar()))
+			.content(projection.getContent())
+			.likeCount(projection.getLikeCount())
+			.isLiked(projection.getIsLiked())
+			.repostCount(projection.getRepostCount())
+			.isReposted(projection.getIsReposted())
+			.viewCount(projection.getViewCount())
 			.mediaEntities(mediaEntities)
-			.createdAt(post.getCreatedAt())
+			.createdAt(projection.getCreatedAt())
 			.isDeleted(false)
 			.build();
+	}
+
+	@Transactional
+	public void incrementViewCount(Long postId) {
+		postRepository.incrementViewCount(postId);
 	}
 
 	private Post createAndSavePost(PostCreateRequest request, Member member) {
