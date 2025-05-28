@@ -29,6 +29,7 @@ public class PostController {
 
 	@GetMapping
 	public ResponseEntity<PostResponse> getPost(@RequestParam Long postId, @CurrentMember Member member) {
+		postService.incrementViewCount(postId);
 		PostResponse response = postService.getPost(postId, member);
 		return ResponseEntity.ok(response);
 	}
