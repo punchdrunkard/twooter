@@ -205,6 +205,11 @@ class PostServiceTest extends IntegrationTestSupport {
 		void shouldGetLikedCountAndRepostCount() {
 			// given
 			Member author = saveTestMember();
+
+			Member member1 = saveTestMember("member1");
+			Member member2 = saveTestMember("member2");
+			Member member3 = saveTestMember("member3");
+
 			Post post = Post.builder()
 				.authorId(author.getId())
 				.content("테스트 포스트 내용입니다.")
@@ -214,34 +219,34 @@ class PostServiceTest extends IntegrationTestSupport {
 			// 리트윗 및 좋아요 갯수
 			PostLike like1 = PostLike.builder()
 				.postId(post.getId())
-				.memberId(-1L)
+				.memberId(member1.getId())
 				.build();
 
 			PostLike like2 = PostLike.builder()
 				.postId(post.getId())
-				.memberId(-2L)
+				.memberId(member2.getId())
 				.build();
 
 			PostLike like3 = PostLike.builder()
 				.postId(post.getId())
-				.memberId(-3L)
+				.memberId(member3.getId())
 				.build();
 
 			postLikeRepository.saveAll(List.of(like1, like2, like3));
 
 			Repost repost1 = Repost.builder()
 				.postId(post.getId())
-				.memberId(-1L)
+				.memberId(member1.getId())
 				.build();
 
 			Repost repost2 = Repost.builder()
 				.postId(post.getId())
-				.memberId(-2L)
+				.memberId(member2.getId())
 				.build();
 
 			Repost repost3 = Repost.builder()
 				.postId(post.getId())
-				.memberId(-4L)
+				.memberId(member3.getId())
 				.build();
 
 			repostRepository.saveAll(List.of(repost1, repost2, repost3));
