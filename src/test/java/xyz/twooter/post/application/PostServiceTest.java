@@ -18,10 +18,14 @@ import xyz.twooter.media.presentation.dto.response.MediaSimpleResponse;
 import xyz.twooter.member.domain.Member;
 import xyz.twooter.member.domain.repository.MemberRepository;
 import xyz.twooter.post.domain.Post;
+import xyz.twooter.post.domain.PostLike;
 import xyz.twooter.post.domain.PostMedia;
+import xyz.twooter.post.domain.Repost;
 import xyz.twooter.post.domain.exception.PostNotFoundException;
+import xyz.twooter.post.domain.repository.PostLikeRepository;
 import xyz.twooter.post.domain.repository.PostMediaRepository;
 import xyz.twooter.post.domain.repository.PostRepository;
+import xyz.twooter.post.domain.repository.RepostRepository;
 import xyz.twooter.post.presentation.dto.request.PostCreateRequest;
 import xyz.twooter.post.presentation.dto.response.PostCreateResponse;
 import xyz.twooter.post.presentation.dto.response.PostResponse;
@@ -39,6 +43,10 @@ class PostServiceTest extends IntegrationTestSupport {
 	private PostMediaRepository postMediaRepository;
 	@Autowired
 	private MediaRepository mediaRepository;
+	@Autowired
+	private PostLikeRepository postLikeRepository;
+	@Autowired
+	private RepostRepository repostRepository;
 
 	@BeforeEach
 	void setUp() {
@@ -47,6 +55,8 @@ class PostServiceTest extends IntegrationTestSupport {
 		mediaRepository.deleteAll();
 		postRepository.deleteAll();
 		memberRepository.deleteAll();
+		postLikeRepository.deleteAll();
+		repostRepository.deleteAll();
 	}
 
 	@Nested
@@ -190,85 +200,121 @@ class PostServiceTest extends IntegrationTestSupport {
 				);
 		}
 
-		@DisplayName("성공 - 포스트를 조회하면 조회수가 증가한다.")
+		@DisplayName("성공 - 좋아요와 리포스트 갯수를 조회할 수 있다.")
 		@Test
-		void shouldIncrementViewCountWhenPostIsRetrieved() {
+		void shouldGetLikedCountAndRepostCount() {
 			// given
 			Member author = saveTestMember();
 
+			Member member1 = saveTestMember("member1");
+			Member member2 = saveTestMember("member2");
+			Member member3 = saveTestMember("member3");
+
 			Post post = Post.builder()
 				.authorId(author.getId())
-				.content("조회수 테스트 포스트입니다.")
-				.viewCount(0L)
+				.content("테스트 포스트 내용입니다.")
+				.build();
+			postRepository.save(post);
+
+			// 리트윗 및 좋아요 갯수
+			PostLike like1 = PostLike.builder()
+				.postId(post.getId())
+				.memberId(member1.getId())
 				.build();
 
-			postRepository.save(post);
-			Long initialViewCount = post.getViewCount();
+			PostLike like2 = PostLike.builder()
+				.postId(post.getId())
+				.memberId(member2.getId())
+				.build();
+
+			PostLike like3 = PostLike.builder()
+				.postId(post.getId())
+				.memberId(member3.getId())
+				.build();
+
+			postLikeRepository.saveAll(List.of(like1, like2, like3));
+
+			Repost repost1 = Repost.builder()
+				.postId(post.getId())
+				.memberId(member1.getId())
+				.build();
+
+			Repost repost2 = Repost.builder()
+				.postId(post.getId())
+				.memberId(member2.getId())
+				.build();
+
+			Repost repost3 = Repost.builder()
+				.postId(post.getId())
+				.memberId(member3.getId())
+				.build();
+
+			repostRepository.saveAll(List.of(repost1, repost2, repost3));
 
 			// when
-			PostResponse response = postService.getPost(post.getId(), author);
+			PostResponse response = postService.getPost(post.getId(), null);
 
 			// then
-			assertThat(response.getViewCount()).isEqualTo(initialViewCount + 1);
-
-			// DB에서 다시 조회하여 실제로 저장되었는지 확인
-			Post updatedPost = postRepository.findById(post.getId()).orElseThrow();
-			assertThat(updatedPost.getViewCount()).isEqualTo(initialViewCount + 1);
+			assertThat(response.getLikeCount()).isEqualTo(3);
+			assertThat(response.getRepostCount()).isEqualTo(3);
 		}
 
-		@DisplayName("성공 - 같은 포스트를 여러 번 조회하면 조회수가 누적해서 증가한다.")
+		@DisplayName("성공 - 유저가 로그인하지 않은 경우, 본인의 리트윗/좋아요 정보를 제외한다.")
 		@Test
-		void shouldAccumulateViewCountWhenPostIsRetrievedMultipleTimes() {
+		void shouldFindPostDetailWhenUserDoesNotLogin() {
 			// given
 			Member author = saveTestMember();
-
 			Post post = Post.builder()
 				.authorId(author.getId())
-				.content("조회수 누적 테스트 포스트입니다.")
-				.viewCount(5L) // 초기 조회수 5
+				.content("테스트 포스트 내용입니다.")
 				.build();
-
 			postRepository.save(post);
-			Long initialViewCount = post.getViewCount();
 
 			// when
-			postService.getPost(post.getId(), author); // 첫 번째 조회
-			postService.getPost(post.getId(), author); // 두 번째 조회
-			PostResponse response = postService.getPost(post.getId(), author); // 세 번째 조회
+			PostResponse response = postService.getPost(post.getId(), null);
 
 			// then
-			assertThat(response.getViewCount()).isEqualTo(initialViewCount + 3);
-			Post updatedPost = postRepository.findById(post.getId()).orElseThrow();
-			assertThat(updatedPost.getViewCount()).isEqualTo(initialViewCount + 3);
+			assertFalse(response.isLiked());
+			assertFalse(response.isDeleted());
+
 		}
 
-		@DisplayName("성공 - 삭제된 포스트는 조회해도 조회수가 증가하지 않는다.")
+		@DisplayName("성공 - 유저가 로그인한 경우, 본인의 리트윗/좋아요 정보를 포함한다.")
 		@Test
-		void shouldNotIncrementViewCountWhenDeletedPostIsRetrieved() {
+		void shouldFindPostDetailWhenUserLogin() {
 			// given
 			Member author = saveTestMember();
+			Member currentMember = saveTestMember("currentMember");
 
 			Post post = Post.builder()
 				.authorId(author.getId())
-				.content("삭제된 포스트 조회수 테스트입니다.")
-				.viewCount(10L)
+				.content("테스트 포스트 내용입니다.")
+				.build();
+			postRepository.save(post);
+
+			PostLike like = PostLike.builder()
+				.postId(post.getId())
+				.memberId(currentMember.getId())
 				.build();
 
-			postRepository.save(post);
-			post.softDelete(); // 포스트 삭제 처리
-			Long initialViewCount = post.getViewCount();
+			postLikeRepository.save(like);
 
 			// when
-			PostResponse response = postService.getPost(post.getId(), author);
+			PostResponse response = postService.getPost(post.getId(), currentMember);
 
 			// then
-			assertThat(response.isDeleted()).isTrue();
-			Post updatedPost = postRepository.findById(post.getId()).orElseThrow();
-			assertThat(updatedPost.getViewCount()).isEqualTo(initialViewCount);
+			assertTrue(response.isLiked());
+			assertFalse(response.isReposted());
 		}
 	}
 
 	// === 헬퍼 ===
+	private Member saveTestMember(String handle) {
+		String email = handle + "@test.test";
+
+		Member member = Member.createDefaultMember(email, "password", handle);
+		return memberRepository.save(member);
+	}
 
 	private Member saveTestMember() {
 		Member member = Member.createDefaultMember("test@test.test", "password", "tester");
