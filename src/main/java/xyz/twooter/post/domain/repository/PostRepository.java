@@ -15,19 +15,22 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 	@Query("""
 		SELECT new xyz.twooter.post.presentation.dto.projection.PostDetailProjection(
 		    p.id, p.content, m.handle, m.nickname, m.avatarPath, p.createdAt, p.viewCount,
-		    (SELECT COUNT(pl) FROM PostLike pl WHERE pl.postId = p.id),
-		    (SELECT COUNT(r) FROM Repost r WHERE r.postId = p.id),
-		    (CASE WHEN :memberId IS NULL THEN FALSE
-		          ELSE EXISTS (SELECT 1 FROM PostLike pl WHERE pl.postId = p.id AND pl.memberId = :memberId) 
-		     END),
-		    (CASE WHEN :memberId IS NULL THEN FALSE 
-		          ELSE EXISTS (SELECT 1 FROM Repost r WHERE r.postId = p.id AND r.memberId = :memberId) 
-		     END),
-		     p.isDeleted
+		    COUNT(DISTINCT pl.id),
+		    COUNT(DISTINCT r.id),
+		    CASE WHEN :memberId IS NULL THEN false 
+		         ELSE EXISTS (SELECT 1 FROM PostLike userLike WHERE userLike.postId = p.id AND userLike.memberId = :memberId) 
+		    END,
+		    CASE WHEN :memberId IS NULL THEN false 
+		         ELSE EXISTS (SELECT 1 FROM Repost userRepost WHERE userRepost.postId = p.id AND userRepost.memberId = :memberId) 
+		    END,
+		    p.isDeleted
 		)
 		FROM Post p
 		JOIN Member m ON p.authorId = m.id
+		LEFT JOIN PostLike pl ON pl.postId = p.id
+		LEFT JOIN Repost r ON r.postId = p.id
 		WHERE p.id = :postId
+		GROUP BY p.id, p.content, m.handle, m.nickname, m.avatarPath, p.createdAt, p.viewCount, p.isDeleted
 		""")
 	Optional<PostDetailProjection> findPostDetailById(@Param("postId") Long postId, @Param("memberId") Long memberId);
 
