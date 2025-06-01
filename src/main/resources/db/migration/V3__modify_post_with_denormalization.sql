@@ -14,7 +14,7 @@ ALTER TABLE post
 DROP TABLE IF EXISTS repost;
 
 -- 3. follow 테이블 네이밍 변경
-ALTER TABLE follow DROP INDEX uk_follows_following_followed;
+ALTER TABLE follows DROP INDEX uk_follows_following_followed;
 RENAME TABLE follows TO follow;
 
 -- 컬럼명 변경
