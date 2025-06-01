@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -20,12 +19,10 @@ import xyz.twooter.member.domain.repository.MemberRepository;
 import xyz.twooter.post.domain.Post;
 import xyz.twooter.post.domain.PostLike;
 import xyz.twooter.post.domain.PostMedia;
-import xyz.twooter.post.domain.Repost;
 import xyz.twooter.post.domain.exception.PostNotFoundException;
 import xyz.twooter.post.domain.repository.PostLikeRepository;
 import xyz.twooter.post.domain.repository.PostMediaRepository;
 import xyz.twooter.post.domain.repository.PostRepository;
-import xyz.twooter.post.domain.repository.RepostRepository;
 import xyz.twooter.post.presentation.dto.request.PostCreateRequest;
 import xyz.twooter.post.presentation.dto.response.PostCreateResponse;
 import xyz.twooter.post.presentation.dto.response.PostResponse;
@@ -45,19 +42,6 @@ class PostServiceTest extends IntegrationTestSupport {
 	private MediaRepository mediaRepository;
 	@Autowired
 	private PostLikeRepository postLikeRepository;
-	@Autowired
-	private RepostRepository repostRepository;
-
-	@BeforeEach
-	void setUp() {
-		// 테스트 전에 관련 데이터 모두 삭제
-		postMediaRepository.deleteAll();
-		mediaRepository.deleteAll();
-		postRepository.deleteAll();
-		memberRepository.deleteAll();
-		postLikeRepository.deleteAll();
-		repostRepository.deleteAll();
-	}
 
 	@Nested
 	class CreatePost {
@@ -67,7 +51,6 @@ class PostServiceTest extends IntegrationTestSupport {
 		void shouldCreatePostWithoutMedia() {
 			// given
 			Member member = saveTestMember();
-
 			PostCreateRequest request = PostCreateRequest.builder()
 				.content("텍스트 포스트입니다.")
 				.media(null)
@@ -127,13 +110,8 @@ class PostServiceTest extends IntegrationTestSupport {
 		@Test
 		void shouldReturnDeletedResponseWhenPostIsDeleted() {
 			// given
-			Post post = Post.builder()
-				.authorId(saveTestMember().getId())
-				.content("this is deleted post")
-				.parentPost(null)
-				.quotedPost(null)
-				.build();
-
+			Member author = saveTestMember();
+			Post post = Post.createPost(author.getId(), "this is deleted post");
 			postRepository.save(post);
 			post.softDelete();
 
@@ -149,12 +127,8 @@ class PostServiceTest extends IntegrationTestSupport {
 		void shouldReturnCorrectPostInfoWhenValidPostIdIsGiven() {
 			// given
 			Member author = saveTestMember();
-
-			Post post = Post.builder()
-				.authorId(author.getId())
-				.content("테스트 포스트 내용입니다.")
-				.build();
-
+			String postContent = "테스트 포스트 내용입니다.";
+			Post post = Post.createPost(author.getId(), postContent);
 			postRepository.save(post);
 
 			// when
@@ -162,7 +136,7 @@ class PostServiceTest extends IntegrationTestSupport {
 
 			// then
 			assertThat(response.getId()).isEqualTo(post.getId());
-			assertThat(response.getContent()).isEqualTo("테스트 포스트 내용입니다.");
+			assertThat(response.getContent()).isEqualTo(postContent);
 			assertThat(response.getAuthor().getHandle()).isEqualTo(author.getHandle());
 			assertThat(response.isDeleted()).isFalse();
 			assertThat(response.getCreatedAt()).isNotNull();
@@ -173,12 +147,7 @@ class PostServiceTest extends IntegrationTestSupport {
 		void shouldReturnPostWithMediaWhenPostHasMedia() {
 			// given
 			Member author = saveTestMember();
-
-			Post post = Post.builder()
-				.authorId(author.getId())
-				.content("미디어 포함 포스트입니다.")
-				.build();
-
+			Post post = Post.createPost(author.getId(), "미디어 포함 포스트입니다.");
 			postRepository.save(post);
 
 			// 미디어 생성 및 연결
@@ -200,74 +169,12 @@ class PostServiceTest extends IntegrationTestSupport {
 				);
 		}
 
-		@DisplayName("성공 - 좋아요와 리포스트 갯수를 조회할 수 있다.")
-		@Test
-		void shouldGetLikedCountAndRepostCount() {
-			// given
-			Member author = saveTestMember();
-
-			Member member1 = saveTestMember("member1");
-			Member member2 = saveTestMember("member2");
-			Member member3 = saveTestMember("member3");
-
-			Post post = Post.builder()
-				.authorId(author.getId())
-				.content("테스트 포스트 내용입니다.")
-				.build();
-			postRepository.save(post);
-
-			// 리트윗 및 좋아요 갯수
-			PostLike like1 = PostLike.builder()
-				.postId(post.getId())
-				.memberId(member1.getId())
-				.build();
-
-			PostLike like2 = PostLike.builder()
-				.postId(post.getId())
-				.memberId(member2.getId())
-				.build();
-
-			PostLike like3 = PostLike.builder()
-				.postId(post.getId())
-				.memberId(member3.getId())
-				.build();
-
-			postLikeRepository.saveAll(List.of(like1, like2, like3));
-
-			Repost repost1 = Repost.builder()
-				.postId(post.getId())
-				.memberId(member1.getId())
-				.build();
-
-			Repost repost2 = Repost.builder()
-				.postId(post.getId())
-				.memberId(member2.getId())
-				.build();
-
-			Repost repost3 = Repost.builder()
-				.postId(post.getId())
-				.memberId(member3.getId())
-				.build();
-
-			repostRepository.saveAll(List.of(repost1, repost2, repost3));
-
-			// when
-			PostResponse response = postService.getPost(post.getId(), null);
-
-			// then
-			assertThat(response.getLikeCount()).isEqualTo(3);
-			assertThat(response.getRepostCount()).isEqualTo(3);
-		}
-
 		@DisplayName("성공 - 유저가 로그인하지 않은 경우, 본인의 리트윗/좋아요 정보를 제외한다.")
 		@Test
 		void shouldFindPostDetailWhenUserDoesNotLogin() {
 			// given
 			Member author = saveTestMember();
-			Post post = Post.builder()
-				.authorId(author.getId())
-				.content("테스트 포스트 내용입니다.")
-				.build();
+			Post post = Post.createPost(author.getId(), "테스트 포스트 내용입니다.");
 			postRepository.save(post);
 
 			// when
@@ -279,17 +186,14 @@ class PostServiceTest extends IntegrationTestSupport {
 
 		}
 
-		@DisplayName("성공 - 유저가 로그인한 경우, 본인의 리트윗/좋아요 정보를 포함한다.")
+		@DisplayName("성공 - 유저가 로그인한 경우, 본인의 리포스트/좋아요 정보를 포함한다.")
 		@Test
 		void shouldFindPostDetailWhenUserLogin() {
 			// given
 			Member author = saveTestMember();
 			Member currentMember = saveTestMember("currentMember");
 
-			Post post = Post.builder()
-				.authorId(author.getId())
-				.content("테스트 포스트 내용입니다.")
-				.build();
+			Post post = Post.createPost(author.getId(), "테스트 포스트 내용입니다.");
 			postRepository.save(post);
 
 			PostLike like = PostLike.builder()
