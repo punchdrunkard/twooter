@@ -88,7 +88,7 @@ public class Post extends BaseTimeEntity {
 
 	// ==== 생성자 ====
 	@Builder
-	public Post(Long authorId, String content, Long parentPostId, Long quotedPostId, Long repostOfId,
+	private Post(Long authorId, String content, Long parentPostId, Long quotedPostId, Long repostOfId,
 		Long viewCount, Long likeCount, Long repostCount) {
 		this.authorId = authorId;
 		this.content = content;
