@@ -34,8 +34,6 @@ public class PostService {
 
 	private final MemberService memberService;
 	private final MediaService mediaService;
-	private final PostLikeService postLikeService;
-	private final RepostService repostService;
 
 	@Transactional
 	public PostCreateResponse createPost(PostCreateRequest request, Member member) {
@@ -67,8 +65,8 @@ public class PostService {
 
 		return PostResponse.builder()
 			.id(projection.getId())
-			.author(new MemberBasic(projection.getAuthorHandle(), projection.getAuthorNickname(),
-				projection.getAuthorAvatar()))
+			.author(new MemberBasic(projection.getHandle(), projection.getNickname(),
+				projection.getAvatarPath()))
 			.content(projection.getContent())
 			.likeCount(projection.getLikeCount())
 			.isLiked(projection.getIsLiked())

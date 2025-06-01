@@ -15,22 +15,18 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 	@Query("""
 		SELECT new xyz.twooter.post.presentation.dto.projection.PostDetailProjection(
 		    p.id, p.content, m.handle, m.nickname, m.avatarPath, p.createdAt, p.viewCount,
-		    COUNT(DISTINCT pl.id),
-		    COUNT(DISTINCT r.id),
-		    CASE WHEN :memberId IS NULL THEN false 
-		         ELSE EXISTS (SELECT 1 FROM PostLike userLike WHERE userLike.postId = p.id AND userLike.memberId = :memberId) 
+		    p.likeCount, p.repostCount,
+		    CASE WHEN :memberId IS NULL THEN false
+		         ELSE EXISTS (SELECT 1 FROM PostLike pl WHERE pl.postId = p.id AND pl.memberId = :memberId) 
 		    END,
 		    CASE WHEN :memberId IS NULL THEN false 
-		         ELSE EXISTS (SELECT 1 FROM Repost userRepost WHERE userRepost.postId = p.id AND userRepost.memberId = :memberId) 
+		         ELSE EXISTS (SELECT 1 FROM Post rp WHERE rp.authorId = :memberId AND rp.repostOfId = p.id AND rp.isDeleted = false) 
 		    END,
-		    p.isDeleted
+		    p.isDeleted, p.parentPostId, p.quotedPostId,p.repostOfId
 		)
 		FROM Post p
 		JOIN Member m ON p.authorId = m.id
-		LEFT JOIN PostLike pl ON pl.postId = p.id
-		LEFT JOIN Repost r ON r.postId = p.id
 		WHERE p.id = :postId
-		GROUP BY p.id, p.content, m.handle, m.nickname, m.avatarPath, p.createdAt, p.viewCount, p.isDeleted
 		""")
 	Optional<PostDetailProjection> findPostDetailById(@Param("postId") Long postId, @Param("memberId") Long memberId);
 
