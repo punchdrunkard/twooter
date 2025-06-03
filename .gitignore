@@ -38,3 +38,6 @@ out/
 
 ### Production information ###
 src/main/resources/application-prod.yml
+
+### QueryDsl ###
+**/generated
