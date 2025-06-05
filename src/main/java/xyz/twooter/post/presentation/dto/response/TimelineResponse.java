@@ -13,6 +13,5 @@ import xyz.twooter.common.infrastructure.pagination.PaginationMetadata;
 public class TimelineResponse {
 	private List<TimelineItemResponse> timeline;
 	private PaginationMetadata metadata;
-
 }
 

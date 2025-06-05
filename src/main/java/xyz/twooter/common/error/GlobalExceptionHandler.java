@@ -22,6 +22,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 
 @RestControllerAdvice
@@ -31,6 +32,11 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	protected ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
 		return buildErrorResponse(e, ErrorCode.INVALID_INPUT_VALUE, e.getBindingResult(), HttpStatus.BAD_REQUEST);
+	}
+
+	@ExceptionHandler(ConstraintViolationException.class)
+	protected ResponseEntity<ErrorResponse> handleConstraintViolationException(ConstraintViolationException e) {
+		return buildErrorResponse(e, ErrorCode.INVALID_INPUT_VALUE, e, HttpStatus.BAD_REQUEST);
 	}
 
 	@ExceptionHandler(BindException.class)
@@ -105,6 +111,7 @@ public class GlobalExceptionHandler {
 		return buildErrorResponse(e, ErrorCode.ACCESS_DENIED, HttpStatus.FORBIDDEN);
 	}
 
+
 	// 3. JWT 관련 예외 처리
 	@ExceptionHandler(ExpiredJwtException.class)
 	protected ResponseEntity<ErrorResponse> handleExpiredJwtException(ExpiredJwtException e) {
@@ -134,6 +141,13 @@ public class GlobalExceptionHandler {
 
 	private ResponseEntity<ErrorResponse> buildErrorResponse(Exception e, ErrorCode errorCode,
 		MethodArgumentTypeMismatchException ex, HttpStatus status) {
+		log.error("Exception: ", e);
+		final ErrorResponse response = ErrorResponse.of(ex);
+		return new ResponseEntity<>(response, status);
+	}
+
+	private ResponseEntity<ErrorResponse> buildErrorResponse(Exception e, ErrorCode errorCode,
+		ConstraintViolationException ex, HttpStatus status) {
 		log.error("Exception: ", e);
 		final ErrorResponse response = ErrorResponse.of(ex);
 		return new ResponseEntity<>(response, status);

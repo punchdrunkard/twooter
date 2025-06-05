@@ -14,13 +14,16 @@ import xyz.twooter.config.TestSecurityConfiguration;
 import xyz.twooter.media.application.MediaService;
 import xyz.twooter.media.presentation.MediaController;
 import xyz.twooter.post.application.PostService;
+import xyz.twooter.post.application.TimelineService;
 import xyz.twooter.post.presentation.PostController;
+import xyz.twooter.post.presentation.TimelineController;
 
 @WebMvcTest(controllers = {
 	// TODO 사용할 컨트롤러
 	AuthController.class,
 	PostController.class,
-	MediaController.class
+	MediaController.class,
+	TimelineController.class
 })
 @Import(TestSecurityConfiguration.class)
 public abstract class ControllerTestSupport {
@@ -36,6 +39,9 @@ public abstract class ControllerTestSupport {
 
 	@MockitoBean
 	protected PostService postService;
+
+	@MockitoBean
+	protected TimelineService timelineService;
 
 	@MockitoBean
 	protected MediaService mediaService;
