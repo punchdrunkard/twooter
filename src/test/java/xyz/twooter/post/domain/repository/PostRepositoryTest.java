@@ -52,6 +52,31 @@ class PostRepositoryTest extends IntegrationTestSupport {
 		@DisplayName("기본 조회 시")
 		class WhenBasicQuery {
 
+			@DisplayName("로그인 하지 않은 경우에도 조회할 수 있다.")
+			@Test
+			void shouldGetTimelineWhenViewerDoesNotLogin() {
+				// given
+				Post post1 = createPost(targetUser, "첫 번째 포스트", baseTime.minusHours(1));
+				Post post2 = createPost(targetUser, "두 번째 포스트", baseTime.minusHours(2));
+				Post post3 = createPost(otherUser, "다른 유저 포스트", baseTime.minusHours(3));
+
+				entityManager.flush();
+				entityManager.clear();
+
+				// when
+				List<TimelineItemProjection> result = postRepository.findUserTimelineWithPagination(
+					targetUser.getId(), null, null, null, 10);
+
+				// then
+				assertThat(result).hasSize(2);
+				assertThat(result.get(0).getType()).isEqualTo("post");
+				assertThat(result.get(0).getOriginalPostContent()).isEqualTo("첫 번째 포스트");
+				assertThat(result.get(1).getOriginalPostContent()).isEqualTo("두 번째 포스트");
+
+				// 시간순 정렬 확인
+				assertThat(result.get(0).getFeedCreatedAt()).isAfter(result.get(1).getFeedCreatedAt());
+			}
+
 			@Test
 			@DisplayName("리포스트가 없을 때 유저 포스트만 반환한다")
 			void shouldReturnUserPostsOnlyWhenNoRepostsExist() {
