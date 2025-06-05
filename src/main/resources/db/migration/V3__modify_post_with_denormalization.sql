@@ -1,7 +1,6 @@
 -- 1. post 테이블 구조 변경
 
 -- repost_of_id 컬럼 추가 (리포스트 기능용)
--- AFTER 절은 H2 MySQL 모드에서도 지원하지 않으므로 제거
 ALTER TABLE post
     ADD COLUMN repost_of_id BIGINT NULL COMMENT '리포스트인 경우 원본 포스트 ID';
 
@@ -16,10 +15,7 @@ ALTER TABLE post
 DROP TABLE IF EXISTS repost;
 
 -- 3. follow 테이블 네이밍 변경
--- 기존 인덱스 삭제
-DROP INDEX IF EXISTS uk_follows_following_followed;
-
--- H2 방식의 테이블명 변경
+ALTER TABLE follows DROP INDEX uk_follows_following_followed;
 ALTER TABLE follows RENAME TO follow;
 
 -- 4. 컬럼명 변경
