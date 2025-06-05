@@ -3,6 +3,7 @@ package xyz.twooter.common.error;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import jakarta.validation.ConstraintViolationException;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -42,5 +43,9 @@ public class ErrorResponse {
 			String.format("'%s' 필드의 값 '%s'의 타입이 올바르지 않습니다.",
 				e.getName(),
 				e.getValue() == null ? "" : e.getValue().toString()));
+	}
+
+	public static ErrorResponse of(ConstraintViolationException e) {
+		return new ErrorResponse(ErrorCode.INVALID_TYPE_VALUE, e.getMessage());
 	}
 }

@@ -17,6 +17,8 @@ public enum ErrorCode {
 	HANDLE_ACCESS_DENIED(403, "C006", "접근이 거부되었습니다"),
 	MESSAGE_NOT_READABLE(400, "C007", "요청 메시지를 처리할 수 없습니다"),
 	MISSING_PARAMETER(400, "C008", "필수 파라미터가 누락되었습니다"),
+	INVALID_CURSOR(400, "C009", "유효하지 않은 커서 입니다."),
+
 	/**
 	 * Domain
 	 */
