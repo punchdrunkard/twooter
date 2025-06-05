@@ -1,6 +1,8 @@
 package xyz.twooter.media.application;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -42,8 +44,9 @@ public class MediaService {
 	}
 
 	public List<MediaSimpleResponse> getMediaListFromId(List<Long> mediaIds) {
-		if (mediaIds.isEmpty())
+		if (mediaIds.isEmpty()) {
 			return List.of();
+		}
 
 		List<Media> mediaList = mediaRepository.findAllByIdIn(mediaIds);
 		if (mediaList.size() != mediaIds.size()) {
@@ -53,6 +56,15 @@ public class MediaService {
 		return mediaList.stream()
 			.map(MediaSimpleResponse::of)
 			.toList();
+	}
+	public Map<Long, List<MediaEntity>> getMediaByPostIds(List<Long> postIds) {
+		Map<Long, List<MediaEntity>> result = new HashMap<>();
+
+		for (Long postId : postIds) {
+			result.put(postId, getMediaByPostId(postId));
+		}
+
+		return result;
 	}
 
 	public SignedUrlResponse generateUploadUrl(String filename, String contentType) {
