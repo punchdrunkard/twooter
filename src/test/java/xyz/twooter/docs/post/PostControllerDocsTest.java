@@ -103,9 +103,7 @@ class PostControllerDocsTest extends RestDocsSupport {
 
 		// when & then
 		mockMvc.perform(
-				get("/api/posts")
-					.param("postId", String.valueOf(postId))
-			)
+				get("/api/posts/{postId}", postId))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.content").value(response.getContent()))
 			.andExpect(jsonPath("$.likeCount").value(response.getLikeCount()))

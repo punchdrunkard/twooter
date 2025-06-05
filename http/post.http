@@ -13,5 +13,3 @@ Authorization: Bearer {access-token}
 
 ### 포스트 조회
 GET http://localhost:8080/api/posts/1
-
-
