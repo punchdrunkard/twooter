@@ -93,13 +93,13 @@ public class PostService {
 	}
 
 	private void savePostMediaMappings(Post post, List<Long> mediaIds) {
-		if (mediaIds.isEmpty())
+		if (mediaIds.isEmpty()) {
 			return;
+		}
 
 		List<PostMedia> mappings = mediaIds.stream()
 			.map(mediaId -> new PostMedia(post.getId(), mediaId))
 			.toList();
 		postMediaRepository.saveAll(mappings);
 	}
-
 }
