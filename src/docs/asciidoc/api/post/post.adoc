@@ -17,7 +17,7 @@ include::{snippets}/post-create/response-fields.adoc[]
 ==== HTTP Request
 
 include::{snippets}/post-get/http-request.adoc[]
-include::{snippets}/post-get/query-parameters.adoc[]
+include::{snippets}/post-get/path-parameters.adoc[]
 
 ==== HTTP Response
 

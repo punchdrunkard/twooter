@@ -111,7 +111,7 @@ class PostControllerDocsTest extends RestDocsSupport {
 			.andDo(document("post-get",
 				preprocessRequest(prettyPrint()),
 				preprocessResponse(prettyPrint()),
-				queryParameters(
+				pathParameters(
 					parameterWithName("postId").description("조회할 포스트 ID")
 				),
 				responseFields(
