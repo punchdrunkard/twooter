@@ -135,7 +135,7 @@ class TimelineControllerTest extends ControllerTestSupport {
 	class GetUserTimelineTests {
 		@Test
 		@DisplayName("성공 - 첫 페이지 조회 (cursor 없음)")
-		void shouldGetMyTimelineFirstPage() throws Exception {
+		void shouldGetUserTimelineFirstPage() throws Exception {
 			TimelineResponse response = createTimelineResponseWithNextCursor();
 
 			given(timelineService.getTimelineByHandle(isNull(), anyInt(), any(), any())).willReturn(response);
