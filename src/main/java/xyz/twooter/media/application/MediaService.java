@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,14 +58,15 @@ public class MediaService {
 			.map(MediaSimpleResponse::of)
 			.toList();
 	}
-	public Map<Long, List<MediaEntity>> getMediaByPostIds(List<Long> postIds) {
-		Map<Long, List<MediaEntity>> result = new HashMap<>();
 
-		for (Long postId : postIds) {
-			result.put(postId, getMediaByPostId(postId));
+	public Map<Long, List<MediaEntity>> getMediaByPostIds(List<Long> postIds) {
+		if (postIds.isEmpty()) {
+			return new HashMap<>();
 		}
 
-		return result;
+		return mediaRepository.findMediaByPostIds(postIds).stream()
+			.map(MediaEntity::fromEntity)
+			.collect(Collectors.groupingBy(MediaEntity::getId));
 	}
 
 	public SignedUrlResponse generateUploadUrl(String filename, String contentType) {

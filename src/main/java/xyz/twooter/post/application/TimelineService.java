@@ -119,7 +119,7 @@ public class TimelineService {
 			.viewCount(projection.getViewCount())
 			.mediaEntities(mediaEntities)
 			.createdAt(projection.getOriginalPostCreatedAt())
-			.isDeleted(false)
+			.isDeleted(projection.getIsDeleted())
 			.build();
 
 		return TimelineItemResponse.builder()

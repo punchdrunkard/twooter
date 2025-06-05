@@ -12,4 +12,7 @@ public interface MediaRepository extends JpaRepository<Media, Long> {
 
 	@Query("SELECT m FROM Media m JOIN PostMedia pm ON m.id = pm.mediaId WHERE pm.postId = :postId")
 	List<Media> findMediaByPostId(Long postId);
+
+	@Query("SELECT m FROM Media m JOIN PostMedia pm ON m.id = pm.mediaId WHERE pm.postId IN :postIds")
+	List<Media> findMediaByPostIds(List<Long> postIds);
 }
