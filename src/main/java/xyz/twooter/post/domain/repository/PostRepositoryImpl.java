@@ -19,6 +19,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import xyz.twooter.member.domain.QMember;
 import xyz.twooter.post.domain.QPost;
+import xyz.twooter.post.domain.QPostLike;
 import xyz.twooter.post.presentation.dto.projection.TimelineItemProjection;
 
 @RequiredArgsConstructor
@@ -26,9 +27,9 @@ public class PostRepositoryImpl implements PostCustomRepository {
 
 	private final JPAQueryFactory queryFactory;
 
-	private final QPost originalPost = new QPost("originalPost");
-	private final QPost repost = new QPost("repost");
-	private final QMember author = new QMember("author");
+	private static final QPost originalPost = new QPost("originalPost");
+
+	private static final QMember author = new QMember("author");
 
 	@Override
 	public List<TimelineItemProjection> findUserTimelineWithPagination(
@@ -39,6 +40,8 @@ public class PostRepositoryImpl implements PostCustomRepository {
 		int limit) {
 
 		QMember originalAuthor = new QMember("originalAuthor");
+		QPostLike viewerLike = new QPostLike("viewerLike");
+		QPost viewerRepost = new QPost("viewerRepost");
 
 		return queryFactory
 			.select(Projections.constructor(TimelineItemProjection.class,
@@ -47,16 +50,16 @@ public class PostRepositoryImpl implements PostCustomRepository {
 					.when(post.repostOfId.isNotNull()).then("repost")
 					.otherwise("post"),
 
-				// createdAt: 타임라인 정렬 기준 (포스트 작성 시간 or 리포스트 시간)
+				// createdAt: 타임라인 정렬 기준
 				post.createdAt,
 
-				// postId: 실제 표시할 포스트 ID (원본 포스트 ID 우선)
+				// postId: 실제 표시할 포스트 ID
 				post.repostOfId.coalesce(post.id),
 
-				// content: 실제 표시할 컨텐츠 (원본 컨텐츠 우선)
+				// content: 실제 표시할 컨텐츠
 				originalPost.content.coalesce(post.content),
 
-				// author: 실제 포스트 작성자 (원본 작성자 우선)
+				// author: 실제 포스트 작성자
 				originalAuthor.handle.coalesce(author.handle),
 				originalAuthor.nickname.coalesce(author.nickname),
 				originalAuthor.avatarPath.coalesce(author.avatarPath),
@@ -66,17 +69,16 @@ public class PostRepositoryImpl implements PostCustomRepository {
 				originalPost.repostCount.coalesce(post.repostCount),
 				originalPost.viewCount.coalesce(post.viewCount),
 
-				// 뷰어 기준 상태: 원본 포스트 기준으로 판단
-				isLikedByViewer(post.repostOfId.coalesce(post.id), viewerId),
-				isRepostedByViewer(post.repostOfId.coalesce(post.id), viewerId),
+				viewerLike.id.isNotNull(),
+				viewerRepost.id.isNotNull(),
 
-				// 삭제 여부: 원본 포스트 기준
+				// 삭제 여부
 				originalPost.isDeleted.coalesce(post.isDeleted),
 
 				// 원본 포스트 작성 시간
 				originalPost.createdAt.coalesce(post.createdAt),
 
-				// 리포스터 정보 (리포스트인 경우만)
+				// 리포스터 정보
 				new CaseBuilder()
 					.when(post.repostOfId.isNotNull()).then(author.handle)
 					.otherwise((String)null),
@@ -91,17 +93,20 @@ public class PostRepositoryImpl implements PostCustomRepository {
 			.join(author).on(post.authorId.eq(author.id))
 			.leftJoin(originalPost).on(post.repostOfId.eq(originalPost.id))
 			.leftJoin(originalAuthor).on(originalPost.authorId.eq(originalAuthor.id))
+			.leftJoin(viewerLike)
+			.on(viewerLike.postId.eq(post.repostOfId.coalesce(post.id))
+				.and(viewerId != null ? viewerLike.memberId.eq(viewerId) : null))
+			.leftJoin(viewerRepost)
+			.on(viewerRepost.repostOfId.eq(post.repostOfId.coalesce(post.id))
+				.and(viewerId != null ? viewerRepost.authorId.eq(viewerId) : null)
+				.and(viewerRepost.isDeleted.isFalse()))
 			.where(
 				post.authorId.eq(targetUserId),
 				post.isDeleted.isFalse(),
-				// 리포스트인 경우 원본이 삭제되지 않았는지 확인
 				originalPost.isDeleted.isFalse().or(originalPost.id.isNull()),
 				applyPaginationCondition(post.createdAt, post.id, cursorCreatedAt, cursorId)
 			)
-			.orderBy(
-				post.createdAt.desc(),
-				post.id.desc()
-			)
+			.orderBy(post.createdAt.desc(), post.id.desc())
 			.limit(limit + 1)
 			.fetch();
 	}
@@ -118,36 +123,5 @@ public class PostRepositoryImpl implements PostCustomRepository {
 
 		return createdAt.lt(beforeTimestamp)
 			.or(createdAt.eq(beforeTimestamp).and(id.lt(beforeId)));
-	}
-
-	private BooleanExpression isLikedByViewer(NumberExpression<Long> postId, Long viewerId) {
-		if (viewerId == null) {
-			return Expressions.asBoolean(false);
-		}
-
-		return JPAExpressions
-			.selectOne()
-			.from(postLike)
-			.where(
-				postLike.postId.eq(postId),
-				postLike.memberId.eq(viewerId)
-			)
-			.exists();
-	}
-
-	private BooleanExpression isRepostedByViewer(NumberExpression<Long> postId, Long viewerId) {
-		if (viewerId == null) {
-			return Expressions.asBoolean(false);
-		}
-
-		return JPAExpressions
-			.selectOne()
-			.from(repost)
-			.where(
-				repost.repostOfId.eq(postId),
-				repost.authorId.eq(viewerId),
-				repost.isDeleted.isFalse()
-			)
-			.exists();
 	}
 }
