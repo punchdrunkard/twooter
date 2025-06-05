@@ -95,11 +95,11 @@ class TimelineControllerTest extends ControllerTestSupport {
 		}
 
 		@Test
-		@DisplayName("실패 - limit이 0 이하일 때")
+		@DisplayName("실패 - limit이 1 미만일 때")
 		void shouldFailWhenLimitIsZeroOrNegative() throws Exception {
 			mockMvc.perform(
 					get("/api/timeline/me")
-						.param("limit", "-1")
+						.param("limit", "0")
 				)
 				.andExpect(status().isBadRequest());
 		}

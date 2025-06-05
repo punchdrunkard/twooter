@@ -26,7 +26,7 @@ public class TimelineController {
 	@GetMapping("/me")
 	public ResponseEntity<TimelineResponse> getMyTimeline(
 		@RequestParam(required = false) String cursor,
-		@RequestParam(required = false, defaultValue = "20") @Min(value = 0, message = "limit은 0 이상이어야 합니다") Integer limit,
+		@RequestParam(required = false, defaultValue = "20") @Min(value = 1, message = "limit은 1 이상이어야 합니다") Integer limit,
 		@CurrentMember Member member
 	) {
 		TimelineResponse response = timelineService.getTimeline(cursor, limit, member, member.getId());
