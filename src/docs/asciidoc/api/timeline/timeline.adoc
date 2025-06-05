@@ -8,6 +8,7 @@
 ==== HTTP Request
 
 include::{snippets}/timeline-get/http-request.adoc[]
+include::{snippets}/timeline-get/request-headers.adoc[]
 include::{snippets}/timeline-get/query-parameters.adoc[]
 
 ==== HTTP Response

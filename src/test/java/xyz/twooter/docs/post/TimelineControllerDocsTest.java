@@ -31,7 +31,7 @@ import xyz.twooter.support.security.WithMockCustomUser;
 @WithMockCustomUser
 class TimelineControllerDocsTest extends RestDocsSupport {
 
-	@DisplayName("타임라인 조회 API")
+	@DisplayName("나의 타임라인 조회 API")
 	@Test
 	void getMyTimeline() throws Exception {
 		// given
@@ -39,11 +39,11 @@ class TimelineControllerDocsTest extends RestDocsSupport {
 		Integer limit = 10;
 		TimelineResponse response = givenTimelineResponse(cursor, limit);
 
-		given(postService.getMyTimeline(any(), any(), any())).willReturn(response);
+		given(timelineService.getTimeline(any(), any(), any(), any())).willReturn(response);
 
 		// when & then
 		mockMvc.perform(
-				get("/api/timeline")
+				get("/api/timeline/me")
 					.param("cursor", cursor)
 					.param("limit", String.valueOf(limit))
 					.header("Authorization",
