@@ -54,7 +54,7 @@ public class SecurityConfiguration {
 			// 경로별 인가 설정
 			.authorizeHttpRequests(auth -> auth
 				.requestMatchers("/h2-console/**", "/api/auth/**", "/docs/**").permitAll()
-				.requestMatchers(HttpMethod.GET, "/api/posts/*").permitAll()
+				.requestMatchers(HttpMethod.GET, "/api/posts/*", "/api/timeline/user/*").permitAll()
 				.anyRequest().authenticated()
 			)
 			.headers(headers -> headers

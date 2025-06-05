@@ -17,6 +17,7 @@ import xyz.twooter.common.infrastructure.pagination.InvalidCursorException;
 import xyz.twooter.media.domain.Media;
 import xyz.twooter.media.domain.repository.MediaRepository;
 import xyz.twooter.member.domain.Member;
+import xyz.twooter.member.domain.exception.MemberNotFoundException;
 import xyz.twooter.member.domain.repository.MemberRepository;
 import xyz.twooter.post.domain.Post;
 import xyz.twooter.post.domain.PostLike;
@@ -747,6 +748,37 @@ class TimelineServiceTest extends IntegrationTestSupport {
 		}
 	}
 
+	@Nested
+	@DisplayName("유저 핸들 기반 타임라인 조회")
+	class GetTimelineByHandle {
+		@DisplayName("성공 - 유저 핸들로 타임라인 조회 (비로그인 시)")
+		@Test
+		void shouldGetTimelineWithValidHandle() {
+			// given
+			Member targetUser = saveTestMember();
+			Post post1 = Post.createPost(targetUser.getId(), "첫 번째 포스트");
+			Post post2 = Post.createPost(targetUser.getId(), "두 번째 포스트");
+			postRepository.saveAll(List.of(post1, post2));
+
+			// when
+			TimelineResponse targetTimeline = timelineService.getTimelineByHandle(null, 10, null,
+				targetUser.getHandle());
+
+			// then
+			assertThat(targetTimeline.getTimeline()).hasSize(2);
+		}
+
+		@DisplayName("실패 - 존재하지 않는 핸들로 조회 시, 에러 발생 ")
+		@Test
+		void shouldReturnErrorWithNotExistedHandle() {
+			// given
+			String nonExistentHandle = "nonexistent";
+			// when // then
+			assertThrows(
+				MemberNotFoundException.class,
+				() -> timelineService.getTimelineByHandle(null, 10, null, nonExistentHandle));
+		}
+	}
 
 	// ===== 헬퍼 메서드 =====
 	private Member saveTestMember(String handle) {

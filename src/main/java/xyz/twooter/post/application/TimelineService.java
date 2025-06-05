@@ -10,7 +10,9 @@ import lombok.RequiredArgsConstructor;
 import xyz.twooter.common.infrastructure.pagination.CursorUtil;
 import xyz.twooter.common.infrastructure.pagination.PaginationMetadata;
 import xyz.twooter.media.application.MediaService;
+import xyz.twooter.member.application.MemberService;
 import xyz.twooter.member.domain.Member;
+import xyz.twooter.member.domain.exception.MemberNotFoundException;
 import xyz.twooter.member.presentation.dto.response.MemberBasic;
 import xyz.twooter.post.domain.model.PostType;
 import xyz.twooter.post.domain.repository.PostRepository;
@@ -28,12 +30,13 @@ public class TimelineService {
 	private final PostRepository postRepository;
 
 	private final MediaService mediaService;
+	private final MemberService memberService;
 
 	private final CursorUtil cursorUtil;
 
 	public TimelineResponse getTimeline(String cursor, Integer limit, Member currentMember, Long targetMemberId) {
 
-		Long memberId = currentMember.getId();
+		Long memberId = currentMember == null ? null : currentMember.getId();
 
 		// 커서 디코딩 (null 가능)
 		CursorUtil.Cursor decodedCursor = extractCursor(cursor);
@@ -50,6 +53,12 @@ public class TimelineService {
 		);
 
 		return buildTimelineResponse(timelineItems, limit);
+	}
+
+	public TimelineResponse getTimelineByHandle(String cursor, Integer limit, Member currentMember,
+		String targetMemberHandle) {
+		Long targetMemberId = memberService.getMemberIdByHandle(targetMemberHandle);
+		return getTimeline(cursor, limit, currentMember, targetMemberId);
 	}
 
 	private boolean isCursorNotNull(CursorUtil.Cursor decodedCursor) {
