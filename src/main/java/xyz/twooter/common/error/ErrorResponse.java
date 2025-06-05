@@ -46,6 +46,6 @@ public class ErrorResponse {
 	}
 
 	public static ErrorResponse of(ConstraintViolationException e) {
-		return new ErrorResponse(ErrorCode.INVALID_TYPE_VALUE, e.getMessage());
+		return new ErrorResponse(ErrorCode.INVALID_INPUT_VALUE, e.getMessage());
 	}
 }
