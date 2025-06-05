@@ -4,6 +4,7 @@
 ==== HTTP Request
 
 include::{snippets}/post-create/http-request.adoc[]
+include::{snippets}/post-create/request-headers.adoc[]
 include::{snippets}/post-create/request-fields.adoc[]
 
 ==== HTTP Response

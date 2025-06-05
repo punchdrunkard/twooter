@@ -52,6 +52,8 @@ class PostControllerDocsTest extends RestDocsSupport {
 		mockMvc.perform(
 				post("/api/posts")
 					.content(objectMapper.writeValueAsString(request))
+					.header("Authorization",
+						"Bearer eyJhbGciOiJIUzI1NiJ9.eyJoYW5kbGUiOiJ0d29vdGVyXzEyMyIsInRva2VuVHlwZSI6IkFDQ0VTUyIsImlhdCI6MTcxMjMyMzIzMiwiZXhwIjoxNzEyMzI1MDMyfQ.exampleToken")
 					.contentType(MediaType.APPLICATION_JSON)
 			)
 			.andExpect(status().isCreated())
@@ -61,6 +63,9 @@ class PostControllerDocsTest extends RestDocsSupport {
 			.andDo(document("post-create",
 				preprocessRequest(prettyPrint()),
 				preprocessResponse(prettyPrint()),
+				requestHeaders(
+					headerWithName("Authorization").description("액세스 토큰 (Bearer 타입)")
+				),
 				requestFields(
 					fieldWithPath("content").type(JsonFieldType.STRING)
 						.description("포스트 내용 (미디어가 없는 경우 필수, 최대 500자)"),
