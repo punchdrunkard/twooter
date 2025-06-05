@@ -14,6 +14,7 @@ import xyz.twooter.common.storage.StorageService;
 import xyz.twooter.media.domain.Media;
 import xyz.twooter.media.domain.exception.InvalidMediaException;
 import xyz.twooter.media.domain.repository.MediaRepository;
+import xyz.twooter.media.presentation.dto.MediaWithPostId;
 import xyz.twooter.media.presentation.dto.request.SignedUrlResponse;
 import xyz.twooter.media.presentation.dto.response.MediaSimpleResponse;
 import xyz.twooter.post.presentation.dto.response.MediaEntity;
@@ -60,13 +61,18 @@ public class MediaService {
 	}
 
 	public Map<Long, List<MediaEntity>> getMediaByPostIds(List<Long> postIds) {
-		if (postIds.isEmpty()) {
+		if (postIds == null || postIds.isEmpty()) {
 			return new HashMap<>();
 		}
 
-		return mediaRepository.findMediaByPostIds(postIds).stream()
-			.map(MediaEntity::fromEntity)
-			.collect(Collectors.groupingBy(MediaEntity::getId));
+		return mediaRepository.findMediaWithPostIdsByPostIds(postIds).stream()
+			.collect(Collectors.groupingBy(
+				MediaWithPostId::getPostId,
+				Collectors.mapping(
+					MediaWithPostId::toMediaEntity,
+					Collectors.toList()
+				)
+			));
 	}
 
 	public SignedUrlResponse generateUploadUrl(String filename, String contentType) {
