@@ -1,4 +1,9 @@
 ### 내 타임라인 조회
 
-GET http://localhost:8080/api/timeline/me?limit={limite}&cursor={cursor}
+GET http://localhost:8080/api/timeline/me?limit={{limit}}&cursor={{cursor}}
 Authorization: Bearer {access-token}
+
+### 특정 유저의 타임라인 조회
+
+GET http://localhost:8080/api/timeline/user/{{userHandle}}
+

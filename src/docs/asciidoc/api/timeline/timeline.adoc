@@ -16,3 +16,16 @@ include::{snippets}/timeline-get/query-parameters.adoc[]
 include::{snippets}/timeline-get/http-response.adoc[]
 include::{snippets}/timeline-get/response-fields.adoc[]
 
+
+=== 특정 유저의 타임라인 조회
+특정 유저의 타임라인을 조회한다.
+타임라인은 해당 유저의 포스트 + 해당 유저의 리포스트 로 구성된다.
+
+==== HTTP Request
+
+include::{snippets}/timeline-user-get/http-request.adoc[]
+include::{snippets}/timeline-user-get/path-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/timeline-user-get/http-response.adoc[]
+include::{snippets}/timeline-user-get/response-fields.adoc[]

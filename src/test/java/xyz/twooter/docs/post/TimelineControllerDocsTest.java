@@ -37,7 +37,7 @@ class TimelineControllerDocsTest extends RestDocsSupport {
 		// given
 		String cursor = "dXNlcjpVMDYxTkZUVDI=";
 		Integer limit = 10;
-		TimelineResponse response = givenTimelineResponse(cursor, limit);
+		TimelineResponse response = givenTimelineResponse();
 
 		given(timelineService.getTimeline(any(), any(), any(), any())).willReturn(response);
 
@@ -58,6 +58,50 @@ class TimelineControllerDocsTest extends RestDocsSupport {
 				preprocessResponse(prettyPrint()),
 				requestHeaders(
 					headerWithName("Authorization").description("액세스 토큰 (Bearer 타입)")
+				),
+				queryParameters(
+					parameterWithName("cursor").optional()
+						.description("이전 요청의 response 메타 데이터가 반환한 next_cursor 의 속성 (아무 값이 없을 경우 컬렉션이 첫 번째 페이지를 가져옴)"),
+					parameterWithName("limit").optional().description("페이지당 반환될 아이템 수 (기본값: 20)")
+				),
+				responseFields(
+					fieldWithPath("timeline").type(JsonFieldType.ARRAY).description("타임라인 아이템 목록"),
+					fieldWithPath("metadata").type(JsonFieldType.OBJECT).description("페이지네이션 메타데이터")
+				)
+					.andWithPrefix("timeline[].", timelineItemFields())
+					.andWithPrefix("timeline[].post.", postResponseFields())
+					.andWithPrefix("timeline[].post.author.", memberBasicFields())
+					.andWithPrefix("timeline[].post.mediaEntities[].", mediaEntityFields())
+					.andWithPrefix("timeline[].repostBy.", memberBasicFields()) // repostBy는 repost 타입일 때만 존재
+					.andWithPrefix("metadata.", paginationMetadataFields())
+			));
+	}
+
+	@DisplayName("특정 유저의 타임라인 조회 API")
+	@Test
+	void getUserTimeline() throws Exception {
+		// given
+		String cursor = "dXNlcjpVMDYxTkZUVDI=";
+		Integer limit = 10;
+		TimelineResponse response = givenTimelineResponse();
+
+		given(timelineService.getTimelineByHandle(any(), any(), any(), any())).willReturn(response);
+
+		// when & then
+		mockMvc.perform(
+				get("/api/timeline/user/{userHandle}", "table_cleaner")
+					.param("cursor", cursor)
+					.param("limit", String.valueOf(limit))
+					.contentType(MediaType.APPLICATION_JSON)
+			)
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.timeline").isArray())
+			.andExpect(jsonPath("$.metadata").exists())
+			.andDo(document("timeline-user-get",
+				preprocessRequest(prettyPrint()),
+				preprocessResponse(prettyPrint()),
+				pathParameters(
+					parameterWithName("userHandle").description("조회 대상 유저의 handle")
 				),
 				queryParameters(
 					parameterWithName("cursor").optional()
@@ -128,14 +172,14 @@ class TimelineControllerDocsTest extends RestDocsSupport {
 	}
 
 	// === 응답 객체 생성 메서드 ===
-	private TimelineResponse givenTimelineResponse(String cursor, Integer limit) {
+	private TimelineResponse givenTimelineResponse() {
 		MemberBasic author1 = MemberBasic.builder()
 			.handle("table_cleaner")
 			.nickname("테이블 청소 마스터")
 			.avatarPath("https://cdn.twooter.xyz/media/avatar1")
 			.build();
 
-		MemberBasic author2= MemberBasic.builder()
+		MemberBasic author2 = MemberBasic.builder()
 			.handle("table_specialist")
 			.nickname("친절한 책상 정리 전문가")
 			.avatarPath("https://cdn.twooter.xyz/media/avatar2")
