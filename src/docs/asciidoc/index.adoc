@@ -15,10 +15,16 @@ endif::[]
 
 include::api/auth/auth.adoc[]
 
+[[Timelie-API]]
+== Timeline API
+
+include::api/timeline/timeline.adoc[]
+
 [[Post-API]]
 == Post API
 
 include::api/post/post.adoc[]
+
 
 [[Media-API]]
 == Media API

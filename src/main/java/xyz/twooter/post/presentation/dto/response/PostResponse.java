@@ -1,6 +1,7 @@
 package xyz.twooter.post.presentation.dto.response;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
@@ -22,7 +23,8 @@ public class PostResponse {
 	private long repostCount;
 	private boolean isReposted;
 	private long viewCount;
-	private List<MediaEntity> mediaEntities;
+	@Builder.Default
+	private List<MediaEntity> mediaEntities = new ArrayList<>();
 	private LocalDateTime createdAt;
 	private boolean isDeleted;
 

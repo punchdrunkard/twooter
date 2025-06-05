@@ -2,6 +2,7 @@ package xyz.twooter.configuration;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -53,6 +54,7 @@ public class SecurityConfiguration {
 			// 경로별 인가 설정
 			.authorizeHttpRequests(auth -> auth
 				.requestMatchers("/h2-console/**", "/api/auth/**", "/docs/**").permitAll()
+				.requestMatchers(HttpMethod.GET, "/api/posts/*").permitAll()
 				.anyRequest().authenticated()
 			)
 			.headers(headers -> headers

@@ -10,7 +10,7 @@ import org.springframework.data.repository.query.Param;
 import xyz.twooter.post.domain.Post;
 import xyz.twooter.post.presentation.dto.projection.PostDetailProjection;
 
-public interface PostRepository extends JpaRepository<Post, Long> {
+public interface PostRepository extends JpaRepository<Post, Long>, PostCustomRepository {
 
 	@Query("""
 		SELECT new xyz.twooter.post.presentation.dto.projection.PostDetailProjection(
@@ -34,3 +34,4 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 	@Query("UPDATE Post p SET p.viewCount = p.viewCount + 1 WHERE p.id = :postId")
 	void incrementViewCount(@Param("postId") Long postId);
 }
+

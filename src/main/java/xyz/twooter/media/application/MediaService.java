@@ -1,7 +1,10 @@
 package xyz.twooter.media.application;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,6 +14,7 @@ import xyz.twooter.common.storage.StorageService;
 import xyz.twooter.media.domain.Media;
 import xyz.twooter.media.domain.exception.InvalidMediaException;
 import xyz.twooter.media.domain.repository.MediaRepository;
+import xyz.twooter.media.presentation.dto.MediaWithPostId;
 import xyz.twooter.media.presentation.dto.request.SignedUrlResponse;
 import xyz.twooter.media.presentation.dto.response.MediaSimpleResponse;
 import xyz.twooter.post.presentation.dto.response.MediaEntity;
@@ -42,8 +46,9 @@ public class MediaService {
 	}
 
 	public List<MediaSimpleResponse> getMediaListFromId(List<Long> mediaIds) {
-		if (mediaIds.isEmpty())
+		if (mediaIds.isEmpty()) {
 			return List.of();
+		}
 
 		List<Media> mediaList = mediaRepository.findAllByIdIn(mediaIds);
 		if (mediaList.size() != mediaIds.size()) {
@@ -53,6 +58,21 @@ public class MediaService {
 		return mediaList.stream()
 			.map(MediaSimpleResponse::of)
 			.toList();
+	}
+
+	public Map<Long, List<MediaEntity>> getMediaByPostIds(List<Long> postIds) {
+		if (postIds == null || postIds.isEmpty()) {
+			return new HashMap<>();
+		}
+
+		return mediaRepository.findMediaWithPostIdsByPostIds(postIds).stream()
+			.collect(Collectors.groupingBy(
+				MediaWithPostId::getPostId,
+				Collectors.mapping(
+					MediaWithPostId::toMediaEntity,
+					Collectors.toList()
+				)
+			));
 	}
 
 	public SignedUrlResponse generateUploadUrl(String filename, String contentType) {

@@ -1,0 +1,15 @@
+### 포스트 생성
+POST http://localhost:8080/api/posts
+Content-Type: application/json
+Authorization: Bearer {access-token}
+
+{
+  "content": "Hello, world!",
+  "media": [
+    "https://cdn.twooter.xyz/media/101.jpg",
+    "https://cdn.twooter.xyz/media/102.jpg"
+  ]
+}
+
+### 포스트 조회
+GET http://localhost:8080/api/posts/1

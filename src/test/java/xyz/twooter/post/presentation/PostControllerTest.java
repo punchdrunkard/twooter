@@ -135,8 +135,7 @@ class PostControllerTest extends ControllerTestSupport {
 			given(postService.getPost(anyLong(), any())).willReturn(response);
 
 			mockMvc.perform(
-					get("/api/posts")
-						.param("postId", String.valueOf(postId))
+					get("/api/posts/{postId}", postId)
 				)
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.content").value(response.getContent()))
@@ -145,16 +144,9 @@ class PostControllerTest extends ControllerTestSupport {
 		}
 
 		@Test
-		@DisplayName("실패 - postId 파라미터가 없으면 400 응답")
-		void shouldReturn400WhenPostIdMissing() throws Exception {
-			mockMvc.perform(get("/api/posts"))
-				.andExpect(status().isBadRequest());
-		}
-
-		@Test
 		@DisplayName("실패 - postId 파라미터가 숫자가 아니면 400 응답")
 		void shouldReturn400WhenPostIdNotNumber() throws Exception {
-			mockMvc.perform(get("/api/posts").param("postId", "not-a-number"))
+			mockMvc.perform(get("/api/posts/{postId}", "non-numeric"))
 				.andExpect(status().isBadRequest());
 		}
 	}
