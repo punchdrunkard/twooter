@@ -1,19 +1,16 @@
 package xyz.twooter.post.domain.repository;
 
 import static xyz.twooter.post.domain.QPost.*;
-import static xyz.twooter.post.domain.QPostLike.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.querydsl.core.types.ConstructorExpression;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.core.types.dsl.NumberPath;
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.RequiredArgsConstructor;
@@ -28,8 +25,10 @@ public class PostRepositoryImpl implements PostCustomRepository {
 	private final JPAQueryFactory queryFactory;
 
 	private static final QPost originalPost = new QPost("originalPost");
-
+	private static final QPost viewerRepost = new QPost("viewerRepost");
 	private static final QMember author = new QMember("author");
+	private static final QMember originalAuthor = new QMember("originalAuthor");
+	private static final QPostLike viewerLike = new QPostLike("viewerLike");
 
 	@Override
 	public List<TimelineItemProjection> findUserTimelineWithPagination(
@@ -39,56 +38,8 @@ public class PostRepositoryImpl implements PostCustomRepository {
 		Long cursorId,
 		int limit) {
 
-		QMember originalAuthor = new QMember("originalAuthor");
-		QPostLike viewerLike = new QPostLike("viewerLike");
-		QPost viewerRepost = new QPost("viewerRepost");
-
 		return queryFactory
-			.select(Projections.constructor(TimelineItemProjection.class,
-				// type: 리포스트 여부 판단
-				new CaseBuilder()
-					.when(post.repostOfId.isNotNull()).then("repost")
-					.otherwise("post"),
-
-				// createdAt: 타임라인 정렬 기준
-				post.createdAt,
-
-				// postId: 실제 표시할 포스트 ID
-				post.repostOfId.coalesce(post.id),
-
-				// content: 실제 표시할 컨텐츠
-				originalPost.content.coalesce(post.content),
-
-				// author: 실제 포스트 작성자
-				originalAuthor.handle.coalesce(author.handle),
-				originalAuthor.nickname.coalesce(author.nickname),
-				originalAuthor.avatarPath.coalesce(author.avatarPath),
-
-				// 통계: 원본 포스트 기준
-				originalPost.likeCount.coalesce(post.likeCount),
-				originalPost.repostCount.coalesce(post.repostCount),
-				originalPost.viewCount.coalesce(post.viewCount),
-
-				viewerLike.id.isNotNull(),
-				viewerRepost.id.isNotNull(),
-
-				// 삭제 여부
-				originalPost.isDeleted.coalesce(post.isDeleted),
-
-				// 원본 포스트 작성 시간
-				originalPost.createdAt.coalesce(post.createdAt),
-
-				// 리포스터 정보
-				new CaseBuilder()
-					.when(post.repostOfId.isNotNull()).then(author.handle)
-					.otherwise((String)null),
-				new CaseBuilder()
-					.when(post.repostOfId.isNotNull()).then(author.nickname)
-					.otherwise((String)null),
-				new CaseBuilder()
-					.when(post.repostOfId.isNotNull()).then(author.avatarPath)
-					.otherwise((String)null)
-			))
+			.select(createTimelineProjection(originalAuthor, viewerLike, viewerRepost))
 			.from(post)
 			.join(author).on(post.authorId.eq(author.id))
 			.leftJoin(originalPost).on(post.repostOfId.eq(originalPost.id))
@@ -109,6 +60,55 @@ public class PostRepositoryImpl implements PostCustomRepository {
 			.orderBy(post.createdAt.desc(), post.id.desc())
 			.limit(limit + 1)
 			.fetch();
+	}
+
+	private static ConstructorExpression<TimelineItemProjection> createTimelineProjection(QMember originalAuthor,
+		QPostLike viewerLike, QPost viewerRepost) {
+		return Projections.constructor(TimelineItemProjection.class,
+			// type: 리포스트 여부 판단
+			new CaseBuilder()
+				.when(post.repostOfId.isNotNull()).then("repost")
+				.otherwise("post"),
+
+			// createdAt: 타임라인 정렬 기준
+			post.createdAt,
+
+			// postId: 실제 표시할 포스트 ID
+			post.repostOfId.coalesce(post.id),
+
+			// content: 실제 표시할 컨텐츠
+			originalPost.content.coalesce(post.content),
+
+			// author: 실제 포스트 작성자
+			originalAuthor.handle.coalesce(author.handle),
+			originalAuthor.nickname.coalesce(author.nickname),
+			originalAuthor.avatarPath.coalesce(author.avatarPath),
+
+			// 통계: 원본 포스트 기준
+			originalPost.likeCount.coalesce(post.likeCount),
+			originalPost.repostCount.coalesce(post.repostCount),
+			originalPost.viewCount.coalesce(post.viewCount),
+
+			viewerLike.id.isNotNull(),
+			viewerRepost.id.isNotNull(),
+
+			// 삭제 여부
+			originalPost.isDeleted.coalesce(post.isDeleted),
+
+			// 원본 포스트 작성 시간
+			originalPost.createdAt.coalesce(post.createdAt),
+
+			// 리포스터 정보
+			new CaseBuilder()
+				.when(post.repostOfId.isNotNull()).then(author.handle)
+				.otherwise((String)null),
+			new CaseBuilder()
+				.when(post.repostOfId.isNotNull()).then(author.nickname)
+				.otherwise((String)null),
+			new CaseBuilder()
+				.when(post.repostOfId.isNotNull()).then(author.avatarPath)
+				.otherwise((String)null)
+		);
 	}
 
 	private BooleanExpression applyPaginationCondition(
