@@ -31,7 +31,7 @@ public class CursorUtil {
 		}
 	}
 
-	public String encode(Cursor cursor) {
+	public static String encode(Cursor cursor) {
 		if (cursor == null || !cursor.isValid()) {
 			throw new InvalidCursorException();
 		}
