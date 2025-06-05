@@ -3,6 +3,7 @@ package xyz.twooter.post.presentation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,9 +28,21 @@ public class TimelineController {
 	public ResponseEntity<TimelineResponse> getMyTimeline(
 		@RequestParam(required = false) String cursor,
 		@RequestParam(required = false, defaultValue = "20") @Min(value = 1, message = "limit은 1 이상이어야 합니다") Integer limit,
-		@CurrentMember Member member
+		@CurrentMember Member currentMember
 	) {
-		TimelineResponse response = timelineService.getTimeline(cursor, limit, member, member.getId());
+		TimelineResponse response = timelineService.getTimeline(cursor, limit, currentMember, currentMember.getId());
+		return ResponseEntity.ok(response);
+	}
+
+	// 특정 유저의 타임라인 (유저의 포스트 + 리포스트)를 가져온다.
+	@GetMapping("/user/{userHandle}")
+	public ResponseEntity<TimelineResponse> getUserTimeline(
+		@RequestParam(required = false) String cursor,
+		@RequestParam(required = false, defaultValue = "20") @Min(value = 1, message = "limit은 1 이상이어야 합니다") Integer limit,
+		@CurrentMember Member member,
+		@PathVariable String userHandle
+	) {
+		TimelineResponse response = timelineService.getTimelineByHandle(cursor, limit, member, userHandle);
 		return ResponseEntity.ok(response);
 	}
 }

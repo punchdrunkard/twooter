@@ -130,6 +130,28 @@ class TimelineControllerTest extends ControllerTestSupport {
 		}
 	}
 
+	@Nested
+	@DisplayName("특정 유저 타임라인 조회 API")
+	class GetUserTimelineTests {
+		@Test
+		@DisplayName("성공 - 첫 페이지 조회 (cursor 없음)")
+		void shouldGetMyTimelineFirstPage() throws Exception {
+			TimelineResponse response = createTimelineResponseWithNextCursor();
+
+			given(timelineService.getTimelineByHandle(isNull(), anyInt(), any(), any())).willReturn(response);
+
+			mockMvc.perform(
+					get("/api/timeline/user/{userHandle}", "table_cleaner")
+						.param("limit", "20")
+				)
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.timeline").isArray())
+				.andExpect(jsonPath("$.timeline").isNotEmpty())
+				.andExpect(jsonPath("$.metadata.hasNext").value(response.getMetadata().isHasNext()))
+				.andExpect(jsonPath("$.metadata.nextCursor").value(response.getMetadata().getNextCursor()));
+		}
+	}
+
 	// === 헬퍼 메서드 ===
 
 	private TimelineResponse createTimelineResponseWithNextCursor() {
