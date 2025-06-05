@@ -27,9 +27,15 @@ public class MemberService {
 	@Transactional
 	public MemberSummaryResponse createMember(SignUpRequest request) {
 		checkDuplicateEmail(request.getEmail());
-		Member member = Member.createDefaultMember(request.getEmail(), bCryptPasswordEncoder.encode(request.getPassword()), request.getHandle());
+		Member member = Member.createDefaultMember(request.getEmail(),
+			bCryptPasswordEncoder.encode(request.getPassword()), request.getHandle());
 		memberRepository.save(member);
 		return MemberSummaryResponse.of(member);
+	}
+
+	public Long getMemberIdByHandle(String handle) {
+		return memberRepository.findMemberIdByHandle(handle)
+			.orElseThrow(MemberNotFoundException::new);
 	}
 
 	public MemberBasic getMemberBasic(Long memberId) {
