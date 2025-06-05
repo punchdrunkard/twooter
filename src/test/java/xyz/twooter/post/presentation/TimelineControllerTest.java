@@ -39,7 +39,7 @@ class TimelineControllerTest extends ControllerTestSupport {
 			given(timelineService.getTimeline(isNull(), anyInt(), any(), any())).willReturn(response);
 
 			mockMvc.perform(
-					get("/api/timeline")
+					get("/api/timeline/me")
 						.param("limit", "20")
 				)
 				.andExpect(status().isOk())
@@ -57,7 +57,7 @@ class TimelineControllerTest extends ControllerTestSupport {
 			given(timelineService.getTimeline(eq(VALID_CURSOR), anyInt(), any(), any())).willReturn(response);
 
 			mockMvc.perform(
-					get("/api/timeline")
+					get("/api/timeline/me")
 						.param("cursor", VALID_CURSOR)
 						.param("limit", "20")
 				)
@@ -74,7 +74,7 @@ class TimelineControllerTest extends ControllerTestSupport {
 
 			given(timelineService.getTimeline(isNull(), eq(20), any(), any())).willReturn(response);
 
-			mockMvc.perform(get("/api/timeline"))
+			mockMvc.perform(get("/api/timeline/me"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.timeline").isArray())
 				.andExpect(jsonPath("$.metadata").exists());
@@ -87,7 +87,7 @@ class TimelineControllerTest extends ControllerTestSupport {
 
 			given(timelineService.getTimeline(isNull(), anyInt(), any(), any())).willReturn(emptyResponse);
 
-			mockMvc.perform(get("/api/timeline"))
+			mockMvc.perform(get("/api/timeline/me"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.timeline").isArray())
 				.andExpect(jsonPath("$.timeline").isEmpty())
@@ -98,7 +98,7 @@ class TimelineControllerTest extends ControllerTestSupport {
 		@DisplayName("실패 - limit이 0 이하일 때")
 		void shouldFailWhenLimitIsZeroOrNegative() throws Exception {
 			mockMvc.perform(
-					get("/api/timeline")
+					get("/api/timeline/me")
 						.param("limit", "-1")
 				)
 				.andExpect(status().isBadRequest());
@@ -108,7 +108,7 @@ class TimelineControllerTest extends ControllerTestSupport {
 		@DisplayName("실패 - limit이 숫자가 아닐 때")
 		void shouldFailWhenLimitIsNotNumber() throws Exception {
 			mockMvc.perform(
-					get("/api/timeline")
+					get("/api/timeline/me")
 						.param("limit", "not-a-number")
 				)
 				.andExpect(status().isBadRequest());
@@ -121,7 +121,7 @@ class TimelineControllerTest extends ControllerTestSupport {
 
 			given(timelineService.getTimeline(isNull(), anyInt(), any(), any())).willReturn(response);
 
-			mockMvc.perform(get("/api/timeline"))
+			mockMvc.perform(get("/api/timeline/me"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.timeline").isArray())
 				.andExpect(jsonPath("$.timeline[0].type").value("post"))
