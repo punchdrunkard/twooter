@@ -19,10 +19,10 @@ DROP TABLE IF EXISTS repost;
 -- 기존 인덱스 삭제
 DROP INDEX IF EXISTS uk_follows_following_followed;
 
--- H2 방식의 테이블명 변경 (MySQL 모드에서도 이 구문 사용 필요)
+-- H2 방식의 테이블명 변경
 ALTER TABLE follows RENAME TO follow;
 
--- 4. 컬럼명 변경 (MySQL 방식)
+-- 4. 컬럼명 변경
 ALTER TABLE follow
     CHANGE COLUMN following_member_id follower_id BIGINT NOT NULL COMMENT '팔로우 하는 사용자';
 ALTER TABLE follow
