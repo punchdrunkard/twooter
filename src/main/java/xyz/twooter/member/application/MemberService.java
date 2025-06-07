@@ -38,13 +38,6 @@ public class MemberService {
 			.orElseThrow(MemberNotFoundException::new);
 	}
 
-	public MemberBasic getMemberBasic(Long memberId) {
-		Member member = memberRepository.findById(memberId).orElseThrow(
-			MemberNotFoundException::new
-		);
-		return MemberBasic.of(member);
-	}
-
 	public MemberSummaryResponse createMemberSummary(String handle) {
 		validateMember(handle);
 		Member member = memberRepository.findByHandle(handle).orElseThrow(MemberNotFoundException::new);
@@ -61,12 +54,6 @@ public class MemberService {
 	public void checkDuplicateEmail(String email) {
 		if (memberRepository.existsByEmail(email)) {
 			throw new EmailAlreadyExistsException();
-		}
-	}
-
-	public void validateMember(Long memberId) {
-		if (Objects.isNull(memberId) || !memberRepository.existsById(memberId)) {
-			throw new IllegalMemberIdException();
 		}
 	}
 

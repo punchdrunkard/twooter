@@ -19,8 +19,9 @@ public class MemberSummaryResponse {
 	}
 
 	@Builder
-	public MemberSummaryResponse(String handle, String nickname, String avatarPath, String email) {
+	public MemberSummaryResponse(Long id, String handle, String nickname, String avatarPath, String email) {
 		this.basicInfo = MemberBasic.builder()
+			.id(id)
 			.nickname(nickname)
 			.handle(handle)
 			.avatarPath(avatarPath)
