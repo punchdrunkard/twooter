@@ -39,7 +39,7 @@ class TimelineControllerDocsTest extends RestDocsSupport {
 		Integer limit = 10;
 		TimelineResponse response = givenTimelineResponse();
 
-		given(timelineService.getTimeline(any(), any(), any(), any())).willReturn(response);
+		given(timelineService.getTimelineByUserId(any(), any(), any(), any())).willReturn(response);
 
 		// when & then
 		mockMvc.perform(
@@ -79,17 +79,17 @@ class TimelineControllerDocsTest extends RestDocsSupport {
 
 	@DisplayName("특정 유저의 타임라인 조회 API")
 	@Test
-	void getUserTimeline() throws Exception {
+	void getTimelineByUserId() throws Exception {
 		// given
 		String cursor = "dXNlcjpVMDYxTkZUVDI=";
 		Integer limit = 10;
 		TimelineResponse response = givenTimelineResponse();
 
-		given(timelineService.getTimelineByHandle(any(), any(), any(), any())).willReturn(response);
+		given(timelineService.getTimelineByUserId(any(), any(), any(), any())).willReturn(response);
 
 		// when & then
 		mockMvc.perform(
-				get("/api/timeline/user/{userHandle}", "table_cleaner")
+				get("/api/timeline/user/{userId}", 1L)
 					.param("cursor", cursor)
 					.param("limit", String.valueOf(limit))
 					.contentType(MediaType.APPLICATION_JSON)
@@ -101,7 +101,7 @@ class TimelineControllerDocsTest extends RestDocsSupport {
 				preprocessRequest(prettyPrint()),
 				preprocessResponse(prettyPrint()),
 				pathParameters(
-					parameterWithName("userHandle").description("조회 대상 유저의 handle")
+					parameterWithName("userId").description("조회 대상 유저의 ID")
 				),
 				queryParameters(
 					parameterWithName("cursor").optional()

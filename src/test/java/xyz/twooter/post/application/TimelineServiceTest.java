@@ -17,7 +17,6 @@ import xyz.twooter.common.infrastructure.pagination.InvalidCursorException;
 import xyz.twooter.media.domain.Media;
 import xyz.twooter.media.domain.repository.MediaRepository;
 import xyz.twooter.member.domain.Member;
-import xyz.twooter.member.domain.exception.MemberNotFoundException;
 import xyz.twooter.member.domain.repository.MemberRepository;
 import xyz.twooter.post.domain.Post;
 import xyz.twooter.post.domain.PostLike;
@@ -63,7 +62,7 @@ class TimelineServiceTest extends IntegrationTestSupport {
 			Integer limit = 10;
 
 			// when - targetUser의 타임라인 조회 (포스트 없음)
-			TimelineResponse response = timelineService.getTimeline(cursor, limit, viewer, targetUser.getId());
+			TimelineResponse response = timelineService.getTimelineByUserId(cursor, limit, viewer, targetUser.getId());
 
 			// then
 			assertThat(response.getTimeline()).isEmpty();
@@ -83,7 +82,7 @@ class TimelineServiceTest extends IntegrationTestSupport {
 			postRepository.saveAll(List.of(post1, post2));
 
 			// when - targetUser의 타임라인 조회
-			TimelineResponse response = timelineService.getTimeline(null, 10, viewer, targetUser.getId());
+			TimelineResponse response = timelineService.getTimelineByUserId(null, 10, viewer, targetUser.getId());
 
 			// then
 			assertThat(response.getTimeline()).hasSize(2);
@@ -121,7 +120,7 @@ class TimelineServiceTest extends IntegrationTestSupport {
 			postRepository.saveAll(List.of(repost1, repost2, repost3));
 
 			// when - targetUser의 타임라인 조회
-			TimelineResponse response = timelineService.getTimeline(null, 10, viewer, targetUser.getId());
+			TimelineResponse response = timelineService.getTimelineByUserId(null, 10, viewer, targetUser.getId());
 
 			// then
 			assertThat(response.getTimeline())
@@ -150,7 +149,7 @@ class TimelineServiceTest extends IntegrationTestSupport {
 			updateCreatedAt(olderPost.getId(), TIME_BASE.minusHours(3));
 
 			// when - targetUser의 타임라인 조회
-			TimelineResponse response = timelineService.getTimeline(null, 10, viewer, targetUser.getId());
+			TimelineResponse response = timelineService.getTimelineByUserId(null, 10, viewer, targetUser.getId());
 			List<TimelineItemResponse> timeline = response.getTimeline();
 
 			// then
@@ -180,7 +179,7 @@ class TimelineServiceTest extends IntegrationTestSupport {
 			postRepository.saveAll(List.of(targetRepost, otherRepost));
 
 			// when - targetUser의 타임라인 조회
-			TimelineResponse response = timelineService.getTimeline(null, 10, viewer, targetUser.getId());
+			TimelineResponse response = timelineService.getTimelineByUserId(null, 10, viewer, targetUser.getId());
 			List<TimelineItemResponse> timeline = response.getTimeline();
 
 			// then - targetUser의 포스트와 리포스트만 포함
@@ -225,7 +224,7 @@ class TimelineServiceTest extends IntegrationTestSupport {
 			createPostMediaRelation(savedPost2, List.of(image2, video));
 
 			// when - targetUser의 타임라인 조회
-			TimelineResponse response = timelineService.getTimeline(null, 10, viewer, targetUser.getId());
+			TimelineResponse response = timelineService.getTimelineByUserId(null, 10, viewer, targetUser.getId());
 
 			// then
 			assertThat(response.getTimeline())
@@ -276,7 +275,7 @@ class TimelineServiceTest extends IntegrationTestSupport {
 			postRepository.saveAll(List.of(repost1, repost2));
 
 			// when - targetUser의 타임라인 조회
-			TimelineResponse response = timelineService.getTimeline(null, 10, viewer, targetUser.getId());
+			TimelineResponse response = timelineService.getTimelineByUserId(null, 10, viewer, targetUser.getId());
 
 			// then
 			assertThat(response.getTimeline())
@@ -326,7 +325,7 @@ class TimelineServiceTest extends IntegrationTestSupport {
 			postRepository.save(targetRepost);
 
 			// when - targetUser의 타임라인 조회
-			TimelineResponse response = timelineService.getTimeline(null, 10, viewer, targetUser.getId());
+			TimelineResponse response = timelineService.getTimelineByUserId(null, 10, viewer, targetUser.getId());
 
 			// then
 			assertThat(response.getTimeline()).hasSize(2);
@@ -388,7 +387,7 @@ class TimelineServiceTest extends IntegrationTestSupport {
 			postLikeRepository.save(like);
 
 			// when - viewer가 targetUser의 타임라인 조회
-			TimelineResponse response = timelineService.getTimeline(null, 10, viewer, targetUser.getId());
+			TimelineResponse response = timelineService.getTimelineByUserId(null, 10, viewer, targetUser.getId());
 
 			// then - viewer의 상태가 반영되어야 함
 			assertThat(response.getTimeline())
@@ -410,7 +409,7 @@ class TimelineServiceTest extends IntegrationTestSupport {
 			postRepository.save(myPost);
 
 			// when - 자신의 타임라인 조회 (viewer == targetUser)
-			TimelineResponse response = timelineService.getTimeline(null, 10, member, member.getId());
+			TimelineResponse response = timelineService.getTimelineByUserId(null, 10, member, member.getId());
 
 			// then
 			assertThat(response.getTimeline())
@@ -438,7 +437,7 @@ class TimelineServiceTest extends IntegrationTestSupport {
 			List<Post> posts = createPostsWithTimeGap(targetUser, 5);
 
 			// when - 첫 페이지 조회 (limit: 3)
-			TimelineResponse response = timelineService.getTimeline(null, 3, viewer, targetUser.getId());
+			TimelineResponse response = timelineService.getTimelineByUserId(null, 3, viewer, targetUser.getId());
 
 			// then
 			assertThat(response.getTimeline()).hasSize(3);
@@ -470,11 +469,11 @@ class TimelineServiceTest extends IntegrationTestSupport {
 			List<Post> posts = createPostsWithTimeGap(targetUser, 5);
 
 			// 첫 페이지 조회
-			TimelineResponse firstPage = timelineService.getTimeline(null, 2, viewer, targetUser.getId());
+			TimelineResponse firstPage = timelineService.getTimelineByUserId(null, 2, viewer, targetUser.getId());
 			String nextCursor = firstPage.getMetadata().getNextCursor();
 
 			// when - 커서로 다음 페이지 조회
-			TimelineResponse secondPage = timelineService.getTimeline(nextCursor, 2, viewer, targetUser.getId());
+			TimelineResponse secondPage = timelineService.getTimelineByUserId(nextCursor, 2, viewer, targetUser.getId());
 
 			// then
 			assertThat(secondPage.getTimeline()).hasSize(2);
@@ -508,7 +507,7 @@ class TimelineServiceTest extends IntegrationTestSupport {
 			createPostsWithTimeGap(targetUser, 3);
 
 			// when - limit을 크게 설정하여 모든 포스트 조회
-			TimelineResponse response = timelineService.getTimeline(null, 10, viewer, targetUser.getId());
+			TimelineResponse response = timelineService.getTimelineByUserId(null, 10, viewer, targetUser.getId());
 
 			// then - 마지막 페이지이므로 nextCursor가 null
 			assertThat(response.getTimeline()).hasSize(3);
@@ -527,7 +526,7 @@ class TimelineServiceTest extends IntegrationTestSupport {
 			createPostsWithTimeGap(targetUser, 3);
 
 			// when - limit도 3으로 설정
-			TimelineResponse response = timelineService.getTimeline(null, 3, viewer, targetUser.getId());
+			TimelineResponse response = timelineService.getTimelineByUserId(null, 3, viewer, targetUser.getId());
 
 			// then - 정확히 limit만큼 있으므로 hasNext는 false
 			assertThat(response.getTimeline()).hasSize(3);
@@ -573,7 +572,7 @@ class TimelineServiceTest extends IntegrationTestSupport {
 			createdPosts.add(targetRepost2);
 
 			// when - 첫 페이지 조회 (limit: 2)
-			TimelineResponse firstPage = timelineService.getTimeline(null, 2, viewer, targetUser.getId());
+			TimelineResponse firstPage = timelineService.getTimelineByUserId(null, 2, viewer, targetUser.getId());
 
 			// then - 첫 페이지 검증
 			assertThat(firstPage.getTimeline()).hasSize(2);
@@ -587,7 +586,7 @@ class TimelineServiceTest extends IntegrationTestSupport {
 			assertThat(firstPageTypes).containsExactly("repost", "post");
 
 			// when - 두 번째 페이지 조회
-			TimelineResponse secondPage = timelineService.getTimeline(
+			TimelineResponse secondPage = timelineService.getTimelineByUserId(
 				firstPage.getMetadata().getNextCursor(), 2, viewer, targetUser.getId());
 
 			// then - 두 번째 페이지 검증
@@ -616,7 +615,7 @@ class TimelineServiceTest extends IntegrationTestSupport {
 			// when & then
 			assertThrows(
 				InvalidCursorException.class,
-				() -> timelineService.getTimeline(invalidCursor, 10, viewer, targetUser.getId()));
+				() -> timelineService.getTimelineByUserId(invalidCursor, 10, viewer, targetUser.getId()));
 		}
 
 		@DisplayName("성공 - 빈 커서 처리")
@@ -629,13 +628,13 @@ class TimelineServiceTest extends IntegrationTestSupport {
 			createPostsWithTimeGap(targetUser, 2);
 
 			// when & then - 다양한 빈 커서 케이스
-			TimelineResponse responseWithNull = timelineService.getTimeline(null, 10, viewer, targetUser.getId());
+			TimelineResponse responseWithNull = timelineService.getTimelineByUserId(null, 10, viewer, targetUser.getId());
 			assertThat(responseWithNull.getTimeline()).hasSize(2);
 
-			TimelineResponse responseWithEmpty = timelineService.getTimeline("", 10, viewer, targetUser.getId());
+			TimelineResponse responseWithEmpty = timelineService.getTimelineByUserId("", 10, viewer, targetUser.getId());
 			assertThat(responseWithEmpty.getTimeline()).hasSize(2);
 
-			TimelineResponse responseWithWhitespace = timelineService.getTimeline("   ", 10, viewer,
+			TimelineResponse responseWithWhitespace = timelineService.getTimelineByUserId("   ", 10, viewer,
 				targetUser.getId());
 			assertThat(responseWithWhitespace.getTimeline()).hasSize(2);
 		}
@@ -662,7 +661,7 @@ class TimelineServiceTest extends IntegrationTestSupport {
 			updateCreatedAt(post3.getId(), TIME_BASE);
 
 			// when - 첫 페이지 조회 (limit: 2)
-			TimelineResponse firstPage = timelineService.getTimeline(null, 2, viewer, targetUser.getId());
+			TimelineResponse firstPage = timelineService.getTimelineByUserId(null, 2, viewer, targetUser.getId());
 
 			// then
 			assertThat(firstPage.getTimeline()).hasSize(2);
@@ -676,7 +675,7 @@ class TimelineServiceTest extends IntegrationTestSupport {
 			assertThat(firstPage.getTimeline().get(1).getPost().getMediaEntities()).hasSize(1);
 
 			// when - 두 번째 페이지 조회
-			TimelineResponse secondPage = timelineService.getTimeline(
+			TimelineResponse secondPage = timelineService.getTimelineByUserId(
 				firstPage.getMetadata().getNextCursor(), 2, viewer, targetUser.getId());
 
 			// then
@@ -710,7 +709,7 @@ class TimelineServiceTest extends IntegrationTestSupport {
 			int limit = 10;
 
 			do {
-				TimelineResponse page = timelineService.getTimeline(cursor, limit, viewer, targetUser.getId());
+				TimelineResponse page = timelineService.getTimelineByUserId(cursor, limit, viewer, targetUser.getId());
 
 				page.getTimeline().forEach(item ->
 					retrievedPostIds.add(item.getPost().getId()));
@@ -745,38 +744,6 @@ class TimelineServiceTest extends IntegrationTestSupport {
 			}
 
 			return posts;
-		}
-	}
-
-	@Nested
-	@DisplayName("유저 핸들 기반 타임라인 조회")
-	class GetTimelineByHandle {
-		@DisplayName("성공 - 유저 핸들로 타임라인 조회 (비로그인 시)")
-		@Test
-		void shouldGetTimelineWithValidHandle() {
-			// given
-			Member targetUser = saveTestMember();
-			Post post1 = Post.createPost(targetUser.getId(), "첫 번째 포스트");
-			Post post2 = Post.createPost(targetUser.getId(), "두 번째 포스트");
-			postRepository.saveAll(List.of(post1, post2));
-
-			// when
-			TimelineResponse targetTimeline = timelineService.getTimelineByHandle(null, 10, null,
-				targetUser.getHandle());
-
-			// then
-			assertThat(targetTimeline.getTimeline()).hasSize(2);
-		}
-
-		@DisplayName("실패 - 존재하지 않는 핸들로 조회 시, 에러 발생 ")
-		@Test
-		void shouldReturnErrorWithNotExistedHandle() {
-			// given
-			String nonExistentHandle = "nonexistent";
-			// when // then
-			assertThrows(
-				MemberNotFoundException.class,
-				() -> timelineService.getTimelineByHandle(null, 10, null, nonExistentHandle));
 		}
 	}
 

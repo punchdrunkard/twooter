@@ -30,19 +30,20 @@ public class TimelineController {
 		@RequestParam(required = false, defaultValue = "20") @Min(value = 1, message = "limit은 1 이상이어야 합니다") Integer limit,
 		@CurrentMember Member currentMember
 	) {
-		TimelineResponse response = timelineService.getTimeline(cursor, limit, currentMember, currentMember.getId());
+		TimelineResponse response = timelineService.getTimelineByUserId(cursor, limit, currentMember,
+			currentMember.getId());
 		return ResponseEntity.ok(response);
 	}
 
 	// 특정 유저의 타임라인 (유저의 포스트 + 리포스트)를 가져온다.
-	@GetMapping("/user/{userHandle}")
-	public ResponseEntity<TimelineResponse> getUserTimeline(
+	@GetMapping("/user/{userId}")
+	public ResponseEntity<TimelineResponse> getTimelineByUserId(
 		@RequestParam(required = false) String cursor,
 		@RequestParam(required = false, defaultValue = "20") @Min(value = 1, message = "limit은 1 이상이어야 합니다") Integer limit,
-		@CurrentMember Member member,
-		@PathVariable String userHandle
+		@CurrentMember Member currentMember,
+		@PathVariable Long userId
 	) {
-		TimelineResponse response = timelineService.getTimelineByHandle(cursor, limit, member, userHandle);
+		TimelineResponse response = timelineService.getTimelineByUserId(cursor, limit, currentMember, userId);
 		return ResponseEntity.ok(response);
 	}
 
