@@ -64,9 +64,14 @@ public class PostService {
 		List<MediaEntity> mediaEntities = mediaService.getMediaByPostId(postId);
 
 		return PostResponse.builder()
-			.id(projection.getId())
-			.author(new MemberBasic(projection.getHandle(), projection.getNickname(),
-				projection.getAvatarPath()))
+			.id(projection.getPostId())
+			.author(
+				MemberBasic.builder()
+					.id(projection.getAuthorId())
+					.handle(projection.getAuthorHandle())
+					.nickname(projection.getAuthorNickname())
+					.build()
+			)
 			.content(projection.getContent())
 			.likeCount(projection.getLikeCount())
 			.isLiked(projection.getIsLiked())

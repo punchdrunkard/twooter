@@ -6,12 +6,15 @@ import xyz.twooter.member.domain.Member;
 
 @Getter
 public class MemberBasic {
+
+	private final Long id;
 	private final String handle;
 	private final String nickname;
 	private final String avatarPath;
 
 	@Builder
-	public MemberBasic(String handle, String nickname, String avatarPath) {
+	public MemberBasic(Long id, String handle, String nickname, String avatarPath) {
+		this.id = id;
 		this.handle = handle;
 		this.nickname = nickname;
 		this.avatarPath = avatarPath;
@@ -19,6 +22,7 @@ public class MemberBasic {
 
 	public static MemberBasic of(Member member) {
 		return MemberBasic.builder()
+			.id(member.getId())
 			.handle(member.getHandle())
 			.nickname(member.getNickname())
 			.avatarPath(member.getAvatarPath())

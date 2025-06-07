@@ -39,7 +39,7 @@ class TimelineControllerDocsTest extends RestDocsSupport {
 		Integer limit = 10;
 		TimelineResponse response = givenTimelineResponse();
 
-		given(timelineService.getTimeline(any(), any(), any(), any())).willReturn(response);
+		given(timelineService.getTimelineByUserId(any(), any(), any(), any())).willReturn(response);
 
 		// when & then
 		mockMvc.perform(
@@ -79,17 +79,17 @@ class TimelineControllerDocsTest extends RestDocsSupport {
 
 	@DisplayName("특정 유저의 타임라인 조회 API")
 	@Test
-	void getUserTimeline() throws Exception {
+	void getTimelineByUserId() throws Exception {
 		// given
 		String cursor = "dXNlcjpVMDYxTkZUVDI=";
 		Integer limit = 10;
 		TimelineResponse response = givenTimelineResponse();
 
-		given(timelineService.getTimelineByHandle(any(), any(), any(), any())).willReturn(response);
+		given(timelineService.getTimelineByUserId(any(), any(), any(), any())).willReturn(response);
 
 		// when & then
 		mockMvc.perform(
-				get("/api/timeline/user/{userHandle}", "table_cleaner")
+				get("/api/timeline/user/{userId}", 1L)
 					.param("cursor", cursor)
 					.param("limit", String.valueOf(limit))
 					.contentType(MediaType.APPLICATION_JSON)
@@ -101,7 +101,7 @@ class TimelineControllerDocsTest extends RestDocsSupport {
 				preprocessRequest(prettyPrint()),
 				preprocessResponse(prettyPrint()),
 				pathParameters(
-					parameterWithName("userHandle").description("조회 대상 유저의 handle")
+					parameterWithName("userId").description("조회 대상 유저의 ID")
 				),
 				queryParameters(
 					parameterWithName("cursor").optional()
@@ -124,7 +124,7 @@ class TimelineControllerDocsTest extends RestDocsSupport {
 	@DisplayName("현재 유저의 홈 타임라인 조회 API")
 	@Test
 	void getHomeTimeline() throws Exception {
-	  // given
+		// given
 		String cursor = "dXNlcjpVMDYxTkZUVDI=";
 		Integer limit = 10;
 		TimelineResponse response = givenTimelineResponse();
@@ -197,6 +197,7 @@ class TimelineControllerDocsTest extends RestDocsSupport {
 
 	private List<FieldDescriptor> memberBasicFields() {
 		return List.of(
+			fieldWithPath("id").type(JsonFieldType.NUMBER).description("사용자 고유 ID"),
 			fieldWithPath("handle").type(JsonFieldType.STRING).description("사용자 핸들"),
 			fieldWithPath("nickname").type(JsonFieldType.STRING).description("사용자 닉네임"),
 			fieldWithPath("avatarPath").type(JsonFieldType.STRING).description("사용자 아바타 URL")
@@ -220,12 +221,14 @@ class TimelineControllerDocsTest extends RestDocsSupport {
 	// === 응답 객체 생성 메서드 ===
 	private TimelineResponse givenTimelineResponse() {
 		MemberBasic author1 = MemberBasic.builder()
+			.id(1L)
 			.handle("table_cleaner")
 			.nickname("테이블 청소 마스터")
 			.avatarPath("https://cdn.twooter.xyz/media/avatar1")
 			.build();
 
 		MemberBasic author2 = MemberBasic.builder()
+			.id(2L)
 			.handle("table_specialist")
 			.nickname("친절한 책상 정리 전문가")
 			.avatarPath("https://cdn.twooter.xyz/media/avatar2")

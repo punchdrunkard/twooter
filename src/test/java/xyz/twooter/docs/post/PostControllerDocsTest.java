@@ -33,6 +33,7 @@ import xyz.twooter.support.security.WithMockCustomUser;
 class PostControllerDocsTest extends RestDocsSupport {
 
 	final MemberSummaryResponse TEST_MEMBER_SUMMARY = MemberSummaryResponse.builder()
+		.id(123L)
 		.email("test@test.com")
 		.handle("table_cleaner")
 		.nickname("테이블 청소 마스터")
@@ -146,6 +147,7 @@ class PostControllerDocsTest extends RestDocsSupport {
 	// === 필드 문서화 메서드 ===
 	private List<FieldDescriptor> authorFields() {
 		return List.of(
+			fieldWithPath("id").type(JsonFieldType.NUMBER).description("작성자 고유 ID"),
 			fieldWithPath("email").type(JsonFieldType.STRING).description("작성자 이메일"),
 			fieldWithPath("handle").type(JsonFieldType.STRING).description("작성자 핸들"),
 			fieldWithPath("nickname").type(JsonFieldType.STRING).description("작성자 닉네임"),
@@ -162,6 +164,7 @@ class PostControllerDocsTest extends RestDocsSupport {
 
 	private List<FieldDescriptor> authorEntityFields() {
 		return List.of(
+			fieldWithPath("id").type(JsonFieldType.NUMBER).description("작성자 고유 ID"),
 			fieldWithPath("nickname").type(JsonFieldType.STRING).description("작성자 닉네임"),
 			fieldWithPath("avatarPath").type(JsonFieldType.STRING).description("작성자 아바타 URL"),
 			fieldWithPath("handle").type(JsonFieldType.STRING).description("작성자 핸들")
@@ -207,6 +210,7 @@ class PostControllerDocsTest extends RestDocsSupport {
 
 	private PostResponse givenPostResponse(Long postId) {
 		MemberBasic author = MemberBasic.builder()
+			.id(123L)
 			.nickname("테이블 청소 마스터")
 			.handle("table_cleaner")
 			.avatarPath(

@@ -26,6 +26,8 @@ import xyz.twooter.member.presentation.dto.response.MemberSummaryResponse;
 import xyz.twooter.support.MockTestSupport;
 
 class AuthServiceTest extends MockTestSupport {
+
+	private final Long TEST_ID = 1L;
 	private final String TEST_HANDLE = "testUser";
 	private final String TEST_PASSWORD = "password123";
 	private final String TEST_EMAIL = "test@email.com";
@@ -61,7 +63,7 @@ class AuthServiceTest extends MockTestSupport {
 	void shouldIssueTokensWhenValidCredentialsProvided() {
 		// given
 		SignInRequest request = new SignInRequest(TEST_HANDLE, TEST_PASSWORD);
-		MemberSummaryResponse memberSummaryResponse = new MemberSummaryResponse(TEST_HANDLE, TEST_NICKNAME, TEST_AVATAR_PATH, TEST_EMAIL);
+		MemberSummaryResponse memberSummaryResponse = new MemberSummaryResponse(TEST_ID, TEST_HANDLE, TEST_NICKNAME, TEST_AVATAR_PATH, TEST_EMAIL);
 
 		when(authenticationManagerBuilder.getObject()).thenReturn(authenticationManager);
 		when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))

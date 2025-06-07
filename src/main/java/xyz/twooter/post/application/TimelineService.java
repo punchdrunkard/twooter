@@ -33,7 +33,8 @@ public class TimelineService {
 
 	private final CursorUtil cursorUtil;
 
-	public TimelineResponse getTimeline(String cursor, Integer limit, Member currentMember, Long targetMemberId) {
+	public TimelineResponse getTimelineByUserId(String cursor, Integer limit, Member currentMember,
+		Long targetMemberId) {
 
 		Long memberId = currentMember == null ? null : currentMember.getId();
 
@@ -52,12 +53,6 @@ public class TimelineService {
 		);
 
 		return buildTimelineResponse(timelineItems, limit);
-	}
-
-	public TimelineResponse getTimelineByHandle(String cursor, Integer limit, Member currentMember,
-		String targetMemberHandle) {
-		Long targetMemberId = memberService.getMemberIdByHandle(targetMemberHandle);
-		return getTimeline(cursor, limit, currentMember, targetMemberId);
 	}
 
 	public TimelineResponse getHomeTimeline(String cursor, Integer limit, Member currentMember) {
@@ -135,6 +130,7 @@ public class TimelineService {
 		PostResponse postResponse = PostResponse.builder()
 			.id(projection.getOriginalPostId())
 			.author(new MemberBasic(
+				projection.getOriginalPostAuthorId(),
 				projection.getOriginalPostAuthorHandle(),
 				projection.getOriginalPostAuthorNickname(),
 				projection.getOriginalPostAuthorAvatarPath()

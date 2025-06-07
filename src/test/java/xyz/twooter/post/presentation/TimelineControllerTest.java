@@ -36,7 +36,7 @@ class TimelineControllerTest extends ControllerTestSupport {
 		void shouldGetMyTimelineFirstPage() throws Exception {
 			TimelineResponse response = createTimelineResponseWithNextCursor();
 
-			given(timelineService.getTimeline(isNull(), anyInt(), any(), any())).willReturn(response);
+			given(timelineService.getTimelineByUserId(isNull(), anyInt(), any(), any())).willReturn(response);
 
 			mockMvc.perform(
 					get("/api/timeline/me")
@@ -54,7 +54,7 @@ class TimelineControllerTest extends ControllerTestSupport {
 		void shouldGetMyTimelineWithCursor() throws Exception {
 			TimelineResponse response = createTimelineResponseLastPage();
 
-			given(timelineService.getTimeline(eq(VALID_CURSOR), anyInt(), any(), any())).willReturn(response);
+			given(timelineService.getTimelineByUserId(eq(VALID_CURSOR), anyInt(), any(), any())).willReturn(response);
 
 			mockMvc.perform(
 					get("/api/timeline/me")
@@ -72,7 +72,7 @@ class TimelineControllerTest extends ControllerTestSupport {
 		void shouldGetMyTimelineWithDefaultLimit() throws Exception {
 			TimelineResponse response = createTimelineResponseWithNextCursor();
 
-			given(timelineService.getTimeline(isNull(), eq(20), any(), any())).willReturn(response);
+			given(timelineService.getTimelineByUserId(isNull(), eq(20), any(), any())).willReturn(response);
 
 			mockMvc.perform(get("/api/timeline/me"))
 				.andExpect(status().isOk())
@@ -85,7 +85,7 @@ class TimelineControllerTest extends ControllerTestSupport {
 		void shouldReturnEmptyTimeline() throws Exception {
 			TimelineResponse emptyResponse = createEmptyTimelineResponse();
 
-			given(timelineService.getTimeline(isNull(), anyInt(), any(), any())).willReturn(emptyResponse);
+			given(timelineService.getTimelineByUserId(isNull(), anyInt(), any(), any())).willReturn(emptyResponse);
 
 			mockMvc.perform(get("/api/timeline/me"))
 				.andExpect(status().isOk())
@@ -119,7 +119,7 @@ class TimelineControllerTest extends ControllerTestSupport {
 		void shouldGetTimelineWithMixedItemTypes() throws Exception {
 			TimelineResponse response = createMixedTimelineResponse();
 
-			given(timelineService.getTimeline(isNull(), anyInt(), any(), any())).willReturn(response);
+			given(timelineService.getTimelineByUserId(isNull(), anyInt(), any(), any())).willReturn(response);
 
 			mockMvc.perform(get("/api/timeline/me"))
 				.andExpect(status().isOk())
@@ -138,10 +138,10 @@ class TimelineControllerTest extends ControllerTestSupport {
 		void shouldGetUserTimelineFirstPage() throws Exception {
 			TimelineResponse response = createTimelineResponseWithNextCursor();
 
-			given(timelineService.getTimelineByHandle(isNull(), anyInt(), any(), any())).willReturn(response);
+			given(timelineService.getTimelineByUserId(isNull(), anyInt(), any(), any())).willReturn(response);
 
 			mockMvc.perform(
-					get("/api/timeline/user/{userHandle}", "table_cleaner")
+					get("/api/timeline/user/{userId}", 1L)
 						.param("limit", "20")
 				)
 				.andExpect(status().isOk())

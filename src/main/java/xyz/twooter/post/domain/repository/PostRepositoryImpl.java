@@ -119,6 +119,7 @@ public class PostRepositoryImpl implements PostCustomRepository {
 			originalPost.content.coalesce(post.content),
 
 			// author: 실제 포스트 작성자
+			originalAuthor.id.coalesce(author.id),
 			originalAuthor.handle.coalesce(author.handle),
 			originalAuthor.nickname.coalesce(author.nickname),
 			originalAuthor.avatarPath.coalesce(author.avatarPath),
@@ -138,6 +139,9 @@ public class PostRepositoryImpl implements PostCustomRepository {
 			originalPost.createdAt.coalesce(post.createdAt),
 
 			// 리포스터 정보
+			new CaseBuilder()
+				.when(post.repostOfId.isNotNull()).then(author.id)
+				.otherwise((Long)null),
 			new CaseBuilder()
 				.when(post.repostOfId.isNotNull()).then(author.handle)
 				.otherwise((String)null),
