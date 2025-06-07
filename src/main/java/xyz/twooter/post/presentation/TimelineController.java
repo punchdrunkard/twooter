@@ -45,4 +45,15 @@ public class TimelineController {
 		TimelineResponse response = timelineService.getTimelineByHandle(cursor, limit, member, userHandle);
 		return ResponseEntity.ok(response);
 	}
+
+	// 인증된 사용자의 홈 타임라인을 가져온다.
+	@GetMapping("/home")
+	public ResponseEntity<TimelineResponse> getHomeTimeline(
+		@RequestParam(required = false) String cursor,
+		@RequestParam(required = false, defaultValue = "20") @Min(value = 1, message = "limit은 1 이상이어야 합니다") Integer limit,
+		@CurrentMember Member currentMember
+	) {
+		TimelineResponse response = timelineService.getHomeTimeline(cursor, limit, currentMember);
+		return ResponseEntity.ok(response);
+	}
 }

@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import jakarta.persistence.EntityManager;
+import xyz.twooter.member.domain.Follow;
 import xyz.twooter.member.domain.Member;
 import xyz.twooter.post.domain.Post;
 import xyz.twooter.post.domain.PostLike;
@@ -368,6 +370,56 @@ class PostRepositoryTest extends IntegrationTestSupport {
 		}
 	}
 
+	@Nested
+	@DisplayName("findHomeTimelineWithPagination 메서드는")
+	class FindHomeTimeline {
+		private Member followedUser1;
+		private Member followedUser2;
+		private Member notFollowedUser;
+
+		@BeforeEach
+		void setUpHomeTimeline() {
+			// 팔로우할 유저들 생성
+			followedUser1 = createMember("followed1", "팔로우유저1", "followed1@test.com");
+			followedUser2 = createMember("followed2", "팔로우유저2", "followed2@test.com");
+			notFollowedUser = createMember("notfollowed", "언팔로우유저", "notfollowed@test.com");
+
+			// viewer가 followedUser1, followedUser2를 팔로우
+			createFollow(viewer, followedUser1);
+			createFollow(viewer, followedUser2);
+
+			entityManager.flush();
+			entityManager.clear();
+		}
+
+		@DisplayName("자신의 포스트와 팔로우 한 사용자의 포스트를 모두 조회할 수 있다.")
+		@Test
+		void shouldReturnBothFollowersAndMyPosts() {
+			// given
+			Post myPost = createPost(viewer, "내 포스트", baseTime.minusHours(1));
+			Post followedPost1 = createPost(followedUser1, "팔로우한 유저1의 포스트", baseTime.minusHours(2));
+			Post followedPost2 = createPost(followedUser2, "팔로우한 유저2의 포스트", baseTime.minusHours(3));
+			Post notFollowedPost = createPost(notFollowedUser, "팔로우하지 않은 유저의 포스트", baseTime.minusHours(4));
+			Post followsRepost1 = createRepost(followedUser1, myPost, baseTime.minusHours(5));
+
+			// when
+			List<TimelineItemProjection> result = postRepository.findHomeTimelineWithPagination(
+				viewer.getId(), null, null, 10);
+
+			// then
+			assertThat(result).hasSize(4); // 내 포스트 + 팔로우한 유저의 포스트 2개 + 리포스트
+
+			assertThat(
+				result.stream().map(TimelineItemProjection::getOriginalPostId).collect(Collectors.toList()))
+				.containsExactly(
+					myPost.getId(),
+					followedPost1.getId(),
+					followedPost2.getId(),
+					followsRepost1.getRepostOfId()
+				);
+		}
+	}
+
 	// Helper Methods
 	private Member createMember(String handle, String nickname, String email) {
 		Member member = Member.builder()
@@ -427,4 +479,13 @@ class PostRepositoryTest extends IntegrationTestSupport {
 			.executeUpdate();
 	}
 
+	private Follow createFollow(Member follower, Member followee) {
+		Follow follow = Follow.builder()
+			.followerId(follower.getId())
+			.followeeId(followee.getId())
+			.build();
+
+		entityManager.persist(follow);
+		return follow;
+	}
 }
