@@ -37,6 +37,7 @@ class AuthControllerDocsTest extends RestDocsSupport {
 
 		SignUpInfoResponse response = new SignUpInfoResponse(
 			MemberSummaryResponse.builder()
+				.id(123L)
 				.avatarPath("testpath")
 				.handle("twooter_123")
 				.email("user@example.com")
@@ -67,6 +68,7 @@ class AuthControllerDocsTest extends RestDocsSupport {
 				),
 				responseFields(
 					fieldWithPath("member").type(JsonFieldType.OBJECT).description("회원 정보"),
+					fieldWithPath("member.id").type(JsonFieldType.NUMBER).description("회원 고유 ID"),
 					fieldWithPath("member.email").type(JsonFieldType.STRING).description("회원 이메일"),
 					fieldWithPath("member.handle").type(JsonFieldType.STRING).description("회원 핸들"),
 					fieldWithPath("member.nickname").type(JsonFieldType.STRING).description("회원 닉네임"),
@@ -85,6 +87,7 @@ class AuthControllerDocsTest extends RestDocsSupport {
 			.build();
 
 		MemberSummaryResponse memberSummaryResponse = MemberSummaryResponse.builder()
+			.id(123L)
 			.email("user@example.com")
 			.handle("twooter_123")
 			.nickname("twooter_123")
@@ -121,6 +124,7 @@ class AuthControllerDocsTest extends RestDocsSupport {
 					fieldWithPath("accessToken").type(JsonFieldType.STRING).description("액세스 토큰 (JWT)"),
 					fieldWithPath("refreshToken").type(JsonFieldType.STRING).description("리프레시 토큰 (JWT)"),
 					fieldWithPath("member").type(JsonFieldType.OBJECT).description("회원 정보"),
+					fieldWithPath("member.id").type(JsonFieldType.NUMBER).description("회원 고유 ID"),
 					fieldWithPath("member.email").type(JsonFieldType.STRING).description("회원 이메일"),
 					fieldWithPath("member.handle").type(JsonFieldType.STRING).description("회원 핸들"),
 					fieldWithPath("member.nickname").type(JsonFieldType.STRING).description("회원 닉네임"),
