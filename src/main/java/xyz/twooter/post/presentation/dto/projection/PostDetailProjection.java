@@ -9,11 +9,12 @@ import lombok.Getter;
 @AllArgsConstructor
 public class PostDetailProjection {
 
-	private final Long id;
+	private final Long postId;
 	private final String content;
-	private final String handle;
-	private final String nickname;
-	private final String avatarPath;
+	private final Long authorId;
+	private final String authorHandle;
+	private final String authorNickname;
+	private final String authorAvatarPath;
 	private final LocalDateTime createdAt;
 	private final Long viewCount;
 	private final Long likeCount;

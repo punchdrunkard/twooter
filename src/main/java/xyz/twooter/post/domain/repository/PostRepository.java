@@ -14,8 +14,9 @@ public interface PostRepository extends JpaRepository<Post, Long>, PostCustomRep
 
 	@Query("""
 		SELECT new xyz.twooter.post.presentation.dto.projection.PostDetailProjection(
-		    p.id, p.content, m.handle, m.nickname, m.avatarPath, p.createdAt, p.viewCount,
-		    p.likeCount, p.repostCount,
+		    p.id, p.content,
+		    m.id, m.handle, m.nickname, m.avatarPath,
+		    p.createdAt, p.viewCount, p.likeCount, p.repostCount,
 		    CASE WHEN :memberId IS NULL THEN false
 		         ELSE EXISTS (SELECT 1 FROM PostLike pl WHERE pl.postId = p.id AND pl.memberId = :memberId) 
 		    END,

@@ -135,6 +135,7 @@ public class TimelineService {
 		PostResponse postResponse = PostResponse.builder()
 			.id(projection.getOriginalPostId())
 			.author(new MemberBasic(
+				projection.getOriginalPostAuthorId(),
 				projection.getOriginalPostAuthorHandle(),
 				projection.getOriginalPostAuthorNickname(),
 				projection.getOriginalPostAuthorAvatarPath()
