@@ -12,7 +12,6 @@ import xyz.twooter.common.infrastructure.pagination.PaginationMetadata;
 import xyz.twooter.media.application.MediaService;
 import xyz.twooter.member.application.MemberService;
 import xyz.twooter.member.domain.Member;
-import xyz.twooter.member.domain.exception.MemberNotFoundException;
 import xyz.twooter.member.presentation.dto.response.MemberBasic;
 import xyz.twooter.post.domain.model.PostType;
 import xyz.twooter.post.domain.repository.PostRepository;
@@ -59,6 +58,26 @@ public class TimelineService {
 		String targetMemberHandle) {
 		Long targetMemberId = memberService.getMemberIdByHandle(targetMemberHandle);
 		return getTimeline(cursor, limit, currentMember, targetMemberId);
+	}
+
+	public TimelineResponse getHomeTimeline(String cursor, Integer limit, Member currentMember) {
+
+		Long memberId = currentMember.getId();
+
+		// 커서 디코딩 (null 가능)
+		CursorUtil.Cursor decodedCursor = extractCursor(cursor);
+
+		// 실제 조회할 개수 (다음 페이지 존재 여부 확인을 위해 +1)
+		int fetchLimit = limit + 1;
+
+		List<TimelineItemProjection> timelineItems = postRepository.findHomeTimelineWithPagination(
+			memberId,
+			isCursorNotNull(decodedCursor) ? decodedCursor.getTimestamp() : null,
+			isCursorNotNull(decodedCursor) ? decodedCursor.getId() : null,
+			fetchLimit
+		);
+
+		return buildTimelineResponse(timelineItems, limit);
 	}
 
 	private boolean isCursorNotNull(CursorUtil.Cursor decodedCursor) {
@@ -164,4 +183,5 @@ public class TimelineService {
 			.nextCursor(nextCursor)
 			.build();
 	}
+
 }
