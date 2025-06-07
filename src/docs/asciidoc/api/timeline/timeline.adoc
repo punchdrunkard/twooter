@@ -1,9 +1,25 @@
 [[timeline]]
+=== 홈 타임라인 조회
+**현재 로그인한 유저**의 홈 타임라인을 조회한다.
+
+타임라인에는 **자신의 포스트(와 리포스트), 팔로우한 유저의 포스트(와 리포스트)**가 포함된다.
+
+==== HTTP Request
+
+include::{snippets}/timeline-get-home/http-request.adoc[]
+include::{snippets}/timeline-get-home/request-headers.adoc[]
+include::{snippets}/timeline-get-home/query-parameters.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/timeline-get-home/http-response.adoc[]
+include::{snippets}/timeline-get-home/response-fields.adoc[]
+
 === 나의 타임라인 조회
 
-현재 로그인한 유저의 타임라인을 조회한다.
+**현재 로그인한 유저**의 타임라인을 조회한다.
 
-타임라인은 유저의 포스트 + 유저의 리포스트 로 구성된다.
+타임라인은 **자신의 포스트 + 리포스트**로 구성된다.
 
 ==== HTTP Request
 
@@ -18,8 +34,8 @@ include::{snippets}/timeline-get/response-fields.adoc[]
 
 
 === 특정 유저의 타임라인 조회
-특정 유저의 타임라인을 조회한다.
-타임라인은 해당 유저의 포스트 + 해당 유저의 리포스트 로 구성된다.
+**특정 유저**의 타임라인을 조회한다.
+타임라인은 **해당 유저의 포스트 + 해당 유저의 리포스트**로 구성된다.
 
 ==== HTTP Request
 

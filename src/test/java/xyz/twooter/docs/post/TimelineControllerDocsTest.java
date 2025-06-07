@@ -121,6 +121,52 @@ class TimelineControllerDocsTest extends RestDocsSupport {
 			));
 	}
 
+	@DisplayName("현재 유저의 홈 타임라인 조회 API")
+	@Test
+	void getHomeTimeline() throws Exception {
+	  // given
+		String cursor = "dXNlcjpVMDYxTkZUVDI=";
+		Integer limit = 10;
+		TimelineResponse response = givenTimelineResponse();
+
+		given(timelineService.getHomeTimeline(any(), any(), any())).willReturn(response);
+
+		// when & then
+		mockMvc.perform(
+				get("/api/timeline/home")
+					.param("cursor", cursor)
+					.param("limit", String.valueOf(limit))
+					.header("Authorization",
+						"Bearer eyJhbGciOiJIUzI1NiJ9.eyJoYW5kbGUiOiJ0d29vdGVyXzEyMyIsInRva2VuVHlwZSI6IkFDQ0VTUyIsImlhdCI6MTcxMjMyMzIzMiwiZXhwIjoxNzEyMzI1MDMyfQ.exampleToken")
+					.contentType(MediaType.APPLICATION_JSON)
+			)
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.timeline").isArray())
+			.andExpect(jsonPath("$.metadata").exists())
+			.andDo(document("timeline-get-home",
+				preprocessRequest(prettyPrint()),
+				preprocessResponse(prettyPrint()),
+				requestHeaders(
+					headerWithName("Authorization").description("액세스 토큰 (Bearer 타입)")
+				),
+				queryParameters(
+					parameterWithName("cursor").optional()
+						.description("이전 요청의 response 메타 데이터가 반환한 next_cursor 의 속성 (아무 값이 없을 경우 컬렉션이 첫 번째 페이지를 가져옴)"),
+					parameterWithName("limit").optional().description("페이지당 반환될 아이템 수 (기본값: 20)")
+				),
+				responseFields(
+					fieldWithPath("timeline").type(JsonFieldType.ARRAY).description("타임라인 아이템 목록"),
+					fieldWithPath("metadata").type(JsonFieldType.OBJECT).description("페이지네이션 메타데이터")
+				)
+					.andWithPrefix("timeline[].", timelineItemFields())
+					.andWithPrefix("timeline[].post.", postResponseFields())
+					.andWithPrefix("timeline[].post.author.", memberBasicFields())
+					.andWithPrefix("timeline[].post.mediaEntities[].", mediaEntityFields())
+					.andWithPrefix("timeline[].repostBy.", memberBasicFields()) // repostBy는 repost 타입일 때만 존재
+					.andWithPrefix("metadata.", paginationMetadataFields())
+			));
+	}
+
 	// === 필드 문서화 메서드 ===
 	private List<FieldDescriptor> timelineItemFields() {
 		return List.of(
@@ -200,7 +246,7 @@ class TimelineControllerDocsTest extends RestDocsSupport {
 			.mediaEntities(List.of(media1, media2))
 			.createdAt(LocalDateTime.of(2025, 5, 5, 0, 0))
 			.isLiked(true)
-			.isReposted(false)
+			.isReposted(true)
 			.isDeleted(false)
 			.build();
 

@@ -7,3 +7,7 @@ Authorization: Bearer {access-token}
 
 GET http://localhost:8080/api/timeline/user/{{userHandle}}
 
+### 유저의 홈 타임라인 조회
+
+GET http://localhost:8080/api/timeline/home?limit={{limit}}&cursor={{cursor}}
+Authorization: Bearer {access-token}
