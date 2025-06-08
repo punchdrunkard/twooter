@@ -1,5 +1,6 @@
 package xyz.twooter.post.domain.repository;
 
+import static xyz.twooter.common.infrastructure.querydsl.QueryDslPaginationUtils.*;
 import static xyz.twooter.member.domain.QFollow.*;
 import static xyz.twooter.post.domain.QPost.*;
 
@@ -8,10 +9,7 @@ import java.util.List;
 
 import com.querydsl.core.types.ConstructorExpression;
 import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
-import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.RequiredArgsConstructor;
@@ -152,19 +150,5 @@ public class PostRepositoryImpl implements PostCustomRepository {
 				.when(post.repostOfId.isNotNull()).then(author.avatarPath)
 				.otherwise((String)null)
 		);
-	}
-
-	private BooleanExpression applyPaginationCondition(
-		DateTimePath<LocalDateTime> createdAt,
-		NumberPath<Long> id,
-		LocalDateTime beforeTimestamp,
-		Long beforeId) {
-
-		if (beforeTimestamp == null || beforeId == null) {
-			return null;
-		}
-
-		return createdAt.lt(beforeTimestamp)
-			.or(createdAt.eq(beforeTimestamp).and(id.lt(beforeId)));
 	}
 }
