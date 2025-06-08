@@ -1,5 +1,8 @@
 package xyz.twooter.member.application;
 
+import static xyz.twooter.common.infrastructure.pagination.CursorUtil.*;
+
+import java.util.List;
 import java.util.Objects;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -10,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import xyz.twooter.auth.domain.exception.EmailAlreadyExistsException;
 import xyz.twooter.auth.domain.exception.IllegalMemberIdException;
 import xyz.twooter.auth.presentation.dto.request.SignUpRequest;
+import xyz.twooter.common.infrastructure.pagination.CursorUtil;
 import xyz.twooter.member.domain.Follow;
 import xyz.twooter.member.domain.Member;
 import xyz.twooter.member.domain.exception.AlreadyFollowingException;
@@ -17,6 +21,8 @@ import xyz.twooter.member.domain.exception.MemberNotFoundException;
 import xyz.twooter.member.domain.repository.FollowRepository;
 import xyz.twooter.member.domain.repository.MemberRepository;
 import xyz.twooter.member.presentation.dto.response.FollowResponse;
+import xyz.twooter.member.presentation.dto.response.FollowerProfile;
+import xyz.twooter.member.presentation.dto.response.FollowerResponse;
 import xyz.twooter.member.presentation.dto.response.MemberSummaryResponse;
 import xyz.twooter.member.presentation.dto.response.UnFollowResponse;
 
@@ -52,6 +58,26 @@ public class MemberService {
 			.followeeId(followeeId)
 			.build();
 		return FollowResponse.from(followRepository.save(follow));
+	}
+
+	public FollowerResponse getFollowers(String cursor, Integer limit, Member currentMember,
+		Long targetMemberId) {
+
+		validateMember(targetMemberId);
+		Long viewerId = (currentMember != null) ? currentMember.getId() : null;
+
+		// 커서 디코딩 (null 가능)
+		CursorUtil.Cursor decodedCursor = extractCursor(cursor);
+		// 다음 페이지 존재 여부 확인을 위해 +1
+		int fetchLimit = limit + 1;
+
+		List<FollowerProfile> followers = followRepository.findFollowersWithRelation(
+			targetMemberId, viewerId,
+			decodedCursor != null ? decodedCursor.getTimestamp() : null,
+			decodedCursor != null  ? decodedCursor.getId() : null,
+			fetchLimit);
+
+		return FollowerResponse.of(followers, limit);
 	}
 
 	public UnFollowResponse unfollowMember(Member member, Long targetMemberId) {

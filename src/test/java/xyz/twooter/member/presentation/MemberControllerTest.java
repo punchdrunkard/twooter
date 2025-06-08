@@ -13,6 +13,7 @@ import org.springframework.http.MediaType;
 
 import xyz.twooter.member.presentation.dto.request.FollowRequest;
 import xyz.twooter.member.presentation.dto.response.FollowResponse;
+import xyz.twooter.member.presentation.dto.response.FollowerResponse;
 import xyz.twooter.member.presentation.dto.response.UnFollowResponse;
 import xyz.twooter.support.ControllerTestSupport;
 import xyz.twooter.support.security.WithMockCustomUser;
@@ -75,6 +76,29 @@ class MemberControllerTest extends ControllerTestSupport {
 			mockMvc.perform(delete("/api/members/follow/{targetMemberId}", targetMemberId))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.targetMemberId").value(targetMemberId));
+		}
+	}
+
+	@Nested
+	@DisplayName("멤버 팔로워 조회 API")
+	class GetFollowersTests {
+
+		@DisplayName("성공 - 멤버의 팔로워 목록을 조회할 수 있다.")
+		@Test
+		void shouldGetFollowers() throws Exception {
+			// given
+			Long memberId = 1L;
+			String cursor = null;
+			Integer limit = 20;
+
+			given(memberService.getFollowers(any(), any(), any(), any()))
+				.willReturn(FollowerResponse.builder().build());
+
+			// when & then
+			mockMvc.perform(get("/api/members/{memberId}/followers", memberId)
+					.param("cursor", cursor)
+					.param("limit", String.valueOf(limit)))
+				.andExpect(status().isOk());
 		}
 	}
 

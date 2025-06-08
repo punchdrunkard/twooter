@@ -9,15 +9,18 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import xyz.twooter.auth.infrastructure.annotation.CurrentMember;
 import xyz.twooter.member.application.MemberService;
 import xyz.twooter.member.domain.Member;
 import xyz.twooter.member.presentation.dto.request.FollowRequest;
 import xyz.twooter.member.presentation.dto.response.FollowResponse;
+import xyz.twooter.member.presentation.dto.response.FollowerResponse;
 import xyz.twooter.member.presentation.dto.response.MemberSummaryResponse;
 import xyz.twooter.member.presentation.dto.response.UnFollowResponse;
 
@@ -47,4 +50,17 @@ public class MemberController {
 		UnFollowResponse response = memberService.unfollowMember(member, targetMemberId);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
+
+	// 해당 멤버의 팔로워 목록을 조회하는 API
+	@GetMapping("/{memberId}/followers")
+	public ResponseEntity<FollowerResponse> getFollowers(
+		@RequestParam(required = false) String cursor,
+		@RequestParam(required = false, defaultValue = "20") @Min(value = 1, message = "limit은 1 이상이어야 합니다") Integer limit,
+		@CurrentMember Member currentMember,
+		@PathVariable Long memberId
+	) {
+		FollowerResponse response = memberService.getFollowers(cursor, limit, currentMember, memberId);
+		return ResponseEntity.status(HttpStatus.OK).body(response);
+	}
+
 }
