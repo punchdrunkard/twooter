@@ -1,0 +1,33 @@
+[[member]]
+
+=== Follow API
+
+=== 팔로우
+
+유저를 팔로우한다.
+
+==== HTTP Request
+
+include::{snippets}/follow-member/http-request.adoc[]
+include::{snippets}/follow-member/request-headers.adoc[]
+include::{snippets}/follow-member/request-fields.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/follow-member/http-response.adoc[]
+include::{snippets}/follow-member/response-fields.adoc[]
+
+=== 언팔로우
+
+유저의 팔로우를 취소한다.
+
+==== HTTP Request
+
+include::{snippets}/unfollow-member/http-request.adoc[]
+include::{snippets}/unfollow-member/request-headers.adoc[]
+include::{snippets}/unfollow-member/path-parameters.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/unfollow-member/http-response.adoc[]
+include::{snippets}/unfollow-member/response-fields.adoc[]

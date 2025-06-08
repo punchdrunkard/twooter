@@ -15,6 +15,12 @@ endif::[]
 
 include::api/auth/auth.adoc[]
 
+[[Member-API]]
+== Member API
+
+include::api/member/member.adoc[]
+
+[[User-API]]
 [[Timelie-API]]
 == Timeline API
 
@@ -24,7 +30,6 @@ include::api/timeline/timeline.adoc[]
 == Post API
 
 include::api/post/post.adoc[]
-
 
 [[Media-API]]
 == Media API
