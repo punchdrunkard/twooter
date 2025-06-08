@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class FollowerProfile {
+public class MemberProfileWithRelation {
 
 	private Long id;
 	private String handle;

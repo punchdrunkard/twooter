@@ -10,16 +10,16 @@ import xyz.twooter.common.infrastructure.pagination.PaginationMetadata;
 @Getter
 @Builder
 @AllArgsConstructor
-public class FollowerResponse {
+public class MemberWithRelationResponse {
 
-	private List<FollowerProfile> followers;
+	private List<MemberProfileWithRelation> members;
 	private PaginationMetadata metadata;
 
-	public static FollowerResponse of(List<FollowerProfile> followers, Integer limit) {
-		return FollowerResponse.builder()
-			.followers(followers)
+	public static MemberWithRelationResponse of(List<MemberProfileWithRelation> members, Integer limit) {
+		return MemberWithRelationResponse.builder()
+			.members(members)
 			.metadata(PaginationMetadata.builder()
-				.hasNext(followers.size() > limit)
+				.hasNext(members.size() > limit)
 				.build())
 			.build();
 	}
