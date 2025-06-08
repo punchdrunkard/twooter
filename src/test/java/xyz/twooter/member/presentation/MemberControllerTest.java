@@ -13,6 +13,7 @@ import org.springframework.http.MediaType;
 
 import xyz.twooter.member.presentation.dto.request.FollowRequest;
 import xyz.twooter.member.presentation.dto.response.FollowResponse;
+import xyz.twooter.member.presentation.dto.response.UnFollowResponse;
 import xyz.twooter.support.ControllerTestSupport;
 import xyz.twooter.support.security.WithMockCustomUser;
 
@@ -56,6 +57,24 @@ class MemberControllerTest extends ControllerTestSupport {
 					.contentType(MediaType.APPLICATION_JSON)
 				)
 				.andExpect(status().isBadRequest());
+		}
+	}
+
+	@Nested
+	@DisplayName("멤버 언팔로우 API")
+	class UnfollowMemberTests {
+
+		@DisplayName("성공 - 멤버를 언팔로우할 수 있다.")
+		@Test
+		void shouldUnfollowMember() throws Exception {
+			// given
+			Long targetMemberId = 1L;
+			given(memberService.unfollowMember(any(), anyLong())).willReturn(UnFollowResponse.of(targetMemberId));
+
+			// when & then
+			mockMvc.perform(delete("/api/members/follow/{targetMemberId}", targetMemberId))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.targetMemberId").value(targetMemberId));
 		}
 	}
 

@@ -18,6 +18,7 @@ import xyz.twooter.member.domain.repository.FollowRepository;
 import xyz.twooter.member.domain.repository.MemberRepository;
 import xyz.twooter.member.presentation.dto.response.FollowResponse;
 import xyz.twooter.member.presentation.dto.response.MemberSummaryResponse;
+import xyz.twooter.member.presentation.dto.response.UnFollowResponse;
 
 @Service
 @RequiredArgsConstructor
@@ -51,6 +52,12 @@ public class MemberService {
 			.followeeId(followeeId)
 			.build();
 		return FollowResponse.from(followRepository.save(follow));
+	}
+
+	public UnFollowResponse unfollowMember(Member member, Long targetMemberId) {
+		validateMember(targetMemberId);
+		followRepository.deleteByFollowerIdAndFolloweeId(member.getId(), targetMemberId);
+		return UnFollowResponse.of(targetMemberId);
 	}
 
 	private void validateFollowing(Member member, Long targetMemberId) {
@@ -89,4 +96,5 @@ public class MemberService {
 			throw new IllegalMemberIdException();
 		}
 	}
+
 }

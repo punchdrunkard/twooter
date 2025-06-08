@@ -14,6 +14,7 @@ import xyz.twooter.member.domain.exception.AlreadyFollowingException;
 import xyz.twooter.member.domain.repository.FollowRepository;
 import xyz.twooter.member.domain.repository.MemberRepository;
 import xyz.twooter.member.presentation.dto.response.FollowResponse;
+import xyz.twooter.member.presentation.dto.response.UnFollowResponse;
 import xyz.twooter.support.IntegrationTestSupport;
 
 class MemberServiceTest extends IntegrationTestSupport {
@@ -70,6 +71,59 @@ class MemberServiceTest extends IntegrationTestSupport {
 			// when & then
 			assertThatThrownBy(() -> memberService.followMember(member, targetMember.getId()))
 				.isInstanceOf(AlreadyFollowingException.class);
+		}
+	}
+
+	@Nested
+	@DisplayName("Unfollow Member")
+	class UnfollowMemberTests {
+
+		@DisplayName("성공 - 멤버를 언팔로우할 수 있다.")
+		@Test
+		void shouldUnfollowMemberWhenValidRequest() {
+			// given
+			Member member = saveTestMember("follower");
+			Member targetMember = saveTestMember("followee");
+			saveFollow(member, targetMember);
+
+			// when
+			UnFollowResponse response = memberService.unfollowMember(member, targetMember.getId());
+
+			// then
+			assertThat(followRepository.existsByFollowerIdAndFolloweeId(member.getId(), targetMember.getId()))
+				.isFalse();
+			assertThat(response).isNotNull();
+			assertThat(response.getTargetMemberId()).isEqualTo(targetMember.getId());
+		}
+
+		@DisplayName("실패 - 존재하지 않는 멤버를 언팔로우할 수 없다.")
+		@Test
+		void shouldThrowExceptionWhenUnfollowingNonExistentMember() {
+			// given
+			Member member = saveTestMember("follower");
+			Long nonExistentMemberId = -1L; // Assuming this ID does not exist
+
+			// when & then
+			assertThatThrownBy(() -> memberService.unfollowMember(member, nonExistentMemberId))
+				.isInstanceOf(IllegalMemberIdException.class);
+		}
+
+		@DisplayName("성공 - 팔로우 관계가 없는 멤버를 언팔로우할 때 예외가 발생하지 않는다.(idempotent)")
+		@Test
+		void shouldSucceedUnfollowWhenNotFollowingMember() {
+			// given
+			Member member = saveTestMember("follower");
+			Member targetMember = saveTestMember("followee");
+
+			// when
+			UnFollowResponse response = memberService.unfollowMember(member, targetMember.getId());
+
+			// then
+			assertThat(followRepository.existsByFollowerIdAndFolloweeId(member.getId(), targetMember.getId()))
+				.isFalse();
+			assertThat(response).isNotNull();
+			assertThat(response.getTargetMemberId()).isEqualTo(targetMember.getId());
+
 		}
 	}
 
