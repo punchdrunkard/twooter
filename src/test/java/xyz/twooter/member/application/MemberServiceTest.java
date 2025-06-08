@@ -1,0 +1,97 @@
+package xyz.twooter.member.application;
+
+import static org.assertj.core.api.Assertions.*;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import xyz.twooter.auth.domain.exception.IllegalMemberIdException;
+import xyz.twooter.member.domain.Follow;
+import xyz.twooter.member.domain.Member;
+import xyz.twooter.member.domain.exception.AlreadyFollowingException;
+import xyz.twooter.member.domain.repository.FollowRepository;
+import xyz.twooter.member.domain.repository.MemberRepository;
+import xyz.twooter.member.presentation.dto.response.FollowResponse;
+import xyz.twooter.support.IntegrationTestSupport;
+
+class MemberServiceTest extends IntegrationTestSupport {
+
+	@Autowired
+	private MemberService memberService;
+
+	@Autowired
+	private MemberRepository memberRepository;
+
+	@Autowired
+	private FollowRepository followRepository;
+
+	@Nested
+	@DisplayName("Follow Member")
+	class FollowMemberTests {
+
+		@DisplayName("성공 - 멤버를 팔로우할 수 있다.")
+		@Test
+		void shouldFollowMemberWhenValidRequest() {
+			// given
+			Member member = saveTestMember("follower");
+			Member targetMember = saveTestMember("followee");
+
+			// when
+			FollowResponse followResponse = memberService.followMember(member, targetMember.getId());
+
+			// then
+			assertThat(followResponse).isNotNull();
+			assertThat(followResponse.getTargetMemberId()).isEqualTo(targetMember.getId());
+			assertThat(followResponse.getFollowedAt()).isNotNull();
+		}
+
+		@DisplayName("실패 - 존재하지 않는 멤버를 팔로우할 수 없다.")
+		@Test
+		void shouldThrowExceptionWhenTargetMemberIdDoesNotExist() {
+			// given
+			Member member = saveTestMember("follower");
+			Long nonExistentMemberId = -1L; // Assuming this ID does not exist
+
+			// when & then
+			assertThatThrownBy(() -> memberService.followMember(member, nonExistentMemberId))
+				.isInstanceOf(IllegalMemberIdException.class);
+		}
+
+		@DisplayName("실패 - 이미 팔로우하고 있는 경우 예외가 발생한다.")
+		@Test
+		void shouldThrowExceptionWhenFollowingAlreadyFollowedMember() {
+			// given
+			Member member = saveTestMember("follower");
+			Member targetMember = saveTestMember("followee");
+			saveFollow(member, targetMember);
+
+			// when & then
+			assertThatThrownBy(() -> memberService.followMember(member, targetMember.getId()))
+				.isInstanceOf(AlreadyFollowingException.class);
+		}
+	}
+
+	private void saveFollow(Member member, Member targetMember) {
+		Follow follow = Follow.builder()
+			.followerId(member.getId())
+			.followeeId(targetMember.getId())
+			.build();
+		followRepository.save(follow);
+	}
+
+	// ====== 헬퍼 =====
+	private Member saveTestMember(String handle) {
+		String email = handle + "@test.test";
+
+		Member member = Member.createDefaultMember(email, "password", handle);
+		return memberRepository.save(member);
+	}
+
+	private Member saveTestMember() {
+		Member member = Member.createDefaultMember("test@test.test", "password", "tester");
+		return memberRepository.save(member);
+	}
+
+}
