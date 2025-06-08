@@ -1,5 +1,7 @@
 package xyz.twooter.post.application;
 
+import static xyz.twooter.common.infrastructure.pagination.CursorUtil.*;
+
 import java.util.List;
 import java.util.Map;
 
@@ -10,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import xyz.twooter.common.infrastructure.pagination.CursorUtil;
 import xyz.twooter.common.infrastructure.pagination.PaginationMetadata;
 import xyz.twooter.media.application.MediaService;
-import xyz.twooter.member.application.MemberService;
 import xyz.twooter.member.domain.Member;
 import xyz.twooter.member.presentation.dto.response.MemberBasic;
 import xyz.twooter.post.domain.model.PostType;
@@ -29,7 +30,6 @@ public class TimelineService {
 	private final PostRepository postRepository;
 
 	private final MediaService mediaService;
-	private final MemberService memberService;
 
 	private final CursorUtil cursorUtil;
 
@@ -77,14 +77,6 @@ public class TimelineService {
 
 	private boolean isCursorNotNull(CursorUtil.Cursor decodedCursor) {
 		return decodedCursor != null;
-	}
-
-	private CursorUtil.Cursor extractCursor(String cursor) {
-		if (cursor == null || cursor.trim().isEmpty()) {
-			return null;
-		}
-
-		return CursorUtil.decode(cursor);
 	}
 
 	private TimelineResponse buildTimelineResponse(List<TimelineItemProjection> projections, int requestedLimit) {
