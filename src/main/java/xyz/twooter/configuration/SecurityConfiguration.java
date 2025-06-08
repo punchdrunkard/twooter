@@ -55,7 +55,7 @@ public class SecurityConfiguration {
 			.authorizeHttpRequests(auth -> auth
 				.requestMatchers("/h2-console/**", "/api/auth/**", "/docs/**").permitAll()
 				.requestMatchers(HttpMethod.GET, "/api/posts/*", "/api/timeline/user/*").permitAll()
-				.requestMatchers(HttpMethod.GET, "/api/members/*/followers").permitAll()
+				.requestMatchers(HttpMethod.GET, "/api/members/*/followers", "/api/members/*/followings").permitAll()
 				.anyRequest().authenticated()
 			)
 			.headers(headers -> headers

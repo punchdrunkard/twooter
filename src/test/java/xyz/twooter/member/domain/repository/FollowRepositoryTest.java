@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import jakarta.persistence.EntityManager;
 import xyz.twooter.member.domain.Follow;
 import xyz.twooter.member.domain.Member;
-import xyz.twooter.member.presentation.dto.response.FollowerProfile;
+import xyz.twooter.member.presentation.dto.response.MemberProfileWithRelation;
 import xyz.twooter.support.IntegrationTestSupport;
 
 class FollowRepositoryTest extends IntegrationTestSupport {
@@ -41,7 +41,7 @@ class FollowRepositoryTest extends IntegrationTestSupport {
 			createFollow(follower2, targetMember);
 
 			// when
-			List<FollowerProfile> followers = followRepository.findFollowersWithRelation(
+			List<MemberProfileWithRelation> followers = followRepository.findFollowersWithRelation(
 				targetMember.getId(),
 				null, // 로그인하지 않은 경우
 				null, // 커서가 없는 경우 (첫 페이지)
@@ -52,7 +52,7 @@ class FollowRepositoryTest extends IntegrationTestSupport {
 			// then
 			assertThat(followers).isNotEmpty();
 			assertThat(followers).hasSize(2);
-			List<Long> followersId = followers.stream().map(FollowerProfile::getId).toList();
+			List<Long> followersId = followers.stream().map(MemberProfileWithRelation::getId).toList();
 			assertThat(followersId).containsExactlyInAnyOrder(follower1.getId(), follower2.getId());
 		}
 
@@ -67,7 +67,7 @@ class FollowRepositoryTest extends IntegrationTestSupport {
 			createFollow(follower2, targetMember);
 
 			// when
-			List<FollowerProfile> followers = followRepository.findFollowersWithRelation(
+			List<MemberProfileWithRelation> followers = followRepository.findFollowersWithRelation(
 				targetMember.getId(),
 				null, // 로그인하지 않은 경우
 				null, // 커서가 없는 경우 (첫 페이지)
@@ -77,9 +77,9 @@ class FollowRepositoryTest extends IntegrationTestSupport {
 
 			// then
 			assertThat(followers).hasSize(2);
-			assertThat(followers.stream().map(FollowerProfile::isFollowingByMe).collect(Collectors.toList()))
+			assertThat(followers.stream().map(MemberProfileWithRelation::isFollowingByMe).collect(Collectors.toList()))
 				.containsOnly(false);
-			assertThat(followers.stream().map(FollowerProfile::isFollowsMe).collect(Collectors.toList()))
+			assertThat(followers.stream().map(MemberProfileWithRelation::isFollowsMe).collect(Collectors.toList()))
 				.containsOnly(false);
 		}
 
@@ -104,7 +104,7 @@ class FollowRepositoryTest extends IntegrationTestSupport {
 			createFollow(viewer, follower3);
 
 			// when
-			List<FollowerProfile> followers = followRepository.findFollowersWithRelation(
+			List<MemberProfileWithRelation> followers = followRepository.findFollowersWithRelation(
 				targetMember.getId(),
 				viewer.getId(), // 로그인한 유저
 				null, // 커서가 없는 경우 (첫 페이지)
@@ -115,11 +115,109 @@ class FollowRepositoryTest extends IntegrationTestSupport {
 			// then
 			assertThat(followers).hasSize(3);
 			assertThat(followers)
-				.extracting(FollowerProfile::getId, FollowerProfile::isFollowingByMe, FollowerProfile::isFollowsMe)
+				.extracting(MemberProfileWithRelation::getId, MemberProfileWithRelation::isFollowingByMe, MemberProfileWithRelation::isFollowsMe)
 				.containsExactlyInAnyOrder( // 순서는 상관없으므로 AnyOrder 사용
 					tuple(follower1.getId(), true, false),  // viewer -> follower1 (O), follower1 -> viewer (X)
 					tuple(follower2.getId(), false, true),  // viewer -> follower2 (X), follower2 -> viewer (O)
 					tuple(follower3.getId(), true, true)   // viewer <-> follower3 (O, O)
+				);
+		}
+	}
+
+	@Nested
+	@DisplayName("findFolloweesWithRelation 메소드")
+	class FindFolloweesWithRelation {
+
+		@DisplayName("성공 - 대상 유저의 팔로잉 목록을 정확하게 조회해야 한다.")
+		@Test
+		void shouldFindFolloweesWithRelation() {
+			// given
+			Member targetMember = createMember("target");
+			Member followee1 = createMember("followee1");
+			Member followee2 = createMember("followee2");
+			createMember("notFollowee");
+
+			createFollow(targetMember, followee1);
+			createFollow(targetMember, followee2);
+
+			// when
+			List<MemberProfileWithRelation> followees = followRepository.findFolloweesWithRelation(
+				targetMember.getId(),
+				null, // 로그인하지 않은 경우
+				null, // 커서가 없는 경우 (첫 페이지)
+				null, // 커서 ID가 없는 경우 (첫 페이지)
+				10 // limit
+			);
+
+			// then
+			assertThat(followees).isNotEmpty();
+			assertThat(followees).hasSize(2);
+			List<Long> followeesId = followees.stream().map(MemberProfileWithRelation::getId).toList();
+			assertThat(followeesId).containsExactlyInAnyOrder(followee1.getId(), followee2.getId());
+		}
+
+		@DisplayName("성공 - 로그인하지 않은 경우, 팔로우 관계 필드가 모두 false여야 한다")
+		@Test
+		void shouldFollowRelationsSetNullWhenViewerDoesNotLogin() {
+			// given
+			Member targetMember = createMember("target");
+			Member followee1 = createMember("followee1");
+			Member followee2 = createMember("followee2");
+			createFollow(targetMember, followee1);
+			createFollow(targetMember, followee2);
+
+			// when
+			List<MemberProfileWithRelation> followees = followRepository.findFolloweesWithRelation(
+				targetMember.getId(),
+				null, // 로그인하지 않은 경우
+				null, // 커서가 없는 경우 (첫 페이지)
+				null, // 커서 ID가 없는 경우 (첫 페이지)
+				10 // limit
+			);
+
+			// then
+			assertThat(followees).hasSize(2);
+			assertThat(followees.stream().map(MemberProfileWithRelation::isFollowingByMe).collect(Collectors.toList()))
+				.containsOnly(false);
+		}
+
+		@DisplayName("성공 - 로그인한 유저가 조회 시, 각 팔로잉에 대한 자신의 팔로우 관계를 정확히 보여줘야 한다")
+		@Test
+		void shouldShowsViewerFollowRelationsForLoggedInUser() {
+			// given
+			Member targetMember = createMember("target");
+			Member followee1 = createMember("followee1");
+			Member followee2 = createMember("followee2");
+			Member followee3 = createMember("followee3");
+
+			Member viewer = createMember("viewer");
+			createFollow(targetMember, followee1);
+			createFollow(targetMember, followee2);
+			createFollow(targetMember, followee3);
+
+			createFollow(viewer, followee1); // viewer -> followee1 팔로우
+			createFollow(followee2, viewer); // followee2 -> viewer 팔로우
+			// viewer followee 3은 맞팔로우
+			createFollow(followee3, viewer);
+			createFollow(viewer, followee3);
+
+			// when
+			List<MemberProfileWithRelation> followees = followRepository.findFolloweesWithRelation(
+				targetMember.getId(),
+				viewer.getId(), // 로그인한 유저
+				null, // 커서가 없는 경우 (첫 페이지)
+				null, // 커서 ID가 없는 경우 (첫 페이지)
+				10 // limit
+			);
+
+			// then
+			assertThat(followees).hasSize(3);
+			assertThat(followees)
+				.extracting(MemberProfileWithRelation::getId, MemberProfileWithRelation::isFollowingByMe, MemberProfileWithRelation::isFollowsMe)
+				.containsExactlyInAnyOrder( // 순서는 상관없으므로 AnyOrder 사용
+					tuple(followee1.getId(), true, false),  // viewer -> followee1 (O), followee1 -> viewer (X)
+					tuple(followee2.getId(), false, true),  // viewer -> followee2 (X), followee2 -> viewer (O)
+					tuple(followee3.getId(), true, true)   // viewer <-> followee3 (O, O)
 				);
 		}
 	}

@@ -21,8 +21,8 @@ import xyz.twooter.member.domain.exception.MemberNotFoundException;
 import xyz.twooter.member.domain.repository.FollowRepository;
 import xyz.twooter.member.domain.repository.MemberRepository;
 import xyz.twooter.member.presentation.dto.response.FollowResponse;
-import xyz.twooter.member.presentation.dto.response.FollowerProfile;
-import xyz.twooter.member.presentation.dto.response.FollowerResponse;
+import xyz.twooter.member.presentation.dto.response.MemberProfileWithRelation;
+import xyz.twooter.member.presentation.dto.response.MemberWithRelationResponse;
 import xyz.twooter.member.presentation.dto.response.MemberSummaryResponse;
 import xyz.twooter.member.presentation.dto.response.UnFollowResponse;
 
@@ -60,7 +60,7 @@ public class MemberService {
 		return FollowResponse.from(followRepository.save(follow));
 	}
 
-	public FollowerResponse getFollowers(String cursor, Integer limit, Member currentMember,
+	public MemberWithRelationResponse getFollowers(String cursor, Integer limit, Member currentMember,
 		Long targetMemberId) {
 
 		validateMember(targetMemberId);
@@ -71,14 +71,35 @@ public class MemberService {
 		// 다음 페이지 존재 여부 확인을 위해 +1
 		int fetchLimit = limit + 1;
 
-		List<FollowerProfile> followers = followRepository.findFollowersWithRelation(
+		List<MemberProfileWithRelation> followers = followRepository.findFollowersWithRelation(
 			targetMemberId, viewerId,
 			decodedCursor != null ? decodedCursor.getTimestamp() : null,
 			decodedCursor != null  ? decodedCursor.getId() : null,
 			fetchLimit);
 
-		return FollowerResponse.of(followers, limit);
+		return MemberWithRelationResponse.of(followers, limit);
 	}
+
+	public MemberWithRelationResponse getFollowing(String cursor, Integer limit, Member currentMember,
+		Long targetMemberId) {
+
+		validateMember(targetMemberId);
+		Long viewerId = (currentMember != null) ? currentMember.getId() : null;
+
+		// 커서 디코딩 (null 가능)
+		CursorUtil.Cursor decodedCursor = extractCursor(cursor);
+		// 다음 페이지 존재 여부 확인을 위해 +1
+		int fetchLimit = limit + 1;
+
+		List<MemberProfileWithRelation> followers = followRepository.findFolloweesWithRelation(
+			targetMemberId, viewerId,
+			decodedCursor != null ? decodedCursor.getTimestamp() : null,
+			decodedCursor != null  ? decodedCursor.getId() : null,
+			fetchLimit);
+
+		return MemberWithRelationResponse.of(followers, limit);
+	}
+
 
 	public UnFollowResponse unfollowMember(Member member, Long targetMemberId) {
 		validateMember(targetMemberId);

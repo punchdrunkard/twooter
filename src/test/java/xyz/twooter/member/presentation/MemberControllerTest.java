@@ -13,7 +13,7 @@ import org.springframework.http.MediaType;
 
 import xyz.twooter.member.presentation.dto.request.FollowRequest;
 import xyz.twooter.member.presentation.dto.response.FollowResponse;
-import xyz.twooter.member.presentation.dto.response.FollowerResponse;
+import xyz.twooter.member.presentation.dto.response.MemberWithRelationResponse;
 import xyz.twooter.member.presentation.dto.response.UnFollowResponse;
 import xyz.twooter.support.ControllerTestSupport;
 import xyz.twooter.support.security.WithMockCustomUser;
@@ -92,10 +92,33 @@ class MemberControllerTest extends ControllerTestSupport {
 			Integer limit = 20;
 
 			given(memberService.getFollowers(any(), any(), any(), any()))
-				.willReturn(FollowerResponse.builder().build());
+				.willReturn(MemberWithRelationResponse.builder().build());
 
 			// when & then
 			mockMvc.perform(get("/api/members/{memberId}/followers", memberId)
+					.param("cursor", cursor)
+					.param("limit", String.valueOf(limit)))
+				.andExpect(status().isOk());
+		}
+	}
+
+	@Nested
+	@DisplayName("멤버 팔로잉 조회 API")
+	class GetFollowingTests {
+
+		@DisplayName("성공 - 멤버의 팔로잉 목록을 조회할 수 있다.")
+		@Test
+		void shouldGetFollowing() throws Exception {
+			// given
+			Long memberId = 1L;
+			String cursor = null;
+			Integer limit = 20;
+
+			given(memberService.getFollowing(any(), any(), any(), any()))
+				.willReturn(MemberWithRelationResponse.builder().build());
+
+			// when & then
+			mockMvc.perform(get("/api/members/{memberId}/followings", memberId)
 					.param("cursor", cursor)
 					.param("limit", String.valueOf(limit)))
 				.andExpect(status().isOk());

@@ -22,8 +22,8 @@ import org.springframework.restdocs.payload.JsonFieldType;
 import xyz.twooter.docs.RestDocsSupport;
 import xyz.twooter.member.presentation.dto.request.FollowRequest;
 import xyz.twooter.member.presentation.dto.response.FollowResponse;
-import xyz.twooter.member.presentation.dto.response.FollowerProfile;
-import xyz.twooter.member.presentation.dto.response.FollowerResponse;
+import xyz.twooter.member.presentation.dto.response.MemberProfileWithRelation;
+import xyz.twooter.member.presentation.dto.response.MemberWithRelationResponse;
 import xyz.twooter.member.presentation.dto.response.UnFollowResponse;
 
 class MemberControllerDocsTest extends RestDocsSupport {
@@ -98,7 +98,7 @@ class MemberControllerDocsTest extends RestDocsSupport {
 	@Test
 	void getFollowers() throws Exception {
 		// given
-		FollowerResponse response = givenFollowersResponse();
+		MemberWithRelationResponse response = givenFollowersResponse();
 
 		String cursor = "dXNlcjpVMDYxTkZUVDI=";
 		Integer limit = 10;
@@ -114,7 +114,7 @@ class MemberControllerDocsTest extends RestDocsSupport {
 					.contentType(MediaType.APPLICATION_JSON)
 			)
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.followers").isArray())
+			.andExpect(jsonPath("$.members").isArray())
 			.andExpect(jsonPath("$.metadata").exists())
 			.andDo(document("get-followers",
 				preprocessRequest(prettyPrint()),
@@ -128,10 +128,52 @@ class MemberControllerDocsTest extends RestDocsSupport {
 					parameterWithName("limit").optional().description("조회할 최대 팔로워 수 (기본값: 20, 최소값: 1)")
 				),
 				responseFields(
-					fieldWithPath("followers").description("팔로워 목록"),
+					fieldWithPath("members").description("팔로워 목록"),
 					fieldWithPath("metadata").type(JsonFieldType.OBJECT).description("페이지네이션 메타데이터")
 				)
-					.andWithPrefix("followers[].", followersItemFields())
+					.andWithPrefix("members[].", followersItemFields())
+					.andWithPrefix("metadata.", paginationMetadataFields())
+			));
+	}
+
+	@DisplayName("해당 멤버의 팔로잉 목록 조회")
+	@Test
+	void getFollowing() throws Exception {
+		// given
+		MemberWithRelationResponse response = givenFollowersResponse();
+
+		String cursor = "dXNlcjpVMDYxTkZUVDI=";
+		Integer limit = 10;
+
+		given(memberService.getFollowing(any(), any(), any(), any()))
+			.willReturn(response); // 실제 FollowerProfile 객체로 대체 필요
+
+		// when & then
+		mockMvc.perform(
+				get("/api/members/{memberId}/followings", 1L)
+					.param("cursor", cursor)
+					.param("limit", limit.toString())
+					.contentType(MediaType.APPLICATION_JSON)
+			)
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.members").isArray())
+			.andExpect(jsonPath("$.metadata").exists())
+			.andDo(document("get-following",
+				preprocessRequest(prettyPrint()),
+				preprocessResponse(prettyPrint()),
+				pathParameters(
+					parameterWithName("memberId").description("팔로잉 목록을 조회할 멤버의 ID")
+				),
+				queryParameters(
+					parameterWithName("cursor").optional()
+						.description("이전 요청의 response 메타 데이터가 반환한 next_cursor 의 속성 (아무 값이 없을 경우 컬렉션이 첫 번째 페이지를 가져옴)"),
+					parameterWithName("limit").optional().description("조회할 최대 팔로잉 수 (기본값: 20, 최소값: 1)")
+				),
+				responseFields(
+					fieldWithPath("members").description("팔로잉 목록"),
+					fieldWithPath("metadata").type(JsonFieldType.OBJECT).description("페이지네이션 메타데이터")
+				)
+					.andWithPrefix("members[].", followersItemFields())
 					.andWithPrefix("metadata.", paginationMetadataFields())
 			));
 	}
@@ -150,8 +192,8 @@ class MemberControllerDocsTest extends RestDocsSupport {
 	}
 
 	// ==== 응답 객체 생성 메서드 ====
-	private static FollowerResponse givenFollowersResponse() {
-		FollowerProfile followerProfile1 = FollowerProfile.builder()
+	private static MemberWithRelationResponse givenFollowersResponse() {
+		MemberProfileWithRelation memberProfileWithRelation1 = MemberProfileWithRelation.builder()
 			.id(1L)
 			.handle("cameraman")
 			.nickname("카메라맨")
@@ -160,7 +202,7 @@ class MemberControllerDocsTest extends RestDocsSupport {
 			.isFollowingByMe(false)
 			.followsMe(false)
 			.build();
-		FollowerProfile followerProfile2 = FollowerProfile.builder()
+		MemberProfileWithRelation memberProfileWithRelation2 = MemberProfileWithRelation.builder()
 			.id(2L)
 			.handle("movie_journalist")
 			.nickname("영화 상영 기자")
@@ -169,7 +211,7 @@ class MemberControllerDocsTest extends RestDocsSupport {
 			.isFollowingByMe(false)
 			.followsMe(false)
 			.build();
-		FollowerProfile followerProfile3 = FollowerProfile.builder()
+		MemberProfileWithRelation memberProfileWithRelation3 = MemberProfileWithRelation.builder()
 			.id(3L)
 			.handle("movie_critic")
 			.nickname("영화 평론가")
@@ -178,7 +220,8 @@ class MemberControllerDocsTest extends RestDocsSupport {
 			.isFollowingByMe(true)
 			.followsMe(false)
 			.build();
-		FollowerResponse response = FollowerResponse.of(List.of(followerProfile1, followerProfile2, followerProfile3),
+		MemberWithRelationResponse response = MemberWithRelationResponse.of(List.of(memberProfileWithRelation1,
+				memberProfileWithRelation2, memberProfileWithRelation3),
 			10);
 		return response;
 	}
