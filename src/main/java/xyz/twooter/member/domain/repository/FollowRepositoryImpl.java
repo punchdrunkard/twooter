@@ -16,7 +16,6 @@ import lombok.RequiredArgsConstructor;
 import xyz.twooter.member.domain.QFollow;
 import xyz.twooter.member.domain.QMember;
 import xyz.twooter.member.domain.repository.projection.MemberProfileProjection;
-import xyz.twooter.member.presentation.dto.response.MemberProfileWithRelation;
 
 @RequiredArgsConstructor
 public class FollowRepositoryImpl implements FollowCustomRepository {

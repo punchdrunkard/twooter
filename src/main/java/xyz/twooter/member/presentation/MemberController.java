@@ -20,8 +20,8 @@ import xyz.twooter.member.application.MemberService;
 import xyz.twooter.member.domain.Member;
 import xyz.twooter.member.presentation.dto.request.FollowRequest;
 import xyz.twooter.member.presentation.dto.response.FollowResponse;
-import xyz.twooter.member.presentation.dto.response.MemberWithRelationResponse;
 import xyz.twooter.member.presentation.dto.response.MemberSummaryResponse;
+import xyz.twooter.member.presentation.dto.response.MemberWithRelationResponse;
 import xyz.twooter.member.presentation.dto.response.UnFollowResponse;
 
 @RestController
