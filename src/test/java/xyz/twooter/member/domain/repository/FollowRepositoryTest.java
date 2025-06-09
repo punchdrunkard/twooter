@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import jakarta.persistence.EntityManager;
 import xyz.twooter.member.domain.Follow;
 import xyz.twooter.member.domain.Member;
-import xyz.twooter.member.presentation.dto.response.MemberProfileWithRelation;
+import xyz.twooter.member.domain.repository.projection.MemberProfileProjection;
 import xyz.twooter.support.IntegrationTestSupport;
 
 class FollowRepositoryTest extends IntegrationTestSupport {
@@ -41,7 +41,7 @@ class FollowRepositoryTest extends IntegrationTestSupport {
 			createFollow(follower2, targetMember);
 
 			// when
-			List<MemberProfileWithRelation> followers = followRepository.findFollowersWithRelation(
+			List<MemberProfileProjection> followers = followRepository.findFollowersWithRelation(
 				targetMember.getId(),
 				null, // 로그인하지 않은 경우
 				null, // 커서가 없는 경우 (첫 페이지)
@@ -52,7 +52,7 @@ class FollowRepositoryTest extends IntegrationTestSupport {
 			// then
 			assertThat(followers).isNotEmpty();
 			assertThat(followers).hasSize(2);
-			List<Long> followersId = followers.stream().map(MemberProfileWithRelation::getId).toList();
+			List<Long> followersId = followers.stream().map(MemberProfileProjection::getId).toList();
 			assertThat(followersId).containsExactlyInAnyOrder(follower1.getId(), follower2.getId());
 		}
 
@@ -67,7 +67,7 @@ class FollowRepositoryTest extends IntegrationTestSupport {
 			createFollow(follower2, targetMember);
 
 			// when
-			List<MemberProfileWithRelation> followers = followRepository.findFollowersWithRelation(
+			List<MemberProfileProjection> followers = followRepository.findFollowersWithRelation(
 				targetMember.getId(),
 				null, // 로그인하지 않은 경우
 				null, // 커서가 없는 경우 (첫 페이지)
@@ -77,9 +77,9 @@ class FollowRepositoryTest extends IntegrationTestSupport {
 
 			// then
 			assertThat(followers).hasSize(2);
-			assertThat(followers.stream().map(MemberProfileWithRelation::isFollowingByMe).collect(Collectors.toList()))
+			assertThat(followers.stream().map(MemberProfileProjection::isFollowingByMe).collect(Collectors.toList()))
 				.containsOnly(false);
-			assertThat(followers.stream().map(MemberProfileWithRelation::isFollowsMe).collect(Collectors.toList()))
+			assertThat(followers.stream().map(MemberProfileProjection::isFollowsMe).collect(Collectors.toList()))
 				.containsOnly(false);
 		}
 
@@ -104,7 +104,7 @@ class FollowRepositoryTest extends IntegrationTestSupport {
 			createFollow(viewer, follower3);
 
 			// when
-			List<MemberProfileWithRelation> followers = followRepository.findFollowersWithRelation(
+			List<MemberProfileProjection> followers = followRepository.findFollowersWithRelation(
 				targetMember.getId(),
 				viewer.getId(), // 로그인한 유저
 				null, // 커서가 없는 경우 (첫 페이지)
@@ -115,7 +115,8 @@ class FollowRepositoryTest extends IntegrationTestSupport {
 			// then
 			assertThat(followers).hasSize(3);
 			assertThat(followers)
-				.extracting(MemberProfileWithRelation::getId, MemberProfileWithRelation::isFollowingByMe, MemberProfileWithRelation::isFollowsMe)
+				.extracting(MemberProfileProjection::getId, MemberProfileProjection::isFollowingByMe,
+					MemberProfileProjection::isFollowsMe)
 				.containsExactlyInAnyOrder( // 순서는 상관없으므로 AnyOrder 사용
 					tuple(follower1.getId(), true, false),  // viewer -> follower1 (O), follower1 -> viewer (X)
 					tuple(follower2.getId(), false, true),  // viewer -> follower2 (X), follower2 -> viewer (O)
@@ -141,7 +142,7 @@ class FollowRepositoryTest extends IntegrationTestSupport {
 			createFollow(targetMember, followee2);
 
 			// when
-			List<MemberProfileWithRelation> followees = followRepository.findFolloweesWithRelation(
+			List<MemberProfileProjection> followees = followRepository.findFolloweesWithRelation(
 				targetMember.getId(),
 				null, // 로그인하지 않은 경우
 				null, // 커서가 없는 경우 (첫 페이지)
@@ -152,7 +153,7 @@ class FollowRepositoryTest extends IntegrationTestSupport {
 			// then
 			assertThat(followees).isNotEmpty();
 			assertThat(followees).hasSize(2);
-			List<Long> followeesId = followees.stream().map(MemberProfileWithRelation::getId).toList();
+			List<Long> followeesId = followees.stream().map(MemberProfileProjection::getId).toList();
 			assertThat(followeesId).containsExactlyInAnyOrder(followee1.getId(), followee2.getId());
 		}
 
@@ -167,7 +168,7 @@ class FollowRepositoryTest extends IntegrationTestSupport {
 			createFollow(targetMember, followee2);
 
 			// when
-			List<MemberProfileWithRelation> followees = followRepository.findFolloweesWithRelation(
+			List<MemberProfileProjection> followees = followRepository.findFolloweesWithRelation(
 				targetMember.getId(),
 				null, // 로그인하지 않은 경우
 				null, // 커서가 없는 경우 (첫 페이지)
@@ -177,7 +178,7 @@ class FollowRepositoryTest extends IntegrationTestSupport {
 
 			// then
 			assertThat(followees).hasSize(2);
-			assertThat(followees.stream().map(MemberProfileWithRelation::isFollowingByMe).collect(Collectors.toList()))
+			assertThat(followees.stream().map(MemberProfileProjection::isFollowingByMe).collect(Collectors.toList()))
 				.containsOnly(false);
 		}
 
@@ -202,7 +203,7 @@ class FollowRepositoryTest extends IntegrationTestSupport {
 			createFollow(viewer, followee3);
 
 			// when
-			List<MemberProfileWithRelation> followees = followRepository.findFolloweesWithRelation(
+			List<MemberProfileProjection> followees = followRepository.findFolloweesWithRelation(
 				targetMember.getId(),
 				viewer.getId(), // 로그인한 유저
 				null, // 커서가 없는 경우 (첫 페이지)
@@ -213,7 +214,8 @@ class FollowRepositoryTest extends IntegrationTestSupport {
 			// then
 			assertThat(followees).hasSize(3);
 			assertThat(followees)
-				.extracting(MemberProfileWithRelation::getId, MemberProfileWithRelation::isFollowingByMe, MemberProfileWithRelation::isFollowsMe)
+				.extracting(MemberProfileProjection::getId, MemberProfileProjection::isFollowingByMe,
+					MemberProfileProjection::isFollowsMe)
 				.containsExactlyInAnyOrder( // 순서는 상관없으므로 AnyOrder 사용
 					tuple(followee1.getId(), true, false),  // viewer -> followee1 (O), followee1 -> viewer (X)
 					tuple(followee2.getId(), false, true),  // viewer -> followee2 (X), followee2 -> viewer (O)

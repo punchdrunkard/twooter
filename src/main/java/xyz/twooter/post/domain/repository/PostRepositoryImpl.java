@@ -16,7 +16,7 @@ import lombok.RequiredArgsConstructor;
 import xyz.twooter.member.domain.QMember;
 import xyz.twooter.post.domain.QPost;
 import xyz.twooter.post.domain.QPostLike;
-import xyz.twooter.post.presentation.dto.projection.TimelineItemProjection;
+import xyz.twooter.post.domain.repository.projection.TimelineItemProjection;
 
 @RequiredArgsConstructor
 public class PostRepositoryImpl implements PostCustomRepository {

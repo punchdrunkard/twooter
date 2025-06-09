@@ -16,7 +16,7 @@ import xyz.twooter.member.domain.Member;
 import xyz.twooter.member.presentation.dto.response.MemberBasic;
 import xyz.twooter.post.domain.model.PostType;
 import xyz.twooter.post.domain.repository.PostRepository;
-import xyz.twooter.post.presentation.dto.projection.TimelineItemProjection;
+import xyz.twooter.post.domain.repository.projection.TimelineItemProjection;
 import xyz.twooter.post.presentation.dto.response.MediaEntity;
 import xyz.twooter.post.presentation.dto.response.PostResponse;
 import xyz.twooter.post.presentation.dto.response.TimelineItemResponse;

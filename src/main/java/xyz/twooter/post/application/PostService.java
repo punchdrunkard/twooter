@@ -18,7 +18,7 @@ import xyz.twooter.post.domain.PostMedia;
 import xyz.twooter.post.domain.exception.PostNotFoundException;
 import xyz.twooter.post.domain.repository.PostMediaRepository;
 import xyz.twooter.post.domain.repository.PostRepository;
-import xyz.twooter.post.presentation.dto.projection.PostDetailProjection;
+import xyz.twooter.post.domain.repository.projection.PostDetailProjection;
 import xyz.twooter.post.presentation.dto.request.PostCreateRequest;
 import xyz.twooter.post.presentation.dto.response.MediaEntity;
 import xyz.twooter.post.presentation.dto.response.PostCreateResponse;

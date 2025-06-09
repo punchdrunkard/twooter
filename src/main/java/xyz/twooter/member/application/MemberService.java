@@ -73,10 +73,13 @@ public class MemberService {
 		int fetchLimit = limit + 1;
 
 		List<MemberProfileWithRelation> followers = followRepository.findFollowersWithRelation(
-			targetMemberId, viewerId,
-			decodedCursor != null ? decodedCursor.getTimestamp() : null,
-			decodedCursor != null ? decodedCursor.getId() : null,
-			fetchLimit);
+				targetMemberId, viewerId,
+				decodedCursor != null ? decodedCursor.getTimestamp() : null,
+				decodedCursor != null ? decodedCursor.getId() : null,
+				fetchLimit)
+			.stream()
+			.map(MemberProfileWithRelation::fromProjection)
+			.toList();
 
 		return MemberWithRelationResponse.of(followers, limit);
 	}
@@ -93,10 +96,13 @@ public class MemberService {
 		int fetchLimit = limit + 1;
 
 		List<MemberProfileWithRelation> followers = followRepository.findFolloweesWithRelation(
-			targetMemberId, viewerId,
-			decodedCursor != null ? decodedCursor.getTimestamp() : null,
-			decodedCursor != null ? decodedCursor.getId() : null,
-			fetchLimit);
+				targetMemberId, viewerId,
+				decodedCursor != null ? decodedCursor.getTimestamp() : null,
+				decodedCursor != null ? decodedCursor.getId() : null,
+				fetchLimit)
+			.stream()
+			.map(MemberProfileWithRelation::fromProjection)
+			.toList();
 
 		return MemberWithRelationResponse.of(followers, limit);
 	}

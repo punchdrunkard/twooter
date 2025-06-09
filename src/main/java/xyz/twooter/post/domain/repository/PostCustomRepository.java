@@ -3,7 +3,7 @@ package xyz.twooter.post.domain.repository;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import xyz.twooter.post.presentation.dto.projection.TimelineItemProjection;
+import xyz.twooter.post.domain.repository.projection.TimelineItemProjection;
 
 public interface PostCustomRepository {
 

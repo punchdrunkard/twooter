@@ -15,6 +15,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import xyz.twooter.member.domain.QFollow;
 import xyz.twooter.member.domain.QMember;
+import xyz.twooter.member.domain.repository.projection.MemberProfileProjection;
 import xyz.twooter.member.presentation.dto.response.MemberProfileWithRelation;
 
 @RequiredArgsConstructor
@@ -29,7 +30,7 @@ public class FollowRepositoryImpl implements FollowCustomRepository {
 	private final QMember following = new QMember("following");
 
 	@Override
-	public List<MemberProfileWithRelation> findFollowersWithRelation(
+	public List<MemberProfileProjection> findFollowersWithRelation(
 		Long memberId, Long viewerId, LocalDateTime cursorCreatedAt,
 		Long cursorId, int limit) {
 
@@ -37,7 +38,7 @@ public class FollowRepositoryImpl implements FollowCustomRepository {
 		BooleanExpression viewerLoggedIn = viewerId != null ? Expressions.TRUE : Expressions.FALSE;
 
 		return queryFactory
-			.select(Projections.fields(MemberProfileWithRelation.class,
+			.select(Projections.fields(MemberProfileProjection.class,
 				follower.id,
 				follower.handle,
 				follower.nickname,
@@ -79,7 +80,7 @@ public class FollowRepositoryImpl implements FollowCustomRepository {
 	}
 
 	@Override
-	public List<MemberProfileWithRelation> findFolloweesWithRelation( // 메서드 이름 변경
+	public List<MemberProfileProjection> findFolloweesWithRelation( // 메서드 이름 변경
 		Long memberId, Long viewerId, LocalDateTime cursorCreatedAt,
 		Long cursorId, int limit) {
 
@@ -87,7 +88,7 @@ public class FollowRepositoryImpl implements FollowCustomRepository {
 		BooleanExpression viewerLoggedIn = viewerId != null ? Expressions.TRUE : Expressions.FALSE;
 
 		return queryFactory
-			.select(Projections.fields(MemberProfileWithRelation.class,
+			.select(Projections.fields(MemberProfileProjection.class,
 				following.id, // 별칭 변경에 따라 필드도 변경
 				following.handle,
 				following.nickname,
