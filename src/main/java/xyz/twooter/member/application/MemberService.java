@@ -13,7 +13,6 @@ import xyz.twooter.auth.presentation.dto.request.SignUpRequest;
 import xyz.twooter.member.domain.Member;
 import xyz.twooter.member.domain.exception.MemberNotFoundException;
 import xyz.twooter.member.domain.repository.MemberRepository;
-import xyz.twooter.member.presentation.dto.response.MemberBasic;
 import xyz.twooter.member.presentation.dto.response.MemberSummaryResponse;
 
 @Service
@@ -31,11 +30,6 @@ public class MemberService {
 			bCryptPasswordEncoder.encode(request.getPassword()), request.getHandle());
 		memberRepository.save(member);
 		return MemberSummaryResponse.of(member);
-	}
-
-	public Long getMemberIdByHandle(String handle) {
-		return memberRepository.findMemberIdByHandle(handle)
-			.orElseThrow(MemberNotFoundException::new);
 	}
 
 	public MemberSummaryResponse createMemberSummary(String handle) {
@@ -62,4 +56,11 @@ public class MemberService {
 			throw new IllegalMemberIdException();
 		}
 	}
+
+	public void validateMember(Long memberId) {
+		if (Objects.isNull(memberId) || !memberRepository.existsById(memberId)) {
+			throw new IllegalMemberIdException();
+		}
+	}
+
 }

@@ -31,6 +31,8 @@ public enum ErrorCode {
 
 	// Member
 	MEMBER_NOT_FOUND(404, "M001", "해당 유저를 찾을 수 없습니다"),
+	FOLLOW_ALREADY_EXISTS(409, "M002", "이미 팔로우 중인 유저입니다"),
+	SELF_FOLLOW_NOT_ALLOWED(400, "M003", "자기 자신을 팔로우할 수 없습니다"),
 
 	// POST
 	POST_NOT_FOUND(404, "P001", "해당 포스트를 찾을 수 없습니다."),

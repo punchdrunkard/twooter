@@ -8,12 +8,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import xyz.twooter.post.domain.Post;
-import xyz.twooter.post.presentation.dto.projection.PostDetailProjection;
+import xyz.twooter.post.domain.repository.projection.PostDetailProjection;
 
 public interface PostRepository extends JpaRepository<Post, Long>, PostCustomRepository {
 
 	@Query("""
-		SELECT new xyz.twooter.post.presentation.dto.projection.PostDetailProjection(
+		SELECT new xyz.twooter.post.domain.repository.projection.PostDetailProjection(
 		    p.id, p.content,
 		    m.id, m.handle, m.nickname, m.avatarPath,
 		    p.createdAt, p.viewCount, p.likeCount, p.repostCount,

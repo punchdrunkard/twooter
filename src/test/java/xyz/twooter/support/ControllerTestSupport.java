@@ -13,6 +13,9 @@ import xyz.twooter.auth.presentation.AuthController;
 import xyz.twooter.config.TestSecurityConfiguration;
 import xyz.twooter.media.application.MediaService;
 import xyz.twooter.media.presentation.MediaController;
+import xyz.twooter.member.application.FollowService;
+import xyz.twooter.member.application.MemberService;
+import xyz.twooter.member.presentation.MemberController;
 import xyz.twooter.post.application.PostService;
 import xyz.twooter.post.application.TimelineService;
 import xyz.twooter.post.presentation.PostController;
@@ -23,7 +26,8 @@ import xyz.twooter.post.presentation.TimelineController;
 	AuthController.class,
 	PostController.class,
 	MediaController.class,
-	TimelineController.class
+	TimelineController.class,
+	MemberController.class
 })
 @Import(TestSecurityConfiguration.class)
 public abstract class ControllerTestSupport {
@@ -45,4 +49,10 @@ public abstract class ControllerTestSupport {
 
 	@MockitoBean
 	protected MediaService mediaService;
+
+	@MockitoBean
+	protected MemberService memberService;
+
+	@MockitoBean
+	protected FollowService followService;
 }

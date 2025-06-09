@@ -17,7 +17,7 @@ import xyz.twooter.member.domain.Follow;
 import xyz.twooter.member.domain.Member;
 import xyz.twooter.post.domain.Post;
 import xyz.twooter.post.domain.PostLike;
-import xyz.twooter.post.presentation.dto.projection.TimelineItemProjection;
+import xyz.twooter.post.domain.repository.projection.TimelineItemProjection;
 import xyz.twooter.support.IntegrationTestSupport;
 
 class PostRepositoryTest extends IntegrationTestSupport {

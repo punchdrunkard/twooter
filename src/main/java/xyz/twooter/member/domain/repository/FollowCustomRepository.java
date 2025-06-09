@@ -1,22 +1,23 @@
-package xyz.twooter.post.domain.repository;
+package xyz.twooter.member.domain.repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-import xyz.twooter.post.domain.repository.projection.TimelineItemProjection;
+import xyz.twooter.member.domain.repository.projection.MemberProfileProjection;
 
-public interface PostCustomRepository {
+public interface FollowCustomRepository {
 
-	List<TimelineItemProjection> findUserTimelineWithPagination(
-		Long targetMemberId,
+	List<MemberProfileProjection> findFollowersWithRelation(
+		Long memberId,
 		Long viewerId, // 현재 로그인한 유저 (null 가능)
 		LocalDateTime cursorCreatedAt, // null이 될 수 있음 (첫 페이지)
 		Long cursorId, // null이 될 수 있음 (첫 페이지)
 		int limit
 	);
 
-	List<TimelineItemProjection> findHomeTimelineWithPagination(
+	List<MemberProfileProjection> findFolloweesWithRelation(
 		Long memberId,
+		Long viewerId, // 현재 로그인한 유저 (null 가능)
 		LocalDateTime cursorCreatedAt, // null이 될 수 있음 (첫 페이지)
 		Long cursorId, // null이 될 수 있음 (첫 페이지)
 		int limit

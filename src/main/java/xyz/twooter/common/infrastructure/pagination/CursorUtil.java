@@ -96,6 +96,15 @@ public class CursorUtil {
 		}
 	}
 
+	public static Cursor extractCursor(String cursor) {
+		if (cursor == null || cursor.trim().isEmpty()) {
+			return null;
+		}
+
+		return CursorUtil.decode(cursor);
+	}
+
+
 	public String encode(LocalDateTime timestamp, Long id) {
 		return encode(new Cursor(timestamp, id));
 	}

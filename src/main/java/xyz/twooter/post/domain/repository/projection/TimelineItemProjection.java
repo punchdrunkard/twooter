@@ -1,4 +1,4 @@
-package xyz.twooter.post.presentation.dto.projection;
+package xyz.twooter.post.domain.repository.projection;
 
 import java.time.LocalDateTime;
 
