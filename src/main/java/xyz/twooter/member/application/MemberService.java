@@ -18,12 +18,13 @@ import xyz.twooter.member.domain.Follow;
 import xyz.twooter.member.domain.Member;
 import xyz.twooter.member.domain.exception.AlreadyFollowingException;
 import xyz.twooter.member.domain.exception.MemberNotFoundException;
+import xyz.twooter.member.domain.exception.SelfFollowException;
 import xyz.twooter.member.domain.repository.FollowRepository;
 import xyz.twooter.member.domain.repository.MemberRepository;
 import xyz.twooter.member.presentation.dto.response.FollowResponse;
 import xyz.twooter.member.presentation.dto.response.MemberProfileWithRelation;
-import xyz.twooter.member.presentation.dto.response.MemberWithRelationResponse;
 import xyz.twooter.member.presentation.dto.response.MemberSummaryResponse;
+import xyz.twooter.member.presentation.dto.response.MemberWithRelationResponse;
 import xyz.twooter.member.presentation.dto.response.UnFollowResponse;
 
 @Service
@@ -74,7 +75,7 @@ public class MemberService {
 		List<MemberProfileWithRelation> followers = followRepository.findFollowersWithRelation(
 			targetMemberId, viewerId,
 			decodedCursor != null ? decodedCursor.getTimestamp() : null,
-			decodedCursor != null  ? decodedCursor.getId() : null,
+			decodedCursor != null ? decodedCursor.getId() : null,
 			fetchLimit);
 
 		return MemberWithRelationResponse.of(followers, limit);
@@ -94,12 +95,11 @@ public class MemberService {
 		List<MemberProfileWithRelation> followers = followRepository.findFolloweesWithRelation(
 			targetMemberId, viewerId,
 			decodedCursor != null ? decodedCursor.getTimestamp() : null,
-			decodedCursor != null  ? decodedCursor.getId() : null,
+			decodedCursor != null ? decodedCursor.getId() : null,
 			fetchLimit);
 
 		return MemberWithRelationResponse.of(followers, limit);
 	}
-
 
 	public UnFollowResponse unfollowMember(Member member, Long targetMemberId) {
 		validateMember(targetMemberId);
@@ -110,6 +110,10 @@ public class MemberService {
 	private void validateFollowing(Member member, Long targetMemberId) {
 		if (followRepository.existsByFollowerIdAndFolloweeId(member.getId(), targetMemberId)) {
 			throw new AlreadyFollowingException();
+		}
+
+		if (Objects.equals(member.getId(), targetMemberId)) {
+			throw new SelfFollowException();
 		}
 	}
 

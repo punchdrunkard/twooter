@@ -14,6 +14,7 @@ import xyz.twooter.auth.domain.exception.IllegalMemberIdException;
 import xyz.twooter.member.domain.Follow;
 import xyz.twooter.member.domain.Member;
 import xyz.twooter.member.domain.exception.AlreadyFollowingException;
+import xyz.twooter.member.domain.exception.SelfFollowException;
 import xyz.twooter.member.domain.repository.FollowRepository;
 import xyz.twooter.member.domain.repository.MemberRepository;
 import xyz.twooter.member.presentation.dto.response.FollowResponse;
@@ -76,6 +77,17 @@ class MemberServiceTest extends IntegrationTestSupport {
 			// when & then
 			assertThatThrownBy(() -> memberService.followMember(member, targetMember.getId()))
 				.isInstanceOf(AlreadyFollowingException.class);
+		}
+
+		@DisplayName("실패 - 자기 자신을 팔로우할 수 없다.")
+		@Test
+		void shouldThrowExceptionWhenFollowingSelf() {
+			// given
+			Member member = saveTestMember();
+
+			// when & then
+			assertThatThrownBy(() -> memberService.followMember(member, member.getId()))
+				.isInstanceOf(SelfFollowException.class);
 		}
 	}
 
