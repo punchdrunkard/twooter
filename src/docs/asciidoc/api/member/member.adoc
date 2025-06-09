@@ -61,4 +61,5 @@ include::{snippets}/get-following/query-parameters.adoc[]
 
 ==== HTTP Response
 
+include::{snippets}/get-following/http-response.adoc[]
 include::{snippets}/get-following/response-fields.adoc[]
