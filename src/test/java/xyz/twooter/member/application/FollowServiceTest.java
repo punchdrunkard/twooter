@@ -187,7 +187,7 @@ class FollowServiceTest extends IntegrationTestSupport {
 
 		@DisplayName("성공 - 유저의 팔로잉 목록을 조회할 수 있다.")
 		@Test
-		void test() {
+		void shouldGetFollowingWhenValidMember() {
 			// given
 			Member member = saveTestMember("member");
 			Member followee1 = saveTestMember("followee1");
@@ -196,7 +196,7 @@ class FollowServiceTest extends IntegrationTestSupport {
 			saveFollow(member, followee2);
 
 			// when
-			MemberWithRelationResponse response = followService.getFollowing(null, 19, null, member.getId());
+			MemberWithRelationResponse response = followService.getFollowing(null, 10, null, member.getId());
 			List<MemberProfileWithRelation> followings = response.getMembers();
 
 			// then
