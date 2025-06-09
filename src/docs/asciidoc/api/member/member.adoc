@@ -1,5 +1,5 @@
 [[member]]
-=== Follow API
+=== 팔로우 API
 
 === 팔로우
 
@@ -48,3 +48,17 @@ include::{snippets}/get-followers/query-parameters.adoc[]
 include::{snippets}/get-followers/http-response.adoc[]
 include::{snippets}/get-followers/response-fields.adoc[]
 
+=== 팔로잉 목록
+
+해당 유저가 팔로우하고 있는 유저(팔로잉) 목록을 조회한다.
+로그인 했을 경우, 그 유저와의 관계도 함께 조회된다.
+
+==== HTTP Request
+
+include::{snippets}/get-following/http-request.adoc[]
+include::{snippets}/get-following/path-parameters.adoc[]
+include::{snippets}/get-following/query-parameters.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/get-following/response-fields.adoc[]
