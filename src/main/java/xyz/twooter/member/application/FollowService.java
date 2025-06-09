@@ -86,7 +86,7 @@ public class FollowService {
 		// 다음 페이지 존재 여부 확인을 위해 +1
 		int fetchLimit = limit + 1;
 
-		List<MemberProfileWithRelation> followers = followRepository.findFolloweesWithRelation(
+		List<MemberProfileWithRelation> followings = followRepository.findFolloweesWithRelation(
 				targetMemberId, viewerId,
 				decodedCursor != null ? decodedCursor.getTimestamp() : null,
 				decodedCursor != null ? decodedCursor.getId() : null,
@@ -95,7 +95,7 @@ public class FollowService {
 			.map(MemberProfileWithRelation::fromProjection)
 			.toList();
 
-		return MemberWithRelationResponse.of(followers, limit);
+		return MemberWithRelationResponse.of(followings, limit);
 	}
 
 	private void validateTargetMemberExists(Long memberId) {
