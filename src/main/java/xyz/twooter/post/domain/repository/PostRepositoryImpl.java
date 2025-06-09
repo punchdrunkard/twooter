@@ -25,125 +25,125 @@ import xyz.twooter.post.domain.repository.projection.TimelineItemProjection;
 @RequiredArgsConstructor
 public class PostRepositoryImpl implements PostCustomRepository {
 
-    private final JPAQueryFactory queryFactory;
+	private final JPAQueryFactory queryFactory;
 
-    private static final QPost originalPost = new QPost("originalPost");
-    private static final QPost viewerRepost = new QPost("viewerRepost");
-    private static final QMember author = new QMember("author");
-    private static final QMember originalAuthor = new QMember("originalAuthor");
-    private static final QPostLike viewerLike = new QPostLike("viewerLike");
+	private static final QPost originalPost = new QPost("originalPost");
+	private static final QPost viewerRepost = new QPost("viewerRepost");
+	private static final QMember author = new QMember("author");
+	private static final QMember originalAuthor = new QMember("originalAuthor");
+	private static final QPostLike viewerLike = new QPostLike("viewerLike");
 
-    @Override
-    public List<TimelineItemProjection> findUserTimelineWithPagination(
-       Long targetUserId,
-       Long viewerId,
-       LocalDateTime cursorCreatedAt,
-       Long cursorId,
-       int limit) {
+	@Override
+	public List<TimelineItemProjection> findUserTimelineWithPagination(
+		Long targetUserId,
+		Long viewerId,
+		LocalDateTime cursorCreatedAt,
+		Long cursorId,
+		int limit) {
 
-       return applyCommonTimelineQuery(viewerId)
-          .where(
-             post.authorId.eq(targetUserId), // User Timeline에만 해당하는 조건
-             commonPostConditions(), // 공통 포스트 조건
-             applyPaginationCondition(post.createdAt, post.id, cursorCreatedAt, cursorId)
-          )
-          .orderBy(post.createdAt.desc(), post.id.desc())
-          .limit(limit + 1)
-          .fetch();
-    }
+		return applyCommonTimelineQuery(viewerId)
+			.where(
+				post.authorId.eq(targetUserId), // User Timeline에만 해당하는 조건
+				commonPostConditions(), // 공통 포스트 조건
+				applyPaginationCondition(post.createdAt, post.id, cursorCreatedAt, cursorId)
+			)
+			.orderBy(post.createdAt.desc(), post.id.desc())
+			.limit(limit + 1)
+			.fetch();
+	}
 
-    @Override
-    public List<TimelineItemProjection> findHomeTimelineWithPagination(
-       Long memberId,
-       LocalDateTime cursorCreatedAt,
-       Long cursorId,
-       int limit) {
+	@Override
+	public List<TimelineItemProjection> findHomeTimelineWithPagination(
+		Long memberId,
+		LocalDateTime cursorCreatedAt,
+		Long cursorId,
+		int limit) {
 
-       return applyCommonTimelineQuery(memberId) // memberId == viewerId 인 경우
-          .leftJoin(follow) // Home Timeline에만 필요한 팔로우 조인
-          .on(follow.followerId.eq(memberId)
-             .and(follow.followeeId.eq(post.authorId)))
-          .where(
-             // 자신의 포스트이거나 팔로우한 사용자의 포스트
-             post.authorId.eq(memberId).or(follow.followerId.isNotNull()),
-             commonPostConditions(), // 공통 포스트 조건
-             applyPaginationCondition(post.createdAt, post.id, cursorCreatedAt, cursorId)
-          )
-          .orderBy(post.createdAt.desc(), post.id.desc())
-          .limit(limit + 1)
-          .fetch();
-    }
+		return applyCommonTimelineQuery(memberId) // memberId == viewerId 인 경우
+			.leftJoin(follow) // Home Timeline에만 필요한 팔로우 조인
+			.on(follow.followerId.eq(memberId)
+				.and(follow.followeeId.eq(post.authorId)))
+			.where(
+				// 자신의 포스트이거나 팔로우한 사용자의 포스트
+				post.authorId.eq(memberId).or(follow.followerId.isNotNull()),
+				commonPostConditions(), // 공통 포스트 조건
+				applyPaginationCondition(post.createdAt, post.id, cursorCreatedAt, cursorId)
+			)
+			.orderBy(post.createdAt.desc(), post.id.desc())
+			.limit(limit + 1)
+			.fetch();
+	}
 
-    private JPAQuery<TimelineItemProjection> applyCommonTimelineQuery(Long viewerId) {
-        return queryFactory
-            .select(createTimelineProjection())
-            .from(post)
-            .join(author).on(post.authorId.eq(author.id))
-            .leftJoin(originalPost).on(post.repostOfId.eq(originalPost.id))
-            .leftJoin(originalAuthor).on(originalPost.authorId.eq(originalAuthor.id))
-            .leftJoin(viewerLike)
-            .on(viewerLike.postId.eq(post.repostOfId.coalesce(post.id))
-                .and(Objects.nonNull(viewerId) ? viewerLike.memberId.eq(viewerId) : Expressions.FALSE))
-            .leftJoin(viewerRepost)
-            .on(viewerRepost.repostOfId.eq(post.repostOfId.coalesce(post.id))
-                .and(Objects.nonNull(viewerId) ? viewerRepost.authorId.eq(viewerId) : Expressions.FALSE)
-                .and(viewerRepost.isDeleted.isFalse()));
-    }
+	private JPAQuery<TimelineItemProjection> applyCommonTimelineQuery(Long viewerId) {
+		return queryFactory
+			.select(createTimelineProjection())
+			.from(post)
+			.join(author).on(post.authorId.eq(author.id))
+			.leftJoin(originalPost).on(post.repostOfId.eq(originalPost.id))
+			.leftJoin(originalAuthor).on(originalPost.authorId.eq(originalAuthor.id))
+			.leftJoin(viewerLike)
+			.on(viewerLike.postId.eq(post.repostOfId.coalesce(post.id))
+				.and(Objects.nonNull(viewerId) ? viewerLike.memberId.eq(viewerId) : Expressions.FALSE))
+			.leftJoin(viewerRepost)
+			.on(viewerRepost.repostOfId.eq(post.repostOfId.coalesce(post.id))
+				.and(Objects.nonNull(viewerId) ? viewerRepost.authorId.eq(viewerId) : Expressions.FALSE)
+				.and(viewerRepost.isDeleted.isFalse()));
+	}
 
-    private static BooleanExpression commonPostConditions() {
-        return post.isDeleted.isFalse()
-            .and(originalPost.isDeleted.isFalse().or(originalPost.id.isNull()));
-    }
+	private static BooleanExpression commonPostConditions() {
+		return post.isDeleted.isFalse()
+			.and(originalPost.isDeleted.isFalse().or(originalPost.id.isNull()));
+	}
 
-    private static ConstructorExpression<TimelineItemProjection> createTimelineProjection() {
-       return Projections.constructor(TimelineItemProjection.class,
-          // type: 리포스트 여부 판단
-          new CaseBuilder()
-             .when(post.repostOfId.isNotNull()).then("repost")
-             .otherwise("post"),
+	private static ConstructorExpression<TimelineItemProjection> createTimelineProjection() {
+		return Projections.constructor(TimelineItemProjection.class,
+			// type: 리포스트 여부 판단
+			new CaseBuilder()
+				.when(post.repostOfId.isNotNull()).then("repost")
+				.otherwise("post"),
 
-          // createdAt: 타임라인 정렬 기준
-          post.createdAt,
+			// createdAt: 타임라인 정렬 기준
+			post.createdAt,
 
-          // postId: 실제 표시할 포스트 ID
-          post.repostOfId.coalesce(post.id),
+			// postId: 실제 표시할 포스트 ID
+			post.repostOfId.coalesce(post.id),
 
-          // content: 실제 표시할 컨텐츠
-          originalPost.content.coalesce(post.content),
+			// content: 실제 표시할 컨텐츠
+			originalPost.content.coalesce(post.content),
 
-          // author: 실제 포스트 작성자
-          originalAuthor.id.coalesce(author.id),
-          originalAuthor.handle.coalesce(author.handle),
-          originalAuthor.nickname.coalesce(author.nickname),
-          originalAuthor.avatarPath.coalesce(author.avatarPath),
+			// author: 실제 포스트 작성자
+			originalAuthor.id.coalesce(author.id),
+			originalAuthor.handle.coalesce(author.handle),
+			originalAuthor.nickname.coalesce(author.nickname),
+			originalAuthor.avatarPath.coalesce(author.avatarPath),
 
-          // 통계: 원본 포스트 기준
-          originalPost.likeCount.coalesce(post.likeCount),
-          originalPost.repostCount.coalesce(post.repostCount),
-          originalPost.viewCount.coalesce(post.viewCount),
+			// 통계: 원본 포스트 기준
+			originalPost.likeCount.coalesce(post.likeCount),
+			originalPost.repostCount.coalesce(post.repostCount),
+			originalPost.viewCount.coalesce(post.viewCount),
 
-          viewerLike.id.isNotNull(),
-          viewerRepost.id.isNotNull(),
+			viewerLike.id.isNotNull(),
+			viewerRepost.id.isNotNull(),
 
-          // 삭제 여부
-          originalPost.isDeleted.coalesce(post.isDeleted),
+			// 삭제 여부
+			originalPost.isDeleted.coalesce(post.isDeleted),
 
-          // 원본 포스트 작성 시간
-          originalPost.createdAt.coalesce(post.createdAt),
+			// 원본 포스트 작성 시간
+			originalPost.createdAt.coalesce(post.createdAt),
 
-          // 리포스터 정보
-          new CaseBuilder()
-             .when(post.repostOfId.isNotNull()).then(author.id)
-             .otherwise((Long)null),
-          new CaseBuilder()
-             .when(post.repostOfId.isNotNull()).then(author.handle)
-             .otherwise((String)null),
-          new CaseBuilder()
-             .when(post.repostOfId.isNotNull()).then(author.nickname)
-             .otherwise((String)null),
-          new CaseBuilder()
-             .when(post.repostOfId.isNotNull()).then(author.avatarPath)
-             .otherwise((String)null)
-       );
-    }
+			// 리포스터 정보
+			new CaseBuilder()
+				.when(post.repostOfId.isNotNull()).then(author.id)
+				.otherwise((Long)null),
+			new CaseBuilder()
+				.when(post.repostOfId.isNotNull()).then(author.handle)
+				.otherwise((String)null),
+			new CaseBuilder()
+				.when(post.repostOfId.isNotNull()).then(author.nickname)
+				.otherwise((String)null),
+			new CaseBuilder()
+				.when(post.repostOfId.isNotNull()).then(author.avatarPath)
+				.otherwise((String)null)
+		);
+	}
 }
