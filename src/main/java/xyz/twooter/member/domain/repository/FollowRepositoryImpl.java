@@ -63,11 +63,11 @@ public class FollowRepositoryImpl implements FollowCustomRepository {
 			// viewer가 이 팔로워를 팔로우하는지 확인
 			.leftJoin(viewerFollowing)
 			.on(viewerFollowing.followeeId.eq(follower.id)
-				.and(viewerId != null ? viewerFollowing.followerId.eq(viewerId) : null))
+				.and(viewerId != null ? viewerFollowing.followerId.eq(viewerId) : Expressions.FALSE))
 			// 이 팔로워가 viewer를 팔로우하는지 확인
 			.leftJoin(viewerFollower).on(
 				viewerFollower.followerId.eq(follower.id)
-					.and(viewerId != null ? viewerFollower.followeeId.eq(viewerId) : null)
+					.and(viewerId != null ? viewerFollower.followeeId.eq(viewerId) : Expressions.FALSE)
 			)
 			.where(
 				follow.followeeId.eq(memberId),  // memberId의 팔로워들
@@ -114,12 +114,12 @@ public class FollowRepositoryImpl implements FollowCustomRepository {
 			// viewer가 이 'followee'를 팔로우하는지
 			.leftJoin(viewerFollowing)
 			.on(viewerFollowing.followeeId.eq(following.id)
-				.and(viewerId != null ? viewerFollowing.followerId.eq(viewerId) : null))
+				.and(viewerId != null ? viewerFollowing.followerId.eq(viewerId) : Expressions.FALSE))
 			// 이 'followee'가 viewer를 팔로우하는지 확인 (followsMe)
 			.leftJoin(viewerFollower)
 			.on(
 				viewerFollower.followerId.eq(following.id)
-					.and(viewerId != null ? viewerFollower.followeeId.eq(viewerId) : null)
+					.and(viewerId != null ? viewerFollower.followeeId.eq(viewerId) : Expressions.FALSE)
 			)
 			.where(
 				follow.followerId.eq(memberId),
