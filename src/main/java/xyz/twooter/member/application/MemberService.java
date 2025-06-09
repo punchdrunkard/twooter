@@ -61,6 +61,13 @@ public class MemberService {
 		return FollowResponse.from(followRepository.save(follow));
 	}
 
+	@Transactional
+	public UnFollowResponse unfollowMember(Member member, Long targetMemberId) {
+		validateMember(targetMemberId);
+		followRepository.deleteByFollowerIdAndFolloweeId(member.getId(), targetMemberId);
+		return UnFollowResponse.of(targetMemberId);
+	}
+
 	public MemberWithRelationResponse getFollowers(String cursor, Integer limit, Member currentMember,
 		Long targetMemberId) {
 
@@ -105,12 +112,6 @@ public class MemberService {
 			.toList();
 
 		return MemberWithRelationResponse.of(followers, limit);
-	}
-
-	public UnFollowResponse unfollowMember(Member member, Long targetMemberId) {
-		validateMember(targetMemberId);
-		followRepository.deleteByFollowerIdAndFolloweeId(member.getId(), targetMemberId);
-		return UnFollowResponse.of(targetMemberId);
 	}
 
 	private void validateFollowing(Member member, Long targetMemberId) {
