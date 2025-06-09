@@ -16,6 +16,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import xyz.twooter.auth.infrastructure.annotation.CurrentMember;
+import xyz.twooter.member.application.FollowService;
 import xyz.twooter.member.application.MemberService;
 import xyz.twooter.member.domain.Member;
 import xyz.twooter.member.presentation.dto.request.FollowRequest;
@@ -31,6 +32,7 @@ import xyz.twooter.member.presentation.dto.response.UnFollowResponse;
 public class MemberController {
 
 	private final MemberService memberService;
+	private final FollowService followService;
 
 	@GetMapping("/me")
 	public ResponseEntity<MemberSummaryResponse> getMyInfo(@CurrentMember Member member) {
@@ -40,14 +42,14 @@ public class MemberController {
 	@PostMapping("/follow")
 	public ResponseEntity<FollowResponse> followMember(@CurrentMember Member member,
 		@Valid @RequestBody FollowRequest request) {
-		FollowResponse response = memberService.followMember(member, request.getTargetMemberId());
+		FollowResponse response = followService.followMember(member, request.getTargetMemberId());
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
 	@DeleteMapping("/follow/{targetMemberId}")
 	public ResponseEntity<UnFollowResponse> unfollowMember(@CurrentMember Member member,
 		@PathVariable Long targetMemberId) {
-		UnFollowResponse response = memberService.unfollowMember(member, targetMemberId);
+		UnFollowResponse response = followService.unfollowMember(member, targetMemberId);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 
@@ -59,10 +61,9 @@ public class MemberController {
 		@CurrentMember Member currentMember,
 		@PathVariable Long memberId
 	) {
-		MemberWithRelationResponse response = memberService.getFollowers(cursor, limit, currentMember, memberId);
+		MemberWithRelationResponse response = followService.getFollowers(cursor, limit, currentMember, memberId);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
-
 
 	@GetMapping("/{memberId}/followings")
 	public ResponseEntity<MemberWithRelationResponse> getFollowing(
@@ -71,7 +72,7 @@ public class MemberController {
 		@CurrentMember Member currentMember,
 		@PathVariable Long memberId
 	) {
-		MemberWithRelationResponse response = memberService.getFollowing(cursor, limit, currentMember, memberId);
+		MemberWithRelationResponse response = followService.getFollowing(cursor, limit, currentMember, memberId);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 

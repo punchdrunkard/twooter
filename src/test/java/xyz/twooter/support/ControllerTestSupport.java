@@ -13,6 +13,7 @@ import xyz.twooter.auth.presentation.AuthController;
 import xyz.twooter.config.TestSecurityConfiguration;
 import xyz.twooter.media.application.MediaService;
 import xyz.twooter.media.presentation.MediaController;
+import xyz.twooter.member.application.FollowService;
 import xyz.twooter.member.application.MemberService;
 import xyz.twooter.member.presentation.MemberController;
 import xyz.twooter.post.application.PostService;
@@ -51,4 +52,7 @@ public abstract class ControllerTestSupport {
 
 	@MockitoBean
 	protected MemberService memberService;
+
+	@MockitoBean
+	protected FollowService followService;
 }

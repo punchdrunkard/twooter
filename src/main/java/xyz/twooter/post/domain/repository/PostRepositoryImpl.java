@@ -1,8 +1,8 @@
 package xyz.twooter.post.domain.repository;
 
-import static xyz.twooter.common.infrastructure.querydsl.QueryDslPaginationUtils.applyPaginationCondition;
-import static xyz.twooter.member.domain.QFollow.follow;
-import static xyz.twooter.post.domain.QPost.post;
+import static xyz.twooter.common.infrastructure.querydsl.QueryDslPaginationUtils.*;
+import static xyz.twooter.member.domain.QFollow.*;
+import static xyz.twooter.post.domain.QPost.*;
 
 import java.time.LocalDateTime;
 import java.util.List;

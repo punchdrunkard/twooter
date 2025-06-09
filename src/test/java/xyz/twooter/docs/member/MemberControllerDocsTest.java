@@ -37,7 +37,7 @@ class MemberControllerDocsTest extends RestDocsSupport {
 		FollowRequest request = givenFollowRequest();
 		FollowResponse response = givenFollowResponse();
 
-		given(memberService.followMember(any(), anyLong())).willReturn(response);
+		given(followService.followMember(any(), anyLong())).willReturn(response);
 
 		// when  & then
 		mockMvc.perform(post("/api/members/follow")
@@ -70,7 +70,7 @@ class MemberControllerDocsTest extends RestDocsSupport {
 		Long targetMemberId = 1L;
 		UnFollowResponse response = UnFollowResponse.of(targetMemberId);
 
-		given(memberService.unfollowMember(any(), anyLong())).willReturn(response);
+		given(followService.unfollowMember(any(), anyLong())).willReturn(response);
 
 		// when  & then
 		mockMvc.perform(delete("/api/members/follow/{targetMemberId}", targetMemberId)
@@ -103,7 +103,7 @@ class MemberControllerDocsTest extends RestDocsSupport {
 		String cursor = "dXNlcjpVMDYxTkZUVDI=";
 		Integer limit = 10;
 
-		given(memberService.getFollowers(any(), any(), any(), any()))
+		given(followService.getFollowers(any(), any(), any(), any()))
 			.willReturn(response); // 실제 FollowerProfile 객체로 대체 필요
 
 		// when & then
@@ -145,7 +145,7 @@ class MemberControllerDocsTest extends RestDocsSupport {
 		String cursor = "dXNlcjpVMDYxTkZUVDI=";
 		Integer limit = 10;
 
-		given(memberService.getFollowing(any(), any(), any(), any()))
+		given(followService.getFollowing(any(), any(), any(), any()))
 			.willReturn(response); // 실제 FollowerProfile 객체로 대체 필요
 
 		// when & then

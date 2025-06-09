@@ -34,7 +34,7 @@ class MemberControllerTest extends ControllerTestSupport {
 			FollowRequest request = givenFollowRequest();
 			FollowResponse response = givenFollowResponse();
 
-			given(memberService.followMember(any(), anyLong())).willReturn(response);
+			given(followService.followMember(any(), anyLong())).willReturn(response);
 
 			// when & then
 			mockMvc.perform(post("/api/members/follow")
@@ -70,7 +70,7 @@ class MemberControllerTest extends ControllerTestSupport {
 		void shouldUnfollowMember() throws Exception {
 			// given
 			Long targetMemberId = 1L;
-			given(memberService.unfollowMember(any(), anyLong())).willReturn(UnFollowResponse.of(targetMemberId));
+			given(followService.unfollowMember(any(), anyLong())).willReturn(UnFollowResponse.of(targetMemberId));
 
 			// when & then
 			mockMvc.perform(delete("/api/members/follow/{targetMemberId}", targetMemberId))
@@ -91,7 +91,7 @@ class MemberControllerTest extends ControllerTestSupport {
 			String cursor = null;
 			Integer limit = 20;
 
-			given(memberService.getFollowers(any(), any(), any(), any()))
+			given(followService.getFollowers(any(), any(), any(), any()))
 				.willReturn(MemberWithRelationResponse.builder().build());
 
 			// when & then
@@ -114,7 +114,7 @@ class MemberControllerTest extends ControllerTestSupport {
 			String cursor = null;
 			Integer limit = 20;
 
-			given(memberService.getFollowing(any(), any(), any(), any()))
+			given(followService.getFollowing(any(), any(), any(), any()))
 				.willReturn(MemberWithRelationResponse.builder().build());
 
 			// when & then

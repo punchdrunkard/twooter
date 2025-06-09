@@ -23,16 +23,14 @@ import xyz.twooter.member.presentation.dto.response.MemberWithRelationResponse;
 import xyz.twooter.member.presentation.dto.response.UnFollowResponse;
 import xyz.twooter.support.IntegrationTestSupport;
 
-class MemberServiceTest extends IntegrationTestSupport {
+class FollowServiceTest extends IntegrationTestSupport {
 
 	@Autowired
-	private MemberService memberService;
-
-	@Autowired
-	private MemberRepository memberRepository;
-
+	private FollowService followService;
 	@Autowired
 	private FollowRepository followRepository;
+	@Autowired
+	private MemberRepository memberRepository;
 
 	@Nested
 	@DisplayName("Follow Member")
@@ -46,7 +44,7 @@ class MemberServiceTest extends IntegrationTestSupport {
 			Member targetMember = saveTestMember("followee");
 
 			// when
-			FollowResponse followResponse = memberService.followMember(member, targetMember.getId());
+			FollowResponse followResponse = followService.followMember(member, targetMember.getId());
 
 			// then
 			assertThat(followResponse).isNotNull();
@@ -62,7 +60,7 @@ class MemberServiceTest extends IntegrationTestSupport {
 			Long nonExistentMemberId = -1L; // Assuming this ID does not exist
 
 			// when & then
-			assertThatThrownBy(() -> memberService.followMember(member, nonExistentMemberId))
+			assertThatThrownBy(() -> followService.followMember(member, nonExistentMemberId))
 				.isInstanceOf(IllegalMemberIdException.class);
 		}
 
@@ -75,7 +73,7 @@ class MemberServiceTest extends IntegrationTestSupport {
 			saveFollow(member, targetMember);
 
 			// when & then
-			assertThatThrownBy(() -> memberService.followMember(member, targetMember.getId()))
+			assertThatThrownBy(() -> followService.followMember(member, targetMember.getId()))
 				.isInstanceOf(AlreadyFollowingException.class);
 		}
 
@@ -86,7 +84,7 @@ class MemberServiceTest extends IntegrationTestSupport {
 			Member member = saveTestMember();
 
 			// when & then
-			assertThatThrownBy(() -> memberService.followMember(member, member.getId()))
+			assertThatThrownBy(() -> followService.followMember(member, member.getId()))
 				.isInstanceOf(SelfFollowException.class);
 		}
 	}
@@ -104,7 +102,7 @@ class MemberServiceTest extends IntegrationTestSupport {
 			saveFollow(member, targetMember);
 
 			// when
-			UnFollowResponse response = memberService.unfollowMember(member, targetMember.getId());
+			UnFollowResponse response = followService.unfollowMember(member, targetMember.getId());
 
 			// then
 			assertThat(followRepository.existsByFollowerIdAndFolloweeId(member.getId(), targetMember.getId()))
@@ -121,7 +119,7 @@ class MemberServiceTest extends IntegrationTestSupport {
 			Long nonExistentMemberId = -1L; // Assuming this ID does not exist
 
 			// when & then
-			assertThatThrownBy(() -> memberService.unfollowMember(member, nonExistentMemberId))
+			assertThatThrownBy(() -> followService.unfollowMember(member, nonExistentMemberId))
 				.isInstanceOf(IllegalMemberIdException.class);
 		}
 
@@ -133,7 +131,7 @@ class MemberServiceTest extends IntegrationTestSupport {
 			Member targetMember = saveTestMember("followee");
 
 			// when
-			UnFollowResponse response = memberService.unfollowMember(member, targetMember.getId());
+			UnFollowResponse response = followService.unfollowMember(member, targetMember.getId());
 
 			// then
 			assertThat(followRepository.existsByFollowerIdAndFolloweeId(member.getId(), targetMember.getId()))
@@ -159,7 +157,7 @@ class MemberServiceTest extends IntegrationTestSupport {
 			saveFollow(follower2, member);
 
 			// when
-			MemberWithRelationResponse response = memberService.getFollowers(null, 10, null, member.getId());
+			MemberWithRelationResponse response = followService.getFollowers(null, 10, null, member.getId());
 			List<MemberProfileWithRelation> followers = response.getMembers();
 
 			// then
@@ -178,7 +176,7 @@ class MemberServiceTest extends IntegrationTestSupport {
 			Long nonExistentMemberId = -1L;
 
 			// when & then
-			assertThatThrownBy(() -> memberService.getFollowers(null, 10, null, nonExistentMemberId))
+			assertThatThrownBy(() -> followService.getFollowers(null, 10, null, nonExistentMemberId))
 				.isInstanceOf(IllegalMemberIdException.class);
 		}
 	}
@@ -198,7 +196,7 @@ class MemberServiceTest extends IntegrationTestSupport {
 			saveFollow(member, followee2);
 
 			// when
-			MemberWithRelationResponse response = memberService.getFollowing(null, 19, null, member.getId());
+			MemberWithRelationResponse response = followService.getFollowing(null, 19, null, member.getId());
 			List<MemberProfileWithRelation> followings = response.getMembers();
 
 			// then
@@ -217,11 +215,12 @@ class MemberServiceTest extends IntegrationTestSupport {
 			Long nonExistentMemberId = -1L;
 
 			// when & then
-			assertThatThrownBy(() -> memberService.getFollowing(null, 10, null, nonExistentMemberId))
+			assertThatThrownBy(() -> followService.getFollowing(null, 10, null, nonExistentMemberId))
 				.isInstanceOf(IllegalMemberIdException.class);
 		}
 	}
 
+	// ========= 헬퍼 메서드 =========
 	private void saveFollow(Member member, Member targetMember) {
 		Follow follow = Follow.builder()
 			.followerId(member.getId())
@@ -230,7 +229,6 @@ class MemberServiceTest extends IntegrationTestSupport {
 		followRepository.save(follow);
 	}
 
-	// ====== 헬퍼 =====
 	private Member saveTestMember(String handle) {
 		String email = handle + "@test.test";
 
@@ -242,5 +240,5 @@ class MemberServiceTest extends IntegrationTestSupport {
 		Member member = Member.createDefaultMember("test@test.test", "password", "tester");
 		return memberRepository.save(member);
 	}
-
 }
+
