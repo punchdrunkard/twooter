@@ -22,11 +22,11 @@ public class FollowRepositoryImpl implements FollowCustomRepository {
 
 	private final JPAQueryFactory queryFactory;
 
-	private final QFollow viewerFollowing = new QFollow("viewerFollowing");  // viewer가 팔로우하는 관계
-	private final QFollow viewerFollower = new QFollow("viewerFollower");    // viewer를 팔로우하는 관계
+	private static final QFollow viewerFollowing = new QFollow("viewerFollowing");  // viewer가 팔로우하는 관계
+	private static final QFollow viewerFollower = new QFollow("viewerFollower");    // viewer를 팔로우하는 관계
 
-	private final QMember follower = new QMember("follower");
-	private final QMember following = new QMember("following");
+	private static final QMember follower = new QMember("follower");
+	private static final QMember following = new QMember("following");
 
 	@Override
 	public List<MemberProfileProjection> findFollowersWithRelation(
