@@ -20,8 +20,7 @@ include::api/auth/auth.adoc[]
 
 include::api/member/member.adoc[]
 
-[[User-API]]
-[[Timelie-API]]
+[[Timeline-API]]
 == Timeline API
 
 include::api/timeline/timeline.adoc[]
