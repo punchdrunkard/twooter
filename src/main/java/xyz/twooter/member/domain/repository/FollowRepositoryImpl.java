@@ -5,6 +5,7 @@ import static xyz.twooter.member.domain.QFollow.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -22,9 +23,8 @@ public class FollowRepositoryImpl implements FollowCustomRepository {
 
 	private final JPAQueryFactory queryFactory;
 
-	private static final QFollow viewerFollowing = new QFollow("viewerFollowing");  // viewer가 팔로우하는 관계
-	private static final QFollow viewerFollower = new QFollow("viewerFollower");    // viewer를 팔로우하는 관계
-
+	private static final QFollow viewerFollowing = new QFollow("viewerFollowing");
+	private static final QFollow viewerFollower = new QFollow("viewerFollower");
 	private static final QMember follower = new QMember("follower");
 	private static final QMember following = new QMember("following");
 
@@ -32,97 +32,59 @@ public class FollowRepositoryImpl implements FollowCustomRepository {
 	public List<MemberProfileProjection> findFollowersWithRelation(
 		Long memberId, Long viewerId, LocalDateTime cursorCreatedAt,
 		Long cursorId, int limit) {
-
-		// viewerId가 null이 아닌지 체크하는 BooleanExpression 생성
-		BooleanExpression viewerLoggedIn = viewerId != null ? Expressions.TRUE : Expressions.FALSE;
-
-		return queryFactory
-			.select(Projections.fields(MemberProfileProjection.class,
-				follower.id,
-				follower.handle,
-				follower.nickname,
-				follower.avatarPath,
-				follower.bio,
-				// isFollowingByMe: 내가 이 사람을 팔로우하는지
-				// viewerId가 null이면 이 조건은 항상 false
-				new CaseBuilder()
-					// viewerLoggedIn 이면서 AND viewerFollowing이 조인되면 true
-					.when(viewerLoggedIn.and(viewerFollowing.id.isNotNull())).then(true)
-					.otherwise(false)
-					.as("isFollowingByMe"),
-				// followMe: 이 사람이 나를 팔로우하는지
-				// viewerId가 null이면 이 조건은 항상 false
-				new CaseBuilder()
-					// viewerLoggedIn 이면서 AND viewerFollower가 조인되면 true
-					.when(viewerLoggedIn.and(viewerFollower.id.isNotNull())).then(true)
-					.otherwise(false)
-					.as("followsMe")
-			))
-			.from(follow)
-			.join(follower).on(follow.followerId.eq(follower.id))
-			// viewer가 이 팔로워를 팔로우하는지 확인
-			.leftJoin(viewerFollowing)
-			.on(viewerFollowing.followeeId.eq(follower.id)
-				.and(viewerId != null ? viewerFollowing.followerId.eq(viewerId) : Expressions.FALSE))
-			// 이 팔로워가 viewer를 팔로우하는지 확인
-			.leftJoin(viewerFollower).on(
-				viewerFollower.followerId.eq(follower.id)
-					.and(viewerId != null ? viewerFollower.followeeId.eq(viewerId) : Expressions.FALSE)
-			)
-			.where(
-				follow.followeeId.eq(memberId),  // memberId의 팔로워들
-				applyPaginationCondition(follow.createdAt, follow.id, cursorCreatedAt, cursorId)
-			)
-			.orderBy(follow.createdAt.desc(), follow.id.desc())
-			.limit(limit + 1)
-			.fetch();
+		return findMembersWithFollowRelation(
+			FollowRelationType.FOLLOWERS, memberId, viewerId, cursorCreatedAt, cursorId, limit
+		);
 	}
 
 	@Override
-	public List<MemberProfileProjection> findFolloweesWithRelation( // 메서드 이름 변경
+	public List<MemberProfileProjection> findFolloweesWithRelation(
 		Long memberId, Long viewerId, LocalDateTime cursorCreatedAt,
 		Long cursorId, int limit) {
+		return findMembersWithFollowRelation(
+			FollowRelationType.FOLLOWEES, memberId, viewerId, cursorCreatedAt, cursorId, limit
+		);
+	}
 
-		// viewerId가 null이 아닌지 체크하는 BooleanExpression 생성
-		BooleanExpression viewerLoggedIn = viewerId != null ? Expressions.TRUE : Expressions.FALSE;
+	private List<MemberProfileProjection> findMembersWithFollowRelation(
+		FollowRelationType type, Long memberId, Long viewerId,
+		LocalDateTime cursorCreatedAt, Long cursorId, int limit) {
+
+		BooleanExpression viewerLoggedIn = Objects.nonNull(viewerId) ? Expressions.TRUE : Expressions.FALSE;
+
+		// 조인 대상 멤버
+		QMember targetMember = type.getTargetMember(follower, following);
 
 		return queryFactory
 			.select(Projections.fields(MemberProfileProjection.class,
-				following.id, // 별칭 변경에 따라 필드도 변경
-				following.handle,
-				following.nickname,
-				following.avatarPath,
-				following.bio,
+				targetMember.id,
+				targetMember.handle,
+				targetMember.nickname,
+				targetMember.avatarPath,
+				targetMember.bio,
 				// isFollowingByMe: 내가 이 사람을 팔로우하는지
-				// viewerId가 null이면 이 조건은 항상 false
 				new CaseBuilder()
-					// viewerLoggedIn 이면서 AND viewerFollowing이 조인되면 true
 					.when(viewerLoggedIn.and(viewerFollowing.id.isNotNull())).then(true)
 					.otherwise(false)
 					.as("isFollowingByMe"),
-				// followMe: 이 사람이 나를 팔로우하는지
-				// viewerId가 null이면 이 조건은 항상 false
+				// followsMe: 이 사람이 나를 팔로우하는지
 				new CaseBuilder()
-					// viewerLoggedIn 이면서 AND viewerFollower가 조인되면 true
 					.when(viewerLoggedIn.and(viewerFollower.id.isNotNull())).then(true)
 					.otherwise(false)
 					.as("followsMe")
 			))
 			.from(follow)
-			.join(following)
-			.on(follow.followeeId.eq(following.id))
-			// viewer가 이 'followee'를 팔로우하는지
+			.join(targetMember).on(type.getJoinCondition(follow, targetMember))
+			// viewer가 targetMember를 팔로우하는지
 			.leftJoin(viewerFollowing)
-			.on(viewerFollowing.followeeId.eq(following.id)
-				.and(viewerId != null ? viewerFollowing.followerId.eq(viewerId) : Expressions.FALSE))
-			// 이 'followee'가 viewer를 팔로우하는지 확인 (followsMe)
+			.on(viewerFollowing.followeeId.eq(targetMember.id)
+				.and(Objects.nonNull(viewerId) ? viewerFollowing.followerId.eq(viewerId) : Expressions.FALSE))
+			// targetMember가 viewer를 팔로우하는지
 			.leftJoin(viewerFollower)
-			.on(
-				viewerFollower.followerId.eq(following.id)
-					.and(viewerId != null ? viewerFollower.followeeId.eq(viewerId) : Expressions.FALSE)
-			)
+			.on(viewerFollower.followerId.eq(targetMember.id)
+				.and(Objects.nonNull(viewerId) ? viewerFollower.followeeId.eq(viewerId) : Expressions.FALSE))
 			.where(
-				follow.followerId.eq(memberId),
+				type.getWhereCondition(follow, memberId),
 				applyPaginationCondition(follow.createdAt, follow.id, cursorCreatedAt, cursorId)
 			)
 			.orderBy(follow.createdAt.desc(), follow.id.desc())
