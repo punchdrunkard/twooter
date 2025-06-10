@@ -33,7 +33,7 @@ public class PostLikeService {
 
 		boolean isLiked = postLikeRepository.existsByPostIdAndMemberId(postId, member.getId());
 
-		if (postLikeRepository.existsByPostIdAndMemberId(postId, member.getId())) {
+		if (isLiked) {
 			postLikeRepository.deleteByPostIdAndMemberId(postId, member.getId());
 			postLikeRepository.decrementLikeCount(postId);
 		} else {
