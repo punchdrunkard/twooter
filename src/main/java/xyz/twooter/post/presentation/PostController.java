@@ -4,6 +4,7 @@ import java.net.URI;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,9 +16,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import xyz.twooter.auth.infrastructure.annotation.CurrentMember;
 import xyz.twooter.member.domain.Member;
+import xyz.twooter.post.application.PostLikeService;
 import xyz.twooter.post.application.PostService;
 import xyz.twooter.post.presentation.dto.request.PostCreateRequest;
 import xyz.twooter.post.presentation.dto.response.PostCreateResponse;
+import xyz.twooter.post.presentation.dto.response.PostLikeResponse;
 import xyz.twooter.post.presentation.dto.response.PostResponse;
 
 @RestController
@@ -26,6 +29,7 @@ import xyz.twooter.post.presentation.dto.response.PostResponse;
 public class PostController {
 
 	private final PostService postService;
+	private final PostLikeService postLikeService;
 
 	@GetMapping("/{postId}")
 	public ResponseEntity<PostResponse> getPost(@PathVariable Long postId, @CurrentMember Member member) {
@@ -48,4 +52,11 @@ public class PostController {
 			.created(location)
 			.body(response);
 	}
+
+	@PatchMapping("/{postId}/like")
+	public ResponseEntity<PostLikeResponse> likePost(@PathVariable Long postId, @CurrentMember Member member) {
+		PostLikeResponse response = postLikeService.likePost(postId, member);
+		return ResponseEntity.ok(response);
+	}
+
 }

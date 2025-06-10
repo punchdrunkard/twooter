@@ -34,5 +34,8 @@ public interface PostRepository extends JpaRepository<Post, Long>, PostCustomRep
 	@Modifying
 	@Query("UPDATE Post p SET p.viewCount = p.viewCount + 1 WHERE p.id = :postId")
 	void incrementViewCount(@Param("postId") Long postId);
+
+	@Query("SELECT p.isDeleted FROM  Post p WHERE p.id = :postId")
+	boolean findIsDeletedById(Long postId);
 }
 

@@ -57,7 +57,7 @@ public class PostService {
 		PostDetailProjection projection = postRepository.findPostDetailById(postId, memberId)
 			.orElseThrow(PostNotFoundException::new);
 
-		if (projection.getIsDeleted()) {
+		if (Boolean.TRUE.equals(projection.getIsDeleted())) {
 			return PostResponse.deletedPost(postId);
 		}
 
@@ -107,4 +107,5 @@ public class PostService {
 			.toList();
 		postMediaRepository.saveAll(mappings);
 	}
+
 }
