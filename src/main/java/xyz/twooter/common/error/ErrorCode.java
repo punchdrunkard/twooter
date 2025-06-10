@@ -36,6 +36,7 @@ public enum ErrorCode {
 
 	// POST
 	POST_NOT_FOUND(404, "P001", "해당 포스트를 찾을 수 없습니다."),
+	DUPLICATE_REPOST(409, "P002", "이미 리포스트한 포스트입니다."),
 
 	// Media
 	INVALID_MEDIA_KEY(400, "M001", "해당 키의 미디어가 존재하지 않습니다."),

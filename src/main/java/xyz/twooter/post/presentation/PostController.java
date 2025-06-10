@@ -22,6 +22,7 @@ import xyz.twooter.post.presentation.dto.request.PostCreateRequest;
 import xyz.twooter.post.presentation.dto.response.PostCreateResponse;
 import xyz.twooter.post.presentation.dto.response.PostLikeResponse;
 import xyz.twooter.post.presentation.dto.response.PostResponse;
+import xyz.twooter.post.presentation.dto.response.RepostCreateResponse;
 
 @RestController
 @RequestMapping("/api/posts")
@@ -59,4 +60,17 @@ public class PostController {
 		return ResponseEntity.ok(response);
 	}
 
+	@PostMapping("/{postId}/repost")
+	public ResponseEntity<RepostCreateResponse> repost(@PathVariable Long postId, @CurrentMember Member member) {
+		RepostCreateResponse response = postService.repost(postId, member);
+
+		URI location = ServletUriComponentsBuilder
+			.fromCurrentRequest()
+			.build()
+			.toUri();
+
+		return ResponseEntity
+			.created(location)
+			.body(response);
+	}
 }

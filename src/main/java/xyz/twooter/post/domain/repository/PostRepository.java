@@ -37,5 +37,11 @@ public interface PostRepository extends JpaRepository<Post, Long>, PostCustomRep
 
 	@Query("SELECT p.isDeleted FROM  Post p WHERE p.id = :postId")
 	boolean findIsDeletedById(Long postId);
+
+	boolean existsByAuthorIdAndRepostOfId(Long authorId, Long repostOfId);
+
+	@Modifying
+	@Query("UPDATE Post p SET p.repostCount = p.repostCount + 1 WHERE p.id = :postId")
+	void incrementRepostCount(@Param("postId") Long postId);
 }
 

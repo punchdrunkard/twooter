@@ -24,14 +24,28 @@ include::{snippets}/post-get/path-parameters.adoc[]
 include::{snippets}/post-get/http-response.adoc[]
 include::{snippets}/post-get/response-fields.adoc[]
 
-=== 포스트 좋아요
+=== 포스트 좋아요 / 좋아요 취소
 
 ==== HTTP Request
 
 include::{snippets}/post-like/http-request.adoc[]
+include::{snippets}/post-like/request-headers.adoc[]
 include::{snippets}/post-like/path-parameters.adoc[]
 
 ==== HTTP Response
 
 include::{snippets}/post-like/http-response.adoc[]
 include::{snippets}/post-like/response-fields.adoc[]
+
+=== 리포스트
+
+==== HTTP Request
+
+include::{snippets}/post-repost/http-request.adoc[]
+include::{snippets}/post-repost/request-headers.adoc[]
+include::{snippets}/post-repost/path-parameters.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/post-repost/http-response.adoc[]
+include::{snippets}/post-repost/response-fields.adoc[]
