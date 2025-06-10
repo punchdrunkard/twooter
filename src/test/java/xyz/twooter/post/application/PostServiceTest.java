@@ -5,12 +5,16 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import jakarta.persistence.EntityManager;
+import xyz.twooter.common.error.BusinessException;
+import xyz.twooter.common.error.ErrorCode;
 import xyz.twooter.media.domain.Media;
 import xyz.twooter.media.domain.repository.MediaRepository;
 import xyz.twooter.media.presentation.dto.response.MediaSimpleResponse;
@@ -26,11 +30,15 @@ import xyz.twooter.post.domain.repository.PostMediaRepository;
 import xyz.twooter.post.domain.repository.PostRepository;
 import xyz.twooter.post.presentation.dto.request.PostCreateRequest;
 import xyz.twooter.post.presentation.dto.response.PostCreateResponse;
+import xyz.twooter.post.presentation.dto.response.PostDeleteResponse;
 import xyz.twooter.post.presentation.dto.response.PostResponse;
 import xyz.twooter.post.presentation.dto.response.RepostCreateResponse;
 import xyz.twooter.support.IntegrationTestSupport;
 
 class PostServiceTest extends IntegrationTestSupport {
+
+	@Autowired
+	private EntityManager entityManager;
 
 	@Autowired
 	private PostService postService;
@@ -279,6 +287,92 @@ class PostServiceTest extends IntegrationTestSupport {
 			assertThrows(DuplicateRepostException.class, () -> {
 				postService.repost(originalPost.getId(), currentMember);
 			});
+		}
+	}
+
+	@Nested
+	class DeletePost {
+
+		@DisplayName("성공 - 본인이 작성한 포스트를 삭제할 수 있다.")
+		@Test
+		void shouldDeletePostWhenAuthorDeletes() {
+			// given
+			Member author = saveTestMember();
+			Post post = Post.createPost(author.getId(), "삭제할 포스트입니다.");
+			postRepository.save(post);
+
+			// when
+			PostDeleteResponse response = postService.deletePost(post.getId(), author);
+
+			// then
+			assertThat(response.getPostId()).isEqualTo(post.getId());
+
+			// DB 상태 검증
+			Optional<Post> deletedPost = postRepository.findById(post.getId());
+			assertThat(deletedPost).isPresent();
+			assertThat(deletedPost.get().isDeleted()).isTrue();
+		}
+
+		@DisplayName("실패 - 다른 사람이 작성한 포스트를 삭제하려고 할 때 에러가 발생한다.")
+		@Test
+		void shouldThrowErrorWhenNonAuthorTriesToDelete() {
+			// given
+			Member author = saveTestMember("author");
+			Post post = Post.createPost(author.getId(), "다른 사람이 작성한 포스트입니다.");
+			postRepository.save(post);
+
+			Member nonAuthor = saveTestMember("nonAuthor");
+
+			// when & then
+			assertThatThrownBy(() -> postService.deletePost(post.getId(), nonAuthor))
+				.isInstanceOf(BusinessException.class)
+				.extracting("errorCode")
+				.isEqualTo(ErrorCode.ACCESS_DENIED);
+
+			Optional<Post> unchangedPost = postRepository.findById(post.getId());
+			assertThat(unchangedPost).isPresent();
+			assertThat(unchangedPost.get().isDeleted()).isFalse();
+		}
+
+		@DisplayName("실패 - 포스트가 존재하지 않을 때 에러가 발생한다.")
+		@Test
+		void shouldThrowErrorWhenThePostDoesNotExist() {
+			// given
+			Long invalidPostId = -1L;
+			Member author = saveTestMember();
+
+			// when &  then
+			assertThrows(PostNotFoundException.class, () -> {
+				postService.deletePost(invalidPostId, author);
+			});
+		}
+
+		@DisplayName("성공 - 리포스트인 경우, 원본 포스트의 리포스트 수를 감소시킨다.")
+		@Test
+		void shouldDecreaseOriginalRepostCountWhenRepostIsDeleted() {
+			// given
+			Member author = saveTestMember("author");
+			Post originalPost = Post.createPost(author.getId(), "원본 포스트입니다.");
+			postRepository.save(originalPost);
+
+			Post repost = Post.createRepost(author.getId(), originalPost.getId());
+			postRepository.save(repost);
+
+			postRepository.incrementRepostCount(originalPost.getId());
+			entityManager.flush();
+			entityManager.clear();
+
+			Post afterIncrement = postRepository.findById(originalPost.getId()).orElseThrow();
+
+			// when
+			PostDeleteResponse response = postService.deletePost(repost.getId(), author);
+			entityManager.flush();
+			entityManager.clear();
+
+			// then
+			Post afterDelete = postRepository.findById(originalPost.getId()).orElseThrow();
+			assertThat(response.getPostId()).isEqualTo(repost.getId());
+			assertThat(afterDelete.getRepostCount()).isEqualTo(afterIncrement.getRepostCount() - 1);
 		}
 	}
 

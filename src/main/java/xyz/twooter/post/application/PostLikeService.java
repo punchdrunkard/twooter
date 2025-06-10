@@ -35,7 +35,6 @@ public class PostLikeService {
 
 		if (isLiked) {
 			postLikeRepository.deleteByPostIdAndMemberId(postId, member.getId());
-			postLikeRepository.decrementLikeCount(postId);
 		} else {
 			// 좋아요를 누르지 않은 상태면 좋아요 추가
 			postLikeRepository.save(
@@ -43,13 +42,22 @@ public class PostLikeService {
 					.memberId(member.getId())
 					.postId(postId)
 					.build());
-			postLikeRepository.incrementLikeCount(postId);
 		}
 
 		return PostLikeResponse.builder()
 			.postId(postId)
 			.isLiked(!isLiked)
 			.build();
+	}
+
+	@Transactional
+	public void decreaseLikeCount(Long postId) {
+		postLikeRepository.decrementLikeCount(postId);
+	}
+
+	@Transactional
+	public void increaseLikeCount(Long postId) {
+		postLikeRepository.incrementLikeCount(postId);
 	}
 
 	private void validateTargetPost(Long postId) {
