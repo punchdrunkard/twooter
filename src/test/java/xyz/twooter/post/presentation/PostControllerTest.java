@@ -18,6 +18,7 @@ import xyz.twooter.member.presentation.dto.response.MemberBasic;
 import xyz.twooter.post.presentation.dto.request.PostCreateRequest;
 import xyz.twooter.post.presentation.dto.response.MediaEntity;
 import xyz.twooter.post.presentation.dto.response.PostCreateResponse;
+import xyz.twooter.post.presentation.dto.response.PostLikeResponse;
 import xyz.twooter.post.presentation.dto.response.PostResponse;
 import xyz.twooter.support.ControllerTestSupport;
 import xyz.twooter.support.security.WithMockCustomUser;
@@ -148,6 +149,52 @@ class PostControllerTest extends ControllerTestSupport {
 		void shouldReturn400WhenPostIdNotNumber() throws Exception {
 			mockMvc.perform(get("/api/posts/{postId}", "non-numeric"))
 				.andExpect(status().isBadRequest());
+		}
+	}
+
+	@Nested
+	@DisplayName("포스트 좋아요 API")
+	class LikePostTests {
+
+		@Test
+		@DisplayName("성공 - 포스트 좋아요")
+		void shouldLikePost() throws Exception {
+			Long postId = 1L;
+			PostLikeResponse response = PostLikeResponse.builder()
+				.postId(postId)
+				.isLiked(true)
+				.build();
+
+			given(postLikeService.likePost(anyLong(), any())).willReturn(response);
+
+			mockMvc.perform(
+					patch("/api/posts/{postId}/like", postId)
+				)
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.postId").value(postId))
+				.andExpect(jsonPath("$.isLiked").value(true));
+		}
+
+		@DisplayName("성공 - 포스트 좋아요 취소")
+		@Test
+		void shouldRevokeLike() throws Exception {
+			// given
+			Long postId = 1L;
+			PostLikeResponse response = PostLikeResponse.builder()
+				.postId(postId)
+				.isLiked(false)
+				.build();
+
+			// when
+			given(postLikeService.likePost(anyLong(), any())).willReturn(response);
+
+			// then
+			mockMvc.perform(
+					patch("/api/posts/{postId}/like", postId)
+				)
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.postId").value(postId))
+				.andExpect(jsonPath("$.isLiked").value(false));
 		}
 	}
 

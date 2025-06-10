@@ -16,6 +16,7 @@ import xyz.twooter.media.presentation.MediaController;
 import xyz.twooter.member.application.FollowService;
 import xyz.twooter.member.application.MemberService;
 import xyz.twooter.member.presentation.MemberController;
+import xyz.twooter.post.application.PostLikeService;
 import xyz.twooter.post.application.PostService;
 import xyz.twooter.post.application.TimelineService;
 import xyz.twooter.post.presentation.PostController;
@@ -55,4 +56,7 @@ public abstract class ControllerTestSupport {
 
 	@MockitoBean
 	protected FollowService followService;
+
+	@MockitoBean
+	protected PostLikeService postLikeService;
 }

@@ -26,7 +26,9 @@ import xyz.twooter.member.presentation.dto.response.MemberSummaryResponse;
 import xyz.twooter.post.presentation.dto.request.PostCreateRequest;
 import xyz.twooter.post.presentation.dto.response.MediaEntity;
 import xyz.twooter.post.presentation.dto.response.PostCreateResponse;
+import xyz.twooter.post.presentation.dto.response.PostLikeResponse;
 import xyz.twooter.post.presentation.dto.response.PostResponse;
+import xyz.twooter.post.presentation.dto.response.RepostCreateResponse;
 import xyz.twooter.support.security.WithMockCustomUser;
 
 @WithMockCustomUser
@@ -39,6 +41,7 @@ class PostControllerDocsTest extends RestDocsSupport {
 		.nickname("테이블 청소 마스터")
 		.avatarPath("https://cdn.twooter.xyz/media/avatar")
 		.build();
+	final String TEST_ACCESS_TOKEN = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJoYW5kbGUiOiJ0d29vdGVyXzEyMyIsInRva2VuVHlwZSI6IkFDQ0VTUyIsImlhdCI6MTcxMjMyMzIzMiwiZXhwIjoxNzEyMzI1MDMyfQ.exampleToken";
 
 	@DisplayName("포스트 생성 API")
 	@Test
@@ -53,8 +56,7 @@ class PostControllerDocsTest extends RestDocsSupport {
 		mockMvc.perform(
 				post("/api/posts")
 					.content(objectMapper.writeValueAsString(request))
-					.header("Authorization",
-						"Bearer eyJhbGciOiJIUzI1NiJ9.eyJoYW5kbGUiOiJ0d29vdGVyXzEyMyIsInRva2VuVHlwZSI6IkFDQ0VTUyIsImlhdCI6MTcxMjMyMzIzMiwiZXhwIjoxNzEyMzI1MDMyfQ.exampleToken")
+					.header("Authorization", TEST_ACCESS_TOKEN)
 					.contentType(MediaType.APPLICATION_JSON)
 			)
 			.andExpect(status().isCreated())
@@ -141,6 +143,90 @@ class PostControllerDocsTest extends RestDocsSupport {
 				)
 					.andWithPrefix("author.", authorEntityFields())
 					.andWithPrefix("mediaEntities[].", mediaEntityFields())
+			));
+	}
+
+	@DisplayName("포스트 좋아요 API")
+	@Test
+	void likePost() throws Exception {
+		// given
+		Long postId = 1L;
+		PostLikeResponse response = PostLikeResponse.builder()
+			.postId(postId)
+			.isLiked(true)
+			.build();
+
+		// when
+		given(postLikeService.likePost(anyLong(), any())).willReturn(response);
+
+		// then
+		mockMvc.perform(
+				patch("/api/posts/{postId}/like", postId)
+					.header("Authorization", TEST_ACCESS_TOKEN)
+			)
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.postId").value(postId))
+			.andExpect(jsonPath("$.isLiked").value(true))
+			.andDo(document("post-like",
+				preprocessRequest(prettyPrint()),
+				preprocessResponse(prettyPrint()),
+				requestHeaders(
+					headerWithName("Authorization").description("액세스 토큰 (Bearer 타입)")
+				),
+				pathParameters(
+					parameterWithName("postId").description("좋아요/좋아요 취소할 포스트 ID")
+				),
+				responseFields(
+					fieldWithPath("postId").type(JsonFieldType.NUMBER)
+						.description("포스트 ID"),
+					fieldWithPath("isLiked").type(JsonFieldType.BOOLEAN)
+						.description("현재 사용자의 좋아요 여부")
+				)
+			));
+	}
+
+	@DisplayName("포스트 리포스트 API")
+	@Test
+	void repost() throws Exception {
+		// given
+		Long repostId = 1L;
+		Long originalPostId = 2L;
+
+		RepostCreateResponse response = RepostCreateResponse.builder()
+			.repostId(repostId)
+			.originalPostId(originalPostId)
+			.repostedAt(LocalDateTime.of(2025, 5, 5, 0, 0))
+			.build();
+
+		// when
+		given(postService.repost(anyLong(), any())).willReturn(response);
+
+		// then
+		mockMvc.perform(
+				post("/api/posts/{postId}/repost", repostId)
+					.header("Authorization", TEST_ACCESS_TOKEN)
+			)
+			.andExpect(status().isCreated())
+			.andExpect(jsonPath("$.repostId").value(repostId))
+			.andExpect(jsonPath("$.originalPostId").value(originalPostId))
+			.andExpect(jsonPath("$.repostedAt").value("2025-05-05T00:00:00"))
+			.andDo(document("post-repost",
+				preprocessRequest(prettyPrint()),
+				preprocessResponse(prettyPrint()),
+				requestHeaders(
+					headerWithName("Authorization").description("액세스 토큰 (Bearer 타입)")
+				),
+				pathParameters(
+					parameterWithName("postId").description("리포스트할 대상 포스트 ID")
+				),
+				responseFields(
+					fieldWithPath("repostId").type(JsonFieldType.NUMBER)
+						.description("생성된 리포스트 ID"),
+					fieldWithPath("originalPostId").type(JsonFieldType.NUMBER)
+						.description("원본 포스트 ID"),
+					fieldWithPath("repostedAt").type(JsonFieldType.STRING)
+						.description("리포스트 생성 시간")
+				)
 			));
 	}
 

@@ -15,6 +15,7 @@ import xyz.twooter.member.presentation.dto.response.MemberBasic;
 import xyz.twooter.member.presentation.dto.response.MemberSummaryResponse;
 import xyz.twooter.post.domain.Post;
 import xyz.twooter.post.domain.PostMedia;
+import xyz.twooter.post.domain.exception.DuplicateRepostException;
 import xyz.twooter.post.domain.exception.PostNotFoundException;
 import xyz.twooter.post.domain.repository.PostMediaRepository;
 import xyz.twooter.post.domain.repository.PostRepository;
@@ -23,6 +24,7 @@ import xyz.twooter.post.presentation.dto.request.PostCreateRequest;
 import xyz.twooter.post.presentation.dto.response.MediaEntity;
 import xyz.twooter.post.presentation.dto.response.PostCreateResponse;
 import xyz.twooter.post.presentation.dto.response.PostResponse;
+import xyz.twooter.post.presentation.dto.response.RepostCreateResponse;
 
 @Service
 @Transactional(readOnly = true)
@@ -57,7 +59,7 @@ public class PostService {
 		PostDetailProjection projection = postRepository.findPostDetailById(postId, memberId)
 			.orElseThrow(PostNotFoundException::new);
 
-		if (projection.getIsDeleted()) {
+		if (Boolean.TRUE.equals(projection.getIsDeleted())) {
 			return PostResponse.deletedPost(postId);
 		}
 
@@ -85,6 +87,43 @@ public class PostService {
 	}
 
 	@Transactional
+	public RepostCreateResponse repost(Long postId, Member member) {
+
+		validateTargetPost(postId);
+		checkDuplicateRepost(postId, member);
+
+		Post originalPost = postRepository.findById(postId)
+			.orElseThrow(PostNotFoundException::new);
+
+		Post post = Post.createRepost(member.getId(), originalPost.getId());
+		postRepository.save(post);
+		increaseRepostCount(postId);
+
+		return RepostCreateResponse.builder()
+			.repostId(post.getId())
+			.originalPostId(originalPost.getId())
+			.repostedAt(post.getCreatedAt())
+			.build();
+	}
+
+	public void increaseRepostCount(Long postId) {
+		postRepository.incrementRepostCount(postId);
+
+	}
+
+	private void checkDuplicateRepost(Long postId, Member member) {
+		if (postRepository.existsByAuthorIdAndRepostOfId(member.getId(), postId)) {
+			throw new DuplicateRepostException();
+		}
+	}
+
+	private void validateTargetPost(Long postId) {
+		if (!postRepository.existsById(postId) || postRepository.findIsDeletedById(postId)) {
+			throw new PostNotFoundException();
+		}
+	}
+
+	@Transactional
 	public void incrementViewCount(Long postId) {
 		postRepository.incrementViewCount(postId);
 	}
@@ -107,4 +146,5 @@ public class PostService {
 			.toList();
 		postMediaRepository.saveAll(mappings);
 	}
+
 }

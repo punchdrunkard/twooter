@@ -19,6 +19,7 @@ import xyz.twooter.member.domain.repository.MemberRepository;
 import xyz.twooter.post.domain.Post;
 import xyz.twooter.post.domain.PostLike;
 import xyz.twooter.post.domain.PostMedia;
+import xyz.twooter.post.domain.exception.DuplicateRepostException;
 import xyz.twooter.post.domain.exception.PostNotFoundException;
 import xyz.twooter.post.domain.repository.PostLikeRepository;
 import xyz.twooter.post.domain.repository.PostMediaRepository;
@@ -26,6 +27,7 @@ import xyz.twooter.post.domain.repository.PostRepository;
 import xyz.twooter.post.presentation.dto.request.PostCreateRequest;
 import xyz.twooter.post.presentation.dto.response.PostCreateResponse;
 import xyz.twooter.post.presentation.dto.response.PostResponse;
+import xyz.twooter.post.presentation.dto.response.RepostCreateResponse;
 import xyz.twooter.support.IntegrationTestSupport;
 
 class PostServiceTest extends IntegrationTestSupport {
@@ -209,6 +211,74 @@ class PostServiceTest extends IntegrationTestSupport {
 			// then
 			assertTrue(response.isLiked());
 			assertFalse(response.isReposted());
+		}
+	}
+
+	@Nested
+	class Repost {
+
+		@DisplayName("성공")
+		@Test
+		void shouldReturnOriginalPostIdAndRepostIdWhenRepost() {
+			// given
+			Member author = saveTestMember();
+			Post originalPost = Post.createPost(author.getId(), "원본 포스트입니다.");
+			postRepository.save(originalPost);
+			Member currentMember = saveTestMember("currentMember");
+
+			// when
+			RepostCreateResponse response = postService.repost(originalPost.getId(), currentMember);
+
+			// then
+			assertThat(response.getOriginalPostId()).isEqualTo(originalPost.getId());
+			assertThat(response.getRepostId()).isNotNull();
+		}
+
+		@DisplayName("실패 - 존재하지 않는 포스트 ID로 리포스트 시도")
+		@Test
+		void shouldThrowErrorWhenRepostNotExistPost() {
+			// given
+			Long invalidPostId = -1L;
+			Member currentMember = saveTestMember("currentMember");
+
+			// when & then
+			assertThrows(PostNotFoundException.class, () -> {
+				postService.repost(invalidPostId, currentMember);
+			});
+		}
+
+		@DisplayName("실패 - 삭제된 포스트 ID로 리포스트 시도")
+		@Test
+		void shouldThrowErrorTargetPostIsDeleted() {
+			// given
+			Member currentMember = saveTestMember("currentMember");
+			Member author = saveTestMember("author");
+			Post originalPost = Post.createPost(author.getId(), "원본 포스트입니다.");
+			postRepository.save(originalPost);
+			originalPost.softDelete();
+
+			// when & then
+			assertThrows(PostNotFoundException.class, () -> {
+				postService.repost(originalPost.getId(), currentMember);
+			});
+		}
+
+		@DisplayName("실패 - 중복 리포스트 시도")
+		@Test
+		void shouldThrowErrorWhenTryDuplicateRepost() {
+			// given (이미 리포스트가 존재할 때)
+			Member author = saveTestMember("author");
+			Post originalPost = Post.createPost(author.getId(), "원본 포스트입니다.");
+			postRepository.save(originalPost);
+
+			Member currentMember = saveTestMember("currentMember");
+			Post repost = Post.createRepost(currentMember.getId(), originalPost.getId());
+			postRepository.save(repost);
+
+			// when & then
+			assertThrows(DuplicateRepostException.class, () -> {
+				postService.repost(originalPost.getId(), currentMember);
+			});
 		}
 	}
 

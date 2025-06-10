@@ -13,6 +13,7 @@ import xyz.twooter.post.domain.Post;
 import xyz.twooter.post.domain.PostLike;
 import xyz.twooter.post.domain.repository.PostLikeRepository;
 import xyz.twooter.post.domain.repository.PostRepository;
+import xyz.twooter.post.presentation.dto.response.PostLikeResponse;
 import xyz.twooter.support.IntegrationTestSupport;
 
 class PostLikeServiceTest extends IntegrationTestSupport {
@@ -105,7 +106,47 @@ class PostLikeServiceTest extends IntegrationTestSupport {
 		}
 	}
 
+	@Nested
+	class LikePost {
+		@DisplayName("성공 - 좋아요가 없을 때, 좋아요를 생성할 수 있다. ")
+		@Test
+		void shouldLikeWhenThePostIsNotLikedByMember() {
+			// given
+			Member member = saveTestMember("me");
+			Member author = saveTestMember("author");
+
+			Post post = saveTestPost(author);
+
+			// when
+			PostLikeResponse response = postLikeService.likePost(post.getId(), member);
+
+			// then
+			assertThat(response.getPostId()).isEqualTo(post.getId());
+			assertThat(response.getIsLiked()).isTrue();
+		}
+
+		@DisplayName("성공 - 좋아요가 이미 있을 때, 좋아요를 취소한다.")
+		@Test
+		void shouldRevokeLikeWhenThePostIsAlreadyLikedByMember() {
+			// given
+			Member member = saveTestMember("me");
+			Member author = saveTestMember("author");
+			Post post = saveTestPost(author);
+			saveTestPostLike(post.getId(), member.getId());
+
+			// when
+			PostLikeResponse response = postLikeService.likePost(post.getId(), member);
+
+			// then
+			assertThat(response.getPostId()).isEqualTo(post.getId());
+			assertThat(response.getIsLiked()).isFalse();
+		}
+	}
 	// === 헬퍼 ===
+
+	private Member saveTestMember(String handle) {
+		return saveTestMember(handle, handle + "@test.com");
+	}
 
 	private Member saveTestMember(String handle, String email) {
 		Member member = Member.createDefaultMember(email, "password", handle);
