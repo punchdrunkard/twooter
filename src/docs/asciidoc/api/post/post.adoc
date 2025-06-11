@@ -45,7 +45,6 @@ include::{snippets}/post-like/response-fields.adoc[]
 
 포스트를 리포스트한다.
 
-
 ==== HTTP Request
 
 include::{snippets}/post-repost/http-request.adoc[]
@@ -71,3 +70,18 @@ include::{snippets}/post-reply-create/request-fields.adoc[]
 
 include::{snippets}/post-reply-create/http-response.adoc[]
 include::{snippets}/post-reply-create/response-fields.adoc[]
+
+=== 답글 조회
+
+포스트 ID에 대한 답글을 조회한다.
+이 때 답글은 level 1로 조회되며, 오래된 순으로 정렬된다.
+
+==== HTTP Request
+
+include::{snippets}/post-replies-get/http-request.adoc[]
+include::{snippets}/post-replies-get/path-parameters.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/post-replies-get/http-response.adoc[]
+include::{snippets}/post-replies-get/response-fields.adoc[]

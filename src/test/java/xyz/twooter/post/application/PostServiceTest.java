@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import jakarta.persistence.EntityManager;
 import xyz.twooter.common.error.BusinessException;
 import xyz.twooter.common.error.ErrorCode;
-import jakarta.persistence.EntityManager;
 import xyz.twooter.media.domain.Media;
 import xyz.twooter.media.domain.repository.MediaRepository;
 import xyz.twooter.media.presentation.dto.response.MediaSimpleResponse;
@@ -35,6 +34,7 @@ import xyz.twooter.post.presentation.dto.response.PostCreateResponse;
 import xyz.twooter.post.presentation.dto.response.PostDeleteResponse;
 import xyz.twooter.post.presentation.dto.response.PostReplyCreateResponse;
 import xyz.twooter.post.presentation.dto.response.PostResponse;
+import xyz.twooter.post.presentation.dto.response.PostThreadResponse;
 import xyz.twooter.post.presentation.dto.response.RepostCreateResponse;
 import xyz.twooter.support.IntegrationTestSupport;
 
@@ -462,6 +462,96 @@ class PostServiceTest extends IntegrationTestSupport {
 			assertThrows(PostNotFoundException.class, () -> {
 				postService.createReply(request, currentMember);
 			});
+		}
+	}
+
+	@Nested
+	class GetReplies {
+
+		@DisplayName("성공 - 부모 포스트에 대한 답글을 조회할 수 있다.")
+		@Test
+		void shouldReturnRepliesForParentPost() {
+			// given
+			Member author = saveTestMember("author");
+			Post parentPost = Post.createPost(author.getId(), "부모 포스���입니다.");
+			postRepository.save(parentPost);
+
+			Member currentMember = saveTestMember("currentMember");
+			Post reply1 = Post.createReply(currentMember.getId(), "답글 내용입니다.", parentPost.getId());
+			Post reply2 = Post.createReply(author.getId(), "두 번째 답글입니다.", parentPost.getId());
+
+			postRepository.save(reply1);
+			postRepository.save(reply2);
+
+			// when
+			PostThreadResponse response = postService.getReplies(parentPost.getId(), currentMember, null, 10);
+			List<PostResponse> replies = response.getPosts();
+
+			// then
+			assertThat(replies).hasSize(2);
+			assertThat(replies.get(0).getId()).isEqualTo(reply1.getId());
+			assertThat(replies.get(0).getAuthor().getId()).isEqualTo(currentMember.getId());
+			assertThat(replies.get(1).getId()).isEqualTo(reply2.getId());
+			assertThat(replies.get(1).getAuthor().getId()).isEqualTo(author.getId());
+		}
+
+		@DisplayName("성공 - 미디어가 있는 답글들을 올바르게 조회한다.")
+		@Test
+		void shouldGetReplyWithMediaWHeeRepliesHaveMedia() {
+			// given
+			Member author = saveTestMember("author");
+			Post parentPost = Post.createPost(author.getId(), "부모 포스트입니다.");
+			postRepository.save(parentPost);
+
+			Member currentMember = saveTestMember("currentMember");
+			Post reply1 = Post.createReply(currentMember.getId(), "답글 내용입니다.", parentPost.getId());
+			Post reply2 = Post.createReply(author.getId(), "두 번째 답글입니다.", parentPost.getId());
+			postRepository.save(reply1);
+			postRepository.save(reply2);
+
+			// 미디어 생성 및 연결
+			Media media1 = mediaRepository.save(createMedia("reply1.jpg"));
+			Media media2 = mediaRepository.save(createMedia("reply2.jpg"));
+			Media media22 = mediaRepository.save(createMedia("reply2.jpg"));
+
+			postMediaRepository.save(new PostMedia(reply1.getId(), media1.getId()));
+			postMediaRepository.save(new PostMedia(reply2.getId(), media2.getId()));
+			postMediaRepository.save(new PostMedia(reply2.getId(), media22.getId()));
+
+			// when
+			PostThreadResponse response = postService.getReplies(parentPost.getId(), currentMember, null, 10);
+			List<PostResponse> replies = response.getPosts();
+
+			// then
+			assertThat(replies).hasSize(2);
+			assertThat(replies.get(0).getMediaEntities().get(0).getMediaId())
+				.isEqualTo(media1.getId());
+			assertThat(replies.get(1).getMediaEntities()).hasSize(2);
+		}
+
+		@DisplayName("성공 - 답글 중 삭제된 답글이 있는 경우, 삭제 응답을 반환한다.")
+		@Test
+		void shouldGetDeletedContentWithRepliesHasDeletedPost() {
+			// given
+			Member author = saveTestMember("author");
+			Post parentPost = Post.createPost(author.getId(), "부모 포스트입니다.");
+			postRepository.save(parentPost);
+
+			Member currentMember = saveTestMember("currentMember");
+			Post reply1 = Post.createReply(currentMember.getId(), "답글 내용입니다.", parentPost.getId());
+			Post reply2 = Post.createReply(author.getId(), "두 번째 답글입니다.", parentPost.getId());
+			postRepository.save(reply1);
+			postRepository.save(reply2);
+			reply2.softDelete(); // 두 번째 답글 삭제
+
+			// when
+			PostThreadResponse response = postService.getReplies(parentPost.getId(), currentMember, null, 10);
+			List<PostResponse> replies = response.getPosts();
+
+			// then
+			assertThat(replies).hasSize(2);
+			assertThat(replies.get(0).getId()).isEqualTo(reply1.getId());
+			assertThat(replies.get(1)).isEqualTo(PostResponse.deletedPost(reply2.getId(), reply2.getCreatedAt()));
 		}
 	}
 

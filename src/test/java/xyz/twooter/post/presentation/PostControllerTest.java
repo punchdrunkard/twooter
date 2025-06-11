@@ -371,7 +371,7 @@ class PostControllerTest extends ControllerTestSupport {
 				.metadata(createPaginationMetadata())
 				.build();
 
-			given(postService.getReplies(anyLong(), any())).willReturn(response);
+			given(postService.getReplies(anyLong(), any(), any(), any())).willReturn(response);
 
 			// when & then
 			mockMvc.perform(
@@ -393,7 +393,7 @@ class PostControllerTest extends ControllerTestSupport {
 				.metadata(null)
 				.build();
 
-			given(postService.getReplies(anyLong(), any())).willReturn(response);
+			given(postService.getReplies(anyLong(), any(), any(), any())).willReturn(response);
 
 			// when & then
 			mockMvc.perform(

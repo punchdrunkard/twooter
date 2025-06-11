@@ -361,7 +361,7 @@ class PostControllerDocsTest extends RestDocsSupport {
 			.metadata(metadata)
 			.build();
 
-		given(postService.getReplies(anyLong(), any())).willReturn(response);
+		given(postService.getReplies(anyLong(), any(), any(), any())).willReturn(response);
 
 		// when & then
 		mockMvc.perform(

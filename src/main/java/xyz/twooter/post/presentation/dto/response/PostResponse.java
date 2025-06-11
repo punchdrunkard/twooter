@@ -28,12 +28,28 @@ public class PostResponse {
 	private LocalDateTime createdAt;
 	private boolean isDeleted;
 
+	public static PostResponse deletedPost(Long postId, LocalDateTime createdAt) {
+		return PostResponse.builder()
+			.id(postId)
+			.author(null)
+			.content(null)
+			.mediaEntities(new ArrayList<>())
+			.likeCount(0L)
+			.isLiked(false)
+			.repostCount(0L)
+			.isReposted(false)
+			.viewCount(0L)
+			.createdAt(createdAt)
+			.isDeleted(true)
+			.build();
+	}
+
 	public static PostResponse deletedPost(Long postId) {
 		return PostResponse.builder()
 			.id(postId)
 			.author(null)
 			.content(null)
-			.mediaEntities(List.of())
+			.mediaEntities(new ArrayList<>())
 			.likeCount(0L)
 			.isLiked(false)
 			.repostCount(0L)

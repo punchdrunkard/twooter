@@ -10,10 +10,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import xyz.twooter.auth.infrastructure.annotation.CurrentMember;
 import xyz.twooter.member.domain.Member;
@@ -101,8 +103,11 @@ public class PostController {
 	}
 
 	@GetMapping("/{postId}/replies")
-	public ResponseEntity<PostThreadResponse> getReplies(@PathVariable Long postId, @CurrentMember Member member) {
-		PostThreadResponse response = postService.getReplies(postId, member);
+	public ResponseEntity<PostThreadResponse> getReplies(@PathVariable Long postId,
+		@RequestParam(required = false) String cursor,
+		@RequestParam(required = false, defaultValue = "20") @Min(value = 1, message = "limit은 1 이상이어야 합니다") Integer limit,
+		@CurrentMember Member currentMember) {
+		PostThreadResponse response = postService.getReplies(postId, currentMember, cursor, limit);
 		return ResponseEntity.ok(response);
 	}
 }
