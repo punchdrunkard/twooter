@@ -46,7 +46,7 @@ public interface PostRepository extends JpaRepository<Post, Long>, PostCustomRep
 
 	@Modifying
 	@Query("UPDATE Post p SET p.repostCount = p.repostCount - 1 WHERE p.id = :postId")
-	void decrementRepostCount(Long postId);
+	void decrementRepostCount(@Param("postId") Long postId);
 
 	Long findRepostOfIdById(Long postId);
 }
