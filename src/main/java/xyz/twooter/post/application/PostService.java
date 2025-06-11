@@ -90,8 +90,13 @@ public class PostService {
 	}
 
 	@Transactional
-	public RepostCreateResponse repost(Long postId, Member member) {
+	public RepostCreateResponse repostAndIncreaseCount(Long postId, Member member) {
+		RepostCreateResponse response = repost(postId, member);
+		increaseRepostCount(postId);
+		return response;
+	}
 
+	public RepostCreateResponse repost(Long postId, Member member) {
 		validateTargetPost(postId);
 		checkDuplicateRepost(postId, member);
 
@@ -108,7 +113,6 @@ public class PostService {
 			.build();
 	}
 
-	@Transactional
 	public void increaseRepostCount(Long postId) {
 		postRepository.incrementRepostCount(postId);
 

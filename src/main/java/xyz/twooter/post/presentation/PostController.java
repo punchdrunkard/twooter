@@ -59,20 +59,12 @@ public class PostController {
 	@PatchMapping("/{postId}/like")
 	public ResponseEntity<PostLikeResponse> likePost(@PathVariable Long postId, @CurrentMember Member member) {
 		PostLikeResponse response = postLikeService.toggleLikeAndCount(postId, member);
-
-		if (Boolean.TRUE.equals(response.getIsLiked())) {
-			postLikeService.increaseLikeCount(postId);
-		} else {
-			postLikeService.decreaseLikeCount(postId);
-		}
-
 		return ResponseEntity.ok(response);
 	}
 
 	@PostMapping("/{postId}/repost")
 	public ResponseEntity<RepostCreateResponse> repost(@PathVariable Long postId, @CurrentMember Member member) {
-		RepostCreateResponse response = postService.repost(postId, member);
-		postService.increaseRepostCount(postId);
+		RepostCreateResponse response = postService.repostAndIncreaseCount(postId, member);
 
 		URI location = ServletUriComponentsBuilder
 			.fromCurrentRequest()
