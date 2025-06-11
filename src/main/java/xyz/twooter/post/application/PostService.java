@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import xyz.twooter.common.error.BusinessException;
+import xyz.twooter.common.error.ErrorCode;
 import xyz.twooter.media.application.MediaService;
 import xyz.twooter.media.presentation.dto.response.MediaSimpleResponse;
 import xyz.twooter.member.application.MemberService;
@@ -23,6 +25,7 @@ import xyz.twooter.post.domain.repository.projection.PostDetailProjection;
 import xyz.twooter.post.presentation.dto.request.PostCreateRequest;
 import xyz.twooter.post.presentation.dto.response.MediaEntity;
 import xyz.twooter.post.presentation.dto.response.PostCreateResponse;
+import xyz.twooter.post.presentation.dto.response.PostDeleteResponse;
 import xyz.twooter.post.presentation.dto.response.PostResponse;
 import xyz.twooter.post.presentation.dto.response.RepostCreateResponse;
 
@@ -87,8 +90,13 @@ public class PostService {
 	}
 
 	@Transactional
-	public RepostCreateResponse repost(Long postId, Member member) {
+	public RepostCreateResponse repostAndIncreaseCount(Long postId, Member member) {
+		RepostCreateResponse response = repost(postId, member);
+		increaseRepostCount(postId);
+		return response;
+	}
 
+	public RepostCreateResponse repost(Long postId, Member member) {
 		validateTargetPost(postId);
 		checkDuplicateRepost(postId, member);
 
@@ -97,7 +105,6 @@ public class PostService {
 
 		Post post = Post.createRepost(member.getId(), originalPost.getId());
 		postRepository.save(post);
-		increaseRepostCount(postId);
 
 		return RepostCreateResponse.builder()
 			.repostId(post.getId())
@@ -109,6 +116,27 @@ public class PostService {
 	public void increaseRepostCount(Long postId) {
 		postRepository.incrementRepostCount(postId);
 
+	}
+
+	@Transactional
+	public PostDeleteResponse deletePost(Long postId, Member member) {
+		Post post = postRepository.findById(postId)
+			.filter(p -> !p.isDeleted())
+			.orElseThrow(PostNotFoundException::new);
+
+		if (!post.isAuthor(member)) {
+			throw new BusinessException(ErrorCode.ACCESS_DENIED);
+		}
+
+		// repost 인 경우
+		if (post.getRepostOfId() != null) {
+			postRepository.decrementRepostCount(post.getRepostOfId());
+		}
+
+		post.softDelete();
+		return PostDeleteResponse.builder()
+			.postId(postId)
+			.build();
 	}
 
 	private void checkDuplicateRepost(Long postId, Member member) {
@@ -146,5 +174,4 @@ public class PostService {
 			.toList();
 		postMediaRepository.saveAll(mappings);
 	}
-
 }

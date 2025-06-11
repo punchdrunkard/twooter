@@ -26,6 +26,7 @@ import xyz.twooter.member.presentation.dto.response.MemberSummaryResponse;
 import xyz.twooter.post.presentation.dto.request.PostCreateRequest;
 import xyz.twooter.post.presentation.dto.response.MediaEntity;
 import xyz.twooter.post.presentation.dto.response.PostCreateResponse;
+import xyz.twooter.post.presentation.dto.response.PostDeleteResponse;
 import xyz.twooter.post.presentation.dto.response.PostLikeResponse;
 import xyz.twooter.post.presentation.dto.response.PostResponse;
 import xyz.twooter.post.presentation.dto.response.RepostCreateResponse;
@@ -157,7 +158,7 @@ class PostControllerDocsTest extends RestDocsSupport {
 			.build();
 
 		// when
-		given(postLikeService.likePost(anyLong(), any())).willReturn(response);
+		given(postLikeService.toggleLikeAndCount(anyLong(), any())).willReturn(response);
 
 		// then
 		mockMvc.perform(
@@ -199,7 +200,7 @@ class PostControllerDocsTest extends RestDocsSupport {
 			.build();
 
 		// when
-		given(postService.repost(anyLong(), any())).willReturn(response);
+		given(postService.repostAndIncreaseCount(anyLong(), any())).willReturn(response);
 
 		// then
 		mockMvc.perform(
@@ -226,6 +227,38 @@ class PostControllerDocsTest extends RestDocsSupport {
 						.description("원본 포스트 ID"),
 					fieldWithPath("repostedAt").type(JsonFieldType.STRING)
 						.description("리포스트 생성 시간")
+				)
+			));
+	}
+
+	@DisplayName("포스트 삭제 API")
+	@Test
+	void deletePost() throws Exception {
+		// given
+		Long postId = 1L;
+		given(postService.deletePost(anyLong(), any())).willReturn(
+			PostDeleteResponse.builder()
+				.postId(postId)
+				.build()
+		);
+
+		// when & then
+		mockMvc.perform(
+				delete("/api/posts/{postId}", postId)
+					.header("Authorization", TEST_ACCESS_TOKEN))
+			.andExpect(status().isOk())
+			.andDo(document("post-delete",
+				preprocessRequest(prettyPrint()),
+				preprocessResponse(prettyPrint()),
+				requestHeaders(
+					headerWithName("Authorization").description("액세스 토큰 (Bearer 타입)")
+				),
+				pathParameters(
+					parameterWithName("postId").description("삭제할 포스트 ID")
+				),
+				responseFields(
+					fieldWithPath("postId").type(JsonFieldType.NUMBER)
+						.description("삭제된 포스트 ID")
 				)
 			));
 	}

@@ -3,6 +3,7 @@ package xyz.twooter.post.presentation;
 import java.net.URI;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,6 +21,7 @@ import xyz.twooter.post.application.PostLikeService;
 import xyz.twooter.post.application.PostService;
 import xyz.twooter.post.presentation.dto.request.PostCreateRequest;
 import xyz.twooter.post.presentation.dto.response.PostCreateResponse;
+import xyz.twooter.post.presentation.dto.response.PostDeleteResponse;
 import xyz.twooter.post.presentation.dto.response.PostLikeResponse;
 import xyz.twooter.post.presentation.dto.response.PostResponse;
 import xyz.twooter.post.presentation.dto.response.RepostCreateResponse;
@@ -56,13 +58,13 @@ public class PostController {
 
 	@PatchMapping("/{postId}/like")
 	public ResponseEntity<PostLikeResponse> likePost(@PathVariable Long postId, @CurrentMember Member member) {
-		PostLikeResponse response = postLikeService.likePost(postId, member);
+		PostLikeResponse response = postLikeService.toggleLikeAndCount(postId, member);
 		return ResponseEntity.ok(response);
 	}
 
 	@PostMapping("/{postId}/repost")
 	public ResponseEntity<RepostCreateResponse> repost(@PathVariable Long postId, @CurrentMember Member member) {
-		RepostCreateResponse response = postService.repost(postId, member);
+		RepostCreateResponse response = postService.repostAndIncreaseCount(postId, member);
 
 		URI location = ServletUriComponentsBuilder
 			.fromCurrentRequest()
@@ -72,5 +74,11 @@ public class PostController {
 		return ResponseEntity
 			.created(location)
 			.body(response);
+	}
+
+	@DeleteMapping("/{postId}")
+	public ResponseEntity<PostDeleteResponse> deletePost(@PathVariable Long postId, @CurrentMember Member member) {
+		PostDeleteResponse response = postService.deletePost(postId, member);
+		return ResponseEntity.ok(response);
 	}
 }

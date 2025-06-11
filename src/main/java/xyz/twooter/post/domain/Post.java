@@ -11,6 +11,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import xyz.twooter.common.entity.BaseTimeEntity;
+import xyz.twooter.member.domain.Member;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "post")
@@ -130,5 +131,12 @@ public class Post extends BaseTimeEntity {
 			.authorId(authorId)
 			.repostOfId(originalPostId)
 			.build();
+	}
+
+	public boolean isAuthor(Member member) {
+		if (member == null) {
+			return false;
+		}
+		return this.authorId.equals(member.getId());
 	}
 }
