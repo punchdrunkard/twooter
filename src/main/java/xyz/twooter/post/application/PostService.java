@@ -117,6 +117,7 @@ public class PostService {
 	@Transactional
 	public PostDeleteResponse deletePost(Long postId, Member member) {
 		Post post = postRepository.findById(postId)
+			.filter(p -> !p.isDeleted())
 			.orElseThrow(PostNotFoundException::new);
 
 		if (!post.isAuthor(member)) {

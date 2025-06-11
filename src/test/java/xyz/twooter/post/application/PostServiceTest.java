@@ -374,6 +374,23 @@ class PostServiceTest extends IntegrationTestSupport {
 			assertThat(response.getPostId()).isEqualTo(repost.getId());
 			assertThat(afterDelete.getRepostCount()).isEqualTo(afterIncrement.getRepostCount() - 1);
 		}
+
+		@DisplayName("실패 - 삭제된 포스트인 경우, 에러가 발생한다.")
+		@Test
+		void shouldThrowErrorWhenThePostIsAlreadyDeleted() {
+			// given
+			Member member = saveTestMember();
+			Post post = Post.createPost(member.getId(), "삭제된 포스트입니다.");
+			postRepository.save(post);
+			post.softDelete(); // 포스트가 이미 삭제됨
+			entityManager.flush();
+			entityManager.clear();
+
+			// when & then
+			assertThrows(PostNotFoundException.class, () -> {
+				postService.deletePost(post.getId(), member);
+			});
+		}
 	}
 
 	// === 헬퍼 ===
