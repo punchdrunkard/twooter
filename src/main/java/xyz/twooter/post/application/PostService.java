@@ -46,16 +46,35 @@ public class PostService {
 	public PostCreateResponse createPost(PostCreateRequest request, Member member) {
 		Post post = createAndSavePost(request, member);
 		MemberSummaryResponse authorSummary = memberService.createMemberSummary(member);
-
-		String[] mediaArray = request.getMedia();
-		List<String> mediaUrls = (mediaArray != null) ?
-			Arrays.asList(mediaArray) : List.of();
-
-		List<Long> mediaIds = mediaService.saveMedia(mediaUrls);
-		savePostMediaMappings(post, mediaIds);
-
-		List<MediaSimpleResponse> mediaResponses = mediaService.getMediaListFromId(mediaIds);
+		List<MediaSimpleResponse> mediaResponses = processAndAttachMedia(request, post);
 		return PostCreateResponse.of(post, authorSummary, mediaResponses);
+	}
+
+	@Transactional
+	public PostReplyCreateResponse createReply(ReplyCreateRequest request, Member member) {
+		Post parentPost = postRepository.findById(request.getParentId())
+			.filter(p -> !p.isDeleted())
+			.orElseThrow(PostNotFoundException::new);
+
+		Post reply = Post.createReply(
+			member.getId(),
+			request.getContent(),
+			parentPost.getId()
+		);
+
+		postRepository.save(reply);
+
+		MemberSummaryResponse authorSummary = memberService.createMemberSummary(member);
+		List<MediaSimpleResponse> mediaResponses = processAndAttachMedia(request, reply);
+
+		return PostReplyCreateResponse.of(reply, authorSummary, mediaResponses, parentPost.getId());
+	}
+
+	@Transactional
+	public RepostCreateResponse repostAndIncreaseCount(Long postId, Member member) {
+		RepostCreateResponse response = repost(postId, member);
+		increaseRepostCount(postId);
+		return response;
 	}
 
 	public PostResponse getPost(Long postId, Member member) {
@@ -91,13 +110,6 @@ public class PostService {
 			.build();
 	}
 
-	@Transactional
-	public RepostCreateResponse repostAndIncreaseCount(Long postId, Member member) {
-		RepostCreateResponse response = repost(postId, member);
-		increaseRepostCount(postId);
-		return response;
-	}
-
 	public RepostCreateResponse repost(Long postId, Member member) {
 		validateTargetPost(postId);
 		checkDuplicateRepost(postId, member);
@@ -113,38 +125,6 @@ public class PostService {
 			.originalPostId(originalPost.getId())
 			.repostedAt(post.getCreatedAt())
 			.build();
-	}
-
-	@Transactional
-	public PostReplyCreateResponse createReply(ReplyCreateRequest request, Member member) {
-		Post parentPost = postRepository.findById(request.getParentId())
-			.filter(p -> !p.isDeleted())
-			.orElseThrow(PostNotFoundException::new);
-
-		Post reply = Post.createReply(
-			member.getId(),
-			request.getContent(),
-			parentPost.getId()
-		);
-
-		postRepository.save(reply);
-
-		MemberSummaryResponse authorSummary = memberService.createMemberSummary(member);
-
-		String[] mediaArray = request.getMedia();
-		List<String> mediaUrls = (mediaArray != null) ?
-			Arrays.asList(mediaArray) : List.of();
-
-		List<Long> mediaIds = mediaService.saveMedia(mediaUrls);
-		savePostMediaMappings(reply, mediaIds);
-
-		List<MediaSimpleResponse> mediaResponses = mediaService.getMediaListFromId(mediaIds);
-		return PostReplyCreateResponse.of(reply, authorSummary, mediaResponses, parentPost.getId());
-	}
-
-	public void increaseRepostCount(Long postId) {
-		postRepository.incrementRepostCount(postId);
-
 	}
 
 	@Transactional
@@ -166,6 +146,18 @@ public class PostService {
 		return PostDeleteResponse.builder()
 			.postId(postId)
 			.build();
+	}
+
+	private void increaseRepostCount(Long postId) {
+		postRepository.incrementRepostCount(postId);
+	}
+
+	private List<MediaSimpleResponse> processAndAttachMedia(PostCreateRequest request, Post post) {
+		String[] mediaArray = request.getMedia();
+		List<String> mediaUrls = (mediaArray != null) ? Arrays.asList(mediaArray) : List.of();
+		List<Long> mediaIds = mediaService.saveMedia(mediaUrls);
+		savePostMediaMappings(post, mediaIds);
+		return mediaService.getMediaListFromId(mediaIds);
 	}
 
 	private void checkDuplicateRepost(Long postId, Member member) {
