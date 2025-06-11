@@ -200,7 +200,7 @@ class PostControllerDocsTest extends RestDocsSupport {
 			.build();
 
 		// when
-		given(postService.repost(anyLong(), any())).willReturn(response);
+		given(postService.repostAndIncreaseCount(anyLong(), any())).willReturn(response);
 
 		// then
 		mockMvc.perform(
