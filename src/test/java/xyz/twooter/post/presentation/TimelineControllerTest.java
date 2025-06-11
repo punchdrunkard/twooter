@@ -239,8 +239,8 @@ class TimelineControllerTest extends ControllerTestSupport {
 
 	private PostResponse createPostResponse(Long id, MemberBasic author, String content) {
 		List<MediaEntity> mediaList = List.of(
-			MediaEntity.builder().id(101L).path("https://cdn.twooter.xyz/media/101.jpg").build(),
-			MediaEntity.builder().id(102L).path("https://cdn.twooter.xyz/media/102.jpg").build()
+			MediaEntity.builder().mediaId(101L).mediaUrl("https://cdn.twooter.xyz/media/101.jpg").build(),
+			MediaEntity.builder().mediaId(102L).mediaUrl("https://cdn.twooter.xyz/media/102.jpg").build()
 		);
 
 		return PostResponse.builder()

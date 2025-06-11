@@ -175,7 +175,7 @@ class PostServiceTest extends IntegrationTestSupport {
 
 			// then
 			assertThat(response.getMediaEntities()).hasSize(2);
-			assertThat(response.getMediaEntities()).extracting("path")
+			assertThat(response.getMediaEntities()).extracting("mediaUrl")
 				.contains(
 					"https://cdn.twooter.xyz/test1.jpg",
 					"https://cdn.twooter.xyz/test2.jpg"

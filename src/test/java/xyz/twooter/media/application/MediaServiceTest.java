@@ -105,11 +105,11 @@ class MediaServiceTest extends IntegrationTestSupport {
 			assertThat(mediaEntities).hasSize(2);
 
 			// 2. 반환된 미디어 경로 검증
-			assertThat(mediaEntities).extracting("path")
+			assertThat(mediaEntities).extracting("mediaUrl")
 				.containsExactlyInAnyOrder(path1, path2);
 
 			// 3. 반환된 미디어 ID 검증
-			assertThat(mediaEntities).extracting("id")
+			assertThat(mediaEntities).extracting("mediaId")
 				.containsExactlyInAnyOrder(media1.getId(), media2.getId());
 		}
 

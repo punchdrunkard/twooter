@@ -206,8 +206,8 @@ class TimelineControllerDocsTest extends RestDocsSupport {
 
 	private List<FieldDescriptor> mediaEntityFields() {
 		return List.of(
-			fieldWithPath("id").type(JsonFieldType.NUMBER).description("미디어 ID"),
-			fieldWithPath("path").type(JsonFieldType.STRING).description("미디어 경로 URL")
+			fieldWithPath("mediaId").type(JsonFieldType.NUMBER).description("미디어 ID"),
+			fieldWithPath("mediaUrl").type(JsonFieldType.STRING).description("미디어 경로 URL")
 		);
 	}
 
@@ -234,10 +234,10 @@ class TimelineControllerDocsTest extends RestDocsSupport {
 			.avatarPath("https://cdn.twooter.xyz/media/avatar2")
 			.build();
 
-		MediaEntity media1 = MediaEntity.builder().id(101L).path("https://cdn.twooter.xyz/media/101.jpg").build();
-		MediaEntity media2 = MediaEntity.builder().id(102L).path("https://cdn.twooter.xyz/media/102.jpg").build();
-		MediaEntity media3 = MediaEntity.builder().id(103L).path("https://cdn.twooter.xyz/media/101.jpg").build();
-		MediaEntity media4 = MediaEntity.builder().id(104L).path("https://cdn.twooter.xyz/media/102.jpg").build();
+		MediaEntity media1 = MediaEntity.builder().mediaId(101L).mediaUrl("https://cdn.twooter.xyz/media/101.jpg").build();
+		MediaEntity media2 = MediaEntity.builder().mediaId(102L).mediaUrl("https://cdn.twooter.xyz/media/102.jpg").build();
+		MediaEntity media3 = MediaEntity.builder().mediaId(103L).mediaUrl("https://cdn.twooter.xyz/media/101.jpg").build();
+		MediaEntity media4 = MediaEntity.builder().mediaId(104L).mediaUrl("https://cdn.twooter.xyz/media/102.jpg").build();
 
 		PostResponse post1 = PostResponse.builder()
 			.id(1L)

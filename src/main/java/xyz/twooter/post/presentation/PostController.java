@@ -26,6 +26,7 @@ import xyz.twooter.post.presentation.dto.response.PostDeleteResponse;
 import xyz.twooter.post.presentation.dto.response.PostLikeResponse;
 import xyz.twooter.post.presentation.dto.response.PostReplyCreateResponse;
 import xyz.twooter.post.presentation.dto.response.PostResponse;
+import xyz.twooter.post.presentation.dto.response.PostThreadResponse;
 import xyz.twooter.post.presentation.dto.response.RepostCreateResponse;
 
 @RestController
@@ -99,4 +100,9 @@ public class PostController {
 			.body(response);
 	}
 
+	@GetMapping("/{postId}/replies")
+	public ResponseEntity<PostThreadResponse> getReplies(@PathVariable Long postId, @CurrentMember Member member) {
+		PostThreadResponse response = postService.getReplies(postId, member);
+		return ResponseEntity.ok(response);
+	}
 }

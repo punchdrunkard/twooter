@@ -9,13 +9,13 @@ import xyz.twooter.media.domain.Media;
 @Builder
 @AllArgsConstructor
 public class MediaEntity {
-	private Long id;
-	private String path;
+	private Long mediaId;
+	private String mediaUrl;
 
 	public static MediaEntity fromEntity(Media media) {
 		return MediaEntity.builder()
-			.id(media.getId())
-			.path(media.getPath())
+			.mediaId(media.getId())
+			.mediaUrl(media.getPath())
 			.build();
 	}
 }

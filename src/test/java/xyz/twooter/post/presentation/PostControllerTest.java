@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
+import xyz.twooter.common.infrastructure.pagination.PaginationMetadata;
 import xyz.twooter.media.presentation.dto.response.MediaSimpleResponse;
 import xyz.twooter.member.presentation.dto.response.MemberBasic;
 import xyz.twooter.member.presentation.dto.response.MemberSummaryResponse;
@@ -24,6 +25,7 @@ import xyz.twooter.post.presentation.dto.response.PostCreateResponse;
 import xyz.twooter.post.presentation.dto.response.PostLikeResponse;
 import xyz.twooter.post.presentation.dto.response.PostReplyCreateResponse;
 import xyz.twooter.post.presentation.dto.response.PostResponse;
+import xyz.twooter.post.presentation.dto.response.PostThreadResponse;
 import xyz.twooter.support.ControllerTestSupport;
 import xyz.twooter.support.security.WithMockCustomUser;
 
@@ -59,7 +61,7 @@ class PostControllerTest extends ControllerTestSupport {
 		@DisplayName("성공 - 미디어가 함께 존재하는 포스트 작성")
 		void shouldCreatePostWithMedia() throws Exception {
 			PostCreateRequest request = createPostRequestWithMedia();
-			PostCreateResponse response = createPostResponseWithMedia();
+			PostCreateResponse response = createPostCreateResponseWithMedia();
 
 			given(postService.createPost(any(), any())).willReturn(response);
 
@@ -355,6 +357,54 @@ class PostControllerTest extends ControllerTestSupport {
 		}
 	}
 
+	@Nested
+	@DisplayName("답글 조회 API")
+	class GetRepliesTests {
+		@DisplayName("성공 - 부모 parentId로 답글 조회")
+		@Test
+		void shouldReturnRepliesWhenRequestIsValid() throws Exception {
+			// given
+			Long parentPostId = 1L;
+
+			PostThreadResponse response = PostThreadResponse.builder()
+				.posts(List.of(createPostResponse(), createPostResponse(), createPostResponse()))
+				.metadata(createPaginationMetadata())
+				.build();
+
+			given(postService.getReplies(anyLong(), any())).willReturn(response);
+
+			// when & then
+			mockMvc.perform(
+					get("/api/posts/{postId}/replies", parentPostId)
+				)
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.posts").isArray())
+				.andExpect(jsonPath("$.posts.length()").value(3));
+		}
+
+		@DisplayName("성공 - 답글이 없는 경우 빈 리스트 반환")
+		@Test
+		void shouldReturnEmptyListWhenThePostDoesNotHaveAnyReply() throws Exception {
+			// given
+			Long parentPostId = 1L;
+
+			PostThreadResponse response = PostThreadResponse.builder()
+				.posts(List.of())
+				.metadata(null)
+				.build();
+
+			given(postService.getReplies(anyLong(), any())).willReturn(response);
+
+			// when & then
+			mockMvc.perform(
+					get("/api/posts/{postId}/replies", parentPostId)
+				)
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.posts").isArray())
+				.andExpect(jsonPath("$.posts.length()").value(0));
+		}
+	}
+
 	// === 헬퍼 메서드 ===
 
 	private PostCreateRequest createPostRequestWithContentOnly() {
@@ -380,7 +430,7 @@ class PostControllerTest extends ControllerTestSupport {
 			.build();
 	}
 
-	private PostCreateResponse createPostResponseWithMedia() {
+	private PostCreateResponse createPostCreateResponseWithMedia() {
 		MediaSimpleResponse[] mediaResponses = {
 			MediaSimpleResponse.builder()
 				.mediaId(101L)
@@ -408,8 +458,8 @@ class PostControllerTest extends ControllerTestSupport {
 			.build();
 
 		List<MediaEntity> mediaList = List.of(
-			MediaEntity.builder().id(101L).path("https://cdn.twooter.xyz/media/101.jpg").build(),
-			MediaEntity.builder().id(102L).path("https://cdn.twooter.xyz/media/102.jpg").build()
+			MediaEntity.builder().mediaId(101L).mediaUrl("https://cdn.twooter.xyz/media/101.jpg").build(),
+			MediaEntity.builder().mediaId(102L).mediaUrl("https://cdn.twooter.xyz/media/102.jpg").build()
 		);
 
 		return PostResponse.builder()
@@ -478,6 +528,13 @@ class PostControllerTest extends ControllerTestSupport {
 			.content("미디어가 포함된 답글입니다.")
 			.author(createMemberSummaryResponse())
 			.media(mediaResponses)
+			.build();
+	}
+
+	private PaginationMetadata createPaginationMetadata() {
+		return PaginationMetadata.builder()
+			.nextCursor("dGVhbTpDMDYxRkE1UEI=")
+			.hasNext(true)
 			.build();
 	}
 }

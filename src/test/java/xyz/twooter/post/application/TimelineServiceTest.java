@@ -239,7 +239,7 @@ class TimelineServiceTest extends IntegrationTestSupport {
 			TimelineItemResponse firstItem = response.getTimeline().get(0);
 			assertThat(firstItem.getPost().getMediaEntities())
 				.hasSize(2)
-				.extracting(MediaEntity::getPath)
+				.extracting(MediaEntity::getMediaUrl)
 				.containsExactlyInAnyOrder(
 					"https://example.com/image2.jpg",
 					"https://example.com/video.mp4"
@@ -248,7 +248,7 @@ class TimelineServiceTest extends IntegrationTestSupport {
 			TimelineItemResponse secondItem = response.getTimeline().get(1);
 			assertThat(secondItem.getPost().getMediaEntities())
 				.hasSize(1)
-				.extracting(MediaEntity::getPath)
+				.extracting(MediaEntity::getMediaUrl)
 				.containsExactly("https://example.com/image1.jpg");
 		}
 
@@ -290,7 +290,7 @@ class TimelineServiceTest extends IntegrationTestSupport {
 			// 리포스트된 원본 포스트의 미디어 검증
 			List<List<String>> allMediaPaths = response.getTimeline().stream()
 				.map(item -> item.getPost().getMediaEntities().stream()
-					.map(MediaEntity::getPath)
+					.map(MediaEntity::getMediaUrl)
 					.sorted()
 					.toList())
 				.toList();
@@ -347,7 +347,7 @@ class TimelineServiceTest extends IntegrationTestSupport {
 					assertThat(item.getPost().getContent()).isEqualTo("타겟의 미디어 포스트");
 					assertThat(item.getPost().getMediaEntities())
 						.hasSize(2)
-						.extracting(MediaEntity::getPath)
+						.extracting(MediaEntity::getMediaUrl)
 						.containsExactlyInAnyOrder(
 							"https://example.com/target-photo.jpg",
 							"https://example.com/shared.gif"
@@ -364,7 +364,7 @@ class TimelineServiceTest extends IntegrationTestSupport {
 					assertThat(item.getPost().getContent()).isEqualTo("다른 사람 미디어 포스트");
 					assertThat(item.getPost().getMediaEntities())
 						.hasSize(1)
-						.extracting(MediaEntity::getPath)
+						.extracting(MediaEntity::getMediaUrl)
 						.containsExactly("https://example.com/other-video.mp4");
 				});
 		}
@@ -473,7 +473,8 @@ class TimelineServiceTest extends IntegrationTestSupport {
 			String nextCursor = firstPage.getMetadata().getNextCursor();
 
 			// when - 커서로 다음 페이지 조회
-			TimelineResponse secondPage = timelineService.getTimelineByUserId(nextCursor, 2, viewer, targetUser.getId());
+			TimelineResponse secondPage = timelineService.getTimelineByUserId(nextCursor, 2, viewer,
+				targetUser.getId());
 
 			// then
 			assertThat(secondPage.getTimeline()).hasSize(2);
@@ -628,10 +629,12 @@ class TimelineServiceTest extends IntegrationTestSupport {
 			createPostsWithTimeGap(targetUser, 2);
 
 			// when & then - 다양한 빈 커서 케이스
-			TimelineResponse responseWithNull = timelineService.getTimelineByUserId(null, 10, viewer, targetUser.getId());
+			TimelineResponse responseWithNull = timelineService.getTimelineByUserId(null, 10, viewer,
+				targetUser.getId());
 			assertThat(responseWithNull.getTimeline()).hasSize(2);
 
-			TimelineResponse responseWithEmpty = timelineService.getTimelineByUserId("", 10, viewer, targetUser.getId());
+			TimelineResponse responseWithEmpty = timelineService.getTimelineByUserId("", 10, viewer,
+				targetUser.getId());
 			assertThat(responseWithEmpty.getTimeline()).hasSize(2);
 
 			TimelineResponse responseWithWhitespace = timelineService.getTimelineByUserId("   ", 10, viewer,
@@ -723,8 +726,9 @@ class TimelineServiceTest extends IntegrationTestSupport {
 			} while (cursor != null);
 
 			// then
-			assertThat(retrievedPostIds).hasSize(50);
-			assertThat(retrievedPostIds).containsExactlyElementsOf(allPostIds);
+			assertThat(retrievedPostIds)
+				.hasSize(50)
+				.containsExactlyElementsOf(allPostIds);
 			assertThat(pageCount).isEqualTo(5); // 50개를 10개씩 5페이지
 		}
 

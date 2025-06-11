@@ -13,8 +13,8 @@ public class MediaWithPostId {
 
 	public MediaEntity toMediaEntity() {
 		return MediaEntity.builder()
-			.id(mediaId)
-			.path(path)
+			.mediaId(mediaId)
+			.mediaUrl(path)
 			.build();
 	}
 }
