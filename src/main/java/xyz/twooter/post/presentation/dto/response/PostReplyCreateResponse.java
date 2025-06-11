@@ -1,6 +1,5 @@
 package xyz.twooter.post.presentation.dto.response;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import lombok.Getter;
@@ -11,15 +10,11 @@ import xyz.twooter.post.domain.Post;
 
 @Getter
 @SuperBuilder
-public class PostCreateResponse {
-	private Long id;
-	private String content;
-	private MemberSummaryResponse author;
-	private MediaSimpleResponse[] media;
-	private LocalDateTime createdAt;
+public class PostReplyCreateResponse extends PostCreateResponse {
+	private Long parentId;
 
-	public static PostCreateResponse of(Post post, MemberSummaryResponse memberSummaryResponse,
-		List<MediaSimpleResponse> mediaList) {
+	public static PostReplyCreateResponse of(Post post, MemberSummaryResponse memberSummaryResponse,
+		List<MediaSimpleResponse> mediaList, Long parentId) {
 		MediaSimpleResponse[] mediaResponses = mediaList.stream()
 			.map(media -> MediaSimpleResponse.builder()
 				.mediaId(media.getMediaId())
@@ -27,12 +22,13 @@ public class PostCreateResponse {
 				.build())
 			.toArray(MediaSimpleResponse[]::new);
 
-		return PostCreateResponse.builder()
+		return PostReplyCreateResponse.builder()
 			.id(post.getId())
 			.content(post.getContent())
 			.author(memberSummaryResponse)
 			.media(mediaResponses)
 			.createdAt(post.getCreatedAt())
+			.parentId(parentId)
 			.build();
 	}
 }

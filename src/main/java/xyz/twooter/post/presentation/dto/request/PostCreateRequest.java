@@ -1,12 +1,15 @@
 package xyz.twooter.post.presentation.dto.request;
 
 import jakarta.validation.constraints.Size;
-import lombok.Builder;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import xyz.twooter.post.domain.validation.ValidPostContent;
 
-@Builder
+@SuperBuilder
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @ValidPostContent
 public class PostCreateRequest {
 

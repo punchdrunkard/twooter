@@ -23,9 +23,11 @@ import xyz.twooter.post.domain.repository.PostMediaRepository;
 import xyz.twooter.post.domain.repository.PostRepository;
 import xyz.twooter.post.domain.repository.projection.PostDetailProjection;
 import xyz.twooter.post.presentation.dto.request.PostCreateRequest;
+import xyz.twooter.post.presentation.dto.request.ReplyCreateRequest;
 import xyz.twooter.post.presentation.dto.response.MediaEntity;
 import xyz.twooter.post.presentation.dto.response.PostCreateResponse;
 import xyz.twooter.post.presentation.dto.response.PostDeleteResponse;
+import xyz.twooter.post.presentation.dto.response.PostReplyCreateResponse;
 import xyz.twooter.post.presentation.dto.response.PostResponse;
 import xyz.twooter.post.presentation.dto.response.RepostCreateResponse;
 
@@ -113,6 +115,33 @@ public class PostService {
 			.build();
 	}
 
+	@Transactional
+	public PostReplyCreateResponse createReply(ReplyCreateRequest request, Member member) {
+		Post parentPost = postRepository.findById(request.getParentId())
+			.filter(p -> !p.isDeleted())
+			.orElseThrow(PostNotFoundException::new);
+
+		Post reply = Post.createReply(
+			member.getId(),
+			request.getContent(),
+			parentPost.getId()
+		);
+
+		postRepository.save(reply);
+
+		MemberSummaryResponse authorSummary = memberService.createMemberSummary(member);
+
+		String[] mediaArray = request.getMedia();
+		List<String> mediaUrls = (mediaArray != null) ?
+			Arrays.asList(mediaArray) : List.of();
+
+		List<Long> mediaIds = mediaService.saveMedia(mediaUrls);
+		savePostMediaMappings(reply, mediaIds);
+
+		List<MediaSimpleResponse> mediaResponses = mediaService.getMediaListFromId(mediaIds);
+		return PostReplyCreateResponse.of(reply, authorSummary, mediaResponses, parentPost.getId());
+	}
+
 	public void increaseRepostCount(Long postId) {
 		postRepository.incrementRepostCount(postId);
 
@@ -174,4 +203,5 @@ public class PostService {
 			.toList();
 		postMediaRepository.saveAll(mappings);
 	}
+
 }

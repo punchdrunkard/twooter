@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import jakarta.persistence.EntityManager;
 import xyz.twooter.common.error.BusinessException;
 import xyz.twooter.common.error.ErrorCode;
+import jakarta.persistence.EntityManager;
 import xyz.twooter.media.domain.Media;
 import xyz.twooter.media.domain.repository.MediaRepository;
 import xyz.twooter.media.presentation.dto.response.MediaSimpleResponse;
@@ -29,8 +30,10 @@ import xyz.twooter.post.domain.repository.PostLikeRepository;
 import xyz.twooter.post.domain.repository.PostMediaRepository;
 import xyz.twooter.post.domain.repository.PostRepository;
 import xyz.twooter.post.presentation.dto.request.PostCreateRequest;
+import xyz.twooter.post.presentation.dto.request.ReplyCreateRequest;
 import xyz.twooter.post.presentation.dto.response.PostCreateResponse;
 import xyz.twooter.post.presentation.dto.response.PostDeleteResponse;
+import xyz.twooter.post.presentation.dto.response.PostReplyCreateResponse;
 import xyz.twooter.post.presentation.dto.response.PostResponse;
 import xyz.twooter.post.presentation.dto.response.RepostCreateResponse;
 import xyz.twooter.support.IntegrationTestSupport;
@@ -382,13 +385,82 @@ class PostServiceTest extends IntegrationTestSupport {
 			Member member = saveTestMember();
 			Post post = Post.createPost(member.getId(), "삭제된 포스트입니다.");
 			postRepository.save(post);
-			post.softDelete(); // 포스트가 이미 삭제됨
-			entityManager.flush();
-			entityManager.clear();
+			post.softDelete();
 
 			// when & then
 			assertThrows(PostNotFoundException.class, () -> {
 				postService.deletePost(post.getId(), member);
+			});
+		}
+	}
+
+	@Nested
+	class CreateReply {
+		@DisplayName("성공")
+		@Test
+		void shouldCreateReplyWhenTheRequestIsValid() {
+			// given
+			Member author = saveTestMember("author");
+			Post parentPost = Post.createPost(author.getId(), "부모 포스트입니다.");
+			postRepository.save(parentPost);
+			Member currentMember = saveTestMember("currentMember");
+			String replyContent = "답글 내용입니다.";
+			String[] mediaUrls = {"reply1.jpg", "reply2.jpg"};
+			ReplyCreateRequest request = ReplyCreateRequest.builder()
+				.content(replyContent)
+				.media(mediaUrls)
+				.parentId(parentPost.getId())
+				.build();
+
+			// when
+			PostReplyCreateResponse response = postService.createReply(request, currentMember);
+
+			// then
+			assertThat(response.getContent()).isEqualTo(replyContent);
+			assertThat(response.getParentId()).isEqualTo(parentPost.getId());
+			assertThat(response.getAuthor().getBasicInfo().getHandle()).isEqualTo(currentMember.getHandle());
+			assertThat(response.getMedia()).hasSize(2);
+		}
+
+		@DisplayName("실패 - 부모의 ID가 존재하지 않는 경우")
+		@Test
+		void shouldThrowErrorWhenTheParentPostDoesNotExists() {
+			// given
+			Member currentMember = saveTestMember("currentMember");
+			Long nonExistentParentId = -1L;
+			String replyContent = "답글 내용입니다.";
+			ReplyCreateRequest request = ReplyCreateRequest.builder()
+				.content(replyContent)
+				.media(null)
+				.parentId(nonExistentParentId)
+				.build();
+
+			// when & then
+			assertThrows(PostNotFoundException.class, () -> {
+				postService.createReply(request, currentMember);
+			});
+		}
+
+		@DisplayName("실패 - 삭제된 부모 포스트에 답글을 작성하려는 경우")
+		@Test
+		void shouldThrowErrorWhenTheParentPostIsDeleted() {
+			// given
+			Member author = saveTestMember("author");
+			Post parentPost = Post.createPost(author.getId(), "부모 포스트입니다.");
+			postRepository.save(parentPost);
+			parentPost.softDelete();
+
+			Member currentMember = saveTestMember("currentMember");
+			String replyContent = "답글 내용입니다.";
+			ReplyCreateRequest request = ReplyCreateRequest.builder()
+				.content(replyContent)
+				.media(null)
+				.parentId(parentPost.getId())
+				.build();
+
+			// when & then
+			assertThrows(PostNotFoundException.class, () -> {
+				postService.createReply(request, currentMember);
 			});
 		}
 	}

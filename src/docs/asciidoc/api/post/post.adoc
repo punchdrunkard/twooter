@@ -14,6 +14,8 @@ include::{snippets}/post-create/response-fields.adoc[]
 
 === 포스트 단건 조회
 
+포스트를 단건 조회한다.
+
 ==== HTTP Request
 
 include::{snippets}/post-get/http-request.adoc[]
@@ -25,6 +27,8 @@ include::{snippets}/post-get/http-response.adoc[]
 include::{snippets}/post-get/response-fields.adoc[]
 
 === 포스트 좋아요 / 좋아요 취소
+
+포스트에 좋아요를 누르거나, 이미 좋아요가 눌러진 상태에서 다시 누르면 좋아요를 취소한다.
 
 ==== HTTP Request
 
@@ -39,6 +43,9 @@ include::{snippets}/post-like/response-fields.adoc[]
 
 === 리포스트
 
+포스트를 리포스트한다.
+
+
 ==== HTTP Request
 
 include::{snippets}/post-repost/http-request.adoc[]
@@ -49,3 +56,18 @@ include::{snippets}/post-repost/path-parameters.adoc[]
 
 include::{snippets}/post-repost/http-response.adoc[]
 include::{snippets}/post-repost/response-fields.adoc[]
+
+=== 답글 작성
+
+포스트에 대한 답글을 작성한다.
+
+==== HTTP Request
+
+include::{snippets}/post-reply-create/http-request.adoc[]
+include::{snippets}/post-reply-create/request-headers.adoc[]
+include::{snippets}/post-reply-create/request-fields.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/post-reply-create/http-response.adoc[]
+include::{snippets}/post-reply-create/response-fields.adoc[]

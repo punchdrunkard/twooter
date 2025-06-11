@@ -20,9 +20,11 @@ import xyz.twooter.member.domain.Member;
 import xyz.twooter.post.application.PostLikeService;
 import xyz.twooter.post.application.PostService;
 import xyz.twooter.post.presentation.dto.request.PostCreateRequest;
+import xyz.twooter.post.presentation.dto.request.ReplyCreateRequest;
 import xyz.twooter.post.presentation.dto.response.PostCreateResponse;
 import xyz.twooter.post.presentation.dto.response.PostDeleteResponse;
 import xyz.twooter.post.presentation.dto.response.PostLikeResponse;
+import xyz.twooter.post.presentation.dto.response.PostReplyCreateResponse;
 import xyz.twooter.post.presentation.dto.response.PostResponse;
 import xyz.twooter.post.presentation.dto.response.RepostCreateResponse;
 
@@ -81,4 +83,20 @@ public class PostController {
 		PostDeleteResponse response = postService.deletePost(postId, member);
 		return ResponseEntity.ok(response);
 	}
+
+	@PostMapping("/replies")
+	public ResponseEntity<PostReplyCreateResponse> createReply(@RequestBody @Valid ReplyCreateRequest request,
+		@CurrentMember Member member) {
+		PostReplyCreateResponse response = postService.createReply(request, member);
+
+		URI location = ServletUriComponentsBuilder
+			.fromCurrentRequest()
+			.build()
+			.toUri();
+
+		return ResponseEntity
+			.created(location)
+			.body(response);
+	}
+
 }

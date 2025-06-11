@@ -24,10 +24,12 @@ import xyz.twooter.media.presentation.dto.response.MediaSimpleResponse;
 import xyz.twooter.member.presentation.dto.response.MemberBasic;
 import xyz.twooter.member.presentation.dto.response.MemberSummaryResponse;
 import xyz.twooter.post.presentation.dto.request.PostCreateRequest;
+import xyz.twooter.post.presentation.dto.request.ReplyCreateRequest;
 import xyz.twooter.post.presentation.dto.response.MediaEntity;
 import xyz.twooter.post.presentation.dto.response.PostCreateResponse;
 import xyz.twooter.post.presentation.dto.response.PostDeleteResponse;
 import xyz.twooter.post.presentation.dto.response.PostLikeResponse;
+import xyz.twooter.post.presentation.dto.response.PostReplyCreateResponse;
 import xyz.twooter.post.presentation.dto.response.PostResponse;
 import xyz.twooter.post.presentation.dto.response.RepostCreateResponse;
 import xyz.twooter.support.security.WithMockCustomUser;
@@ -259,6 +261,80 @@ class PostControllerDocsTest extends RestDocsSupport {
 				responseFields(
 					fieldWithPath("postId").type(JsonFieldType.NUMBER)
 						.description("삭제된 포스트 ID")
+				)
+			));
+	}
+
+	@DisplayName("답글 생성 API")
+	@Test
+	void reply() throws Exception {
+		// given
+		Long parentId = 1L;
+		ReplyCreateRequest request = ReplyCreateRequest.builder()
+			.content("답글 내용입니다.")
+			.parentId(parentId)
+			.media(new String[] {"https://cdn.twooter.xyz/media/201.jpg"})
+			.build();
+
+		PostReplyCreateResponse response = PostReplyCreateResponse.builder()
+			.id(2L)
+			.content("답글 내용입니다.")
+			.author(TEST_MEMBER_SUMMARY)
+			.media(new MediaSimpleResponse[] {
+				MediaSimpleResponse.builder()
+					.mediaId(201L)
+					.mediaUrl("https://cdn.twooter.xyz/media/201.jpg")
+					.build()
+			})
+			.parentId(parentId)
+			.createdAt(LocalDateTime.of(2025, 5, 5, 0, 0))
+			.build();
+
+		given(postService.createReply(any(), any())).willReturn(response);
+
+		// when & then
+		mockMvc.perform(
+				post("/api/posts/replies")
+					.content(objectMapper.writeValueAsString(request))
+					.header("Authorization", TEST_ACCESS_TOKEN)
+					.contentType(MediaType.APPLICATION_JSON)
+			)
+			.andExpect(status().isCreated())
+			.andExpect(jsonPath("$.id").value(response.getId()))
+			.andExpect(jsonPath("$.content").value(response.getContent()))
+			.andExpect(jsonPath("$.media").isArray())
+			.andDo(document("post-reply-create",
+				preprocessRequest(prettyPrint()),
+				preprocessResponse(prettyPrint()),
+				requestHeaders(
+					headerWithName("Authorization").description("액세스 토큰 (Bearer 타입)")
+				),
+				requestFields(
+					fieldWithPath("parentId").type(JsonFieldType.NUMBER)
+						.description("답글의 부모 포스트 ID (필수)"),
+					fieldWithPath("content").type(JsonFieldType.STRING)
+						.description("포스트 내용 (미디어가 없는 경우 필수, 최대 500자)"),
+					fieldWithPath("media").type(JsonFieldType.ARRAY).optional()
+						.description("첨부된 미디어 파일 URL (내용이 비어있는 경우 필수, 최대 4개), 파일 업로드 API를 이용해, 업로드 후 링크를 첨부")
+				),
+				responseFields(
+					fieldWithPath("id").type(JsonFieldType.NUMBER)
+						.description("생성된 포스트 ID"),
+					fieldWithPath("content").type(JsonFieldType.STRING)
+						.description("포스트 내용"),
+					fieldWithPath("author").type(JsonFieldType.OBJECT)
+						.description("포스트 작성자 정보"),
+					fieldWithPath("media").type(JsonFieldType.ARRAY)
+						.description("첨부된 미디어 정보 목록"),
+					fieldWithPath("createdAt").type(JsonFieldType.STRING)
+						.description("포스트 생성 시간"),
+					fieldWithPath("parentId").type(JsonFieldType.NUMBER)
+						.description("생성된 답글의 부모 ID")
+				)
+					.andWithPrefix("author.", authorFields())
+					.andWithPrefix("media[].", mediaFields()),
+				responseHeaders(
+					headerWithName("Location").description("생성된 리소스의 URI")
 				)
 			));
 	}
