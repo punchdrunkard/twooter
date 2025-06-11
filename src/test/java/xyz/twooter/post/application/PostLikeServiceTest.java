@@ -118,7 +118,7 @@ class PostLikeServiceTest extends IntegrationTestSupport {
 			Post post = saveTestPost(author);
 
 			// when
-			PostLikeResponse response = postLikeService.likePost(post.getId(), member);
+			PostLikeResponse response = postLikeService.toggleLikeAndCount(post.getId(), member);
 
 			// then
 			assertThat(response.getPostId()).isEqualTo(post.getId());
@@ -135,7 +135,7 @@ class PostLikeServiceTest extends IntegrationTestSupport {
 			saveTestPostLike(post.getId(), member.getId());
 
 			// when
-			PostLikeResponse response = postLikeService.likePost(post.getId(), member);
+			PostLikeResponse response = postLikeService.toggleLikeAndCount(post.getId(), member);
 
 			// then
 			assertThat(response.getPostId()).isEqualTo(post.getId());

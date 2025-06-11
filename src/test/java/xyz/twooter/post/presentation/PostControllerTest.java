@@ -165,7 +165,7 @@ class PostControllerTest extends ControllerTestSupport {
 				.isLiked(true)
 				.build();
 
-			given(postLikeService.likePost(anyLong(), any())).willReturn(response);
+			given(postLikeService.toggleLikeAndCount(anyLong(), any())).willReturn(response);
 
 			mockMvc.perform(
 					patch("/api/posts/{postId}/like", postId)
@@ -186,7 +186,7 @@ class PostControllerTest extends ControllerTestSupport {
 				.build();
 
 			// when
-			given(postLikeService.likePost(anyLong(), any())).willReturn(response);
+			given(postLikeService.toggleLikeAndCount(anyLong(), any())).willReturn(response);
 
 			// then
 			mockMvc.perform(

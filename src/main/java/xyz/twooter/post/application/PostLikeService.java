@@ -28,26 +28,37 @@ public class PostLikeService {
 	}
 
 	@Transactional
-	public PostLikeResponse likePost(Long postId, Member member) {
+	public PostLikeResponse toggleLikeAndCount(Long postId, Member member) {
 		validateTargetPost(postId);
 
-		boolean isLiked = postLikeRepository.existsByPostIdAndMemberId(postId, member.getId());
+		boolean isNowLiked = postLikeRepository.existsByPostIdAndMemberId(postId, member.getId())
+			? deleteLike(postId, member)
+			: saveLike(postId, member);
 
-		if (isLiked) {
-			postLikeRepository.deleteByPostIdAndMemberId(postId, member.getId());
+		if (isNowLiked) {
+			postLikeRepository.incrementLikeCount(postId);
 		} else {
-			// 좋아요를 누르지 않은 상태면 좋아요 추가
-			postLikeRepository.save(
-				PostLike.builder()
-					.memberId(member.getId())
-					.postId(postId)
-					.build());
+			postLikeRepository.decrementLikeCount(postId);
 		}
 
 		return PostLikeResponse.builder()
 			.postId(postId)
-			.isLiked(!isLiked)
+			.isLiked(isNowLiked)
 			.build();
+	}
+
+	private boolean deleteLike(Long postId, Member member) {
+		postLikeRepository.deleteByPostIdAndMemberId(postId, member.getId());
+		return false;
+	}
+
+	private boolean saveLike(Long postId, Member member) {
+		postLikeRepository.save(
+			PostLike.builder()
+				.memberId(member.getId())
+				.postId(postId)
+				.build());
+		return true;
 	}
 
 	@Transactional

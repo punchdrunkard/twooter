@@ -158,7 +158,7 @@ class PostControllerDocsTest extends RestDocsSupport {
 			.build();
 
 		// when
-		given(postLikeService.likePost(anyLong(), any())).willReturn(response);
+		given(postLikeService.toggleLikeAndCount(anyLong(), any())).willReturn(response);
 
 		// then
 		mockMvc.perform(

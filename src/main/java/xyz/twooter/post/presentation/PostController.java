@@ -58,7 +58,7 @@ public class PostController {
 
 	@PatchMapping("/{postId}/like")
 	public ResponseEntity<PostLikeResponse> likePost(@PathVariable Long postId, @CurrentMember Member member) {
-		PostLikeResponse response = postLikeService.likePost(postId, member);
+		PostLikeResponse response = postLikeService.toggleLikeAndCount(postId, member);
 
 		if (Boolean.TRUE.equals(response.getIsLiked())) {
 			postLikeService.increaseLikeCount(postId);
