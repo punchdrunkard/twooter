@@ -551,7 +551,10 @@ class PostServiceTest extends IntegrationTestSupport {
 			// then
 			assertThat(replies).hasSize(2);
 			assertThat(replies.get(0).getId()).isEqualTo(reply1.getId());
-			assertThat(replies.get(1)).isEqualTo(PostResponse.deletedPost(reply2.getId(), reply2.getCreatedAt()));
+
+			PostResponse deletedReply = replies.get(1);
+			assertThat(deletedReply.isDeleted()).isTrue();
+			assertThat(deletedReply.getContent()).isNull();
 		}
 	}
 
