@@ -28,7 +28,10 @@ import xyz.twooter.member.presentation.dto.response.UnFollowResponse;
 
 class MemberControllerDocsTest extends RestDocsSupport {
 
+	public static final String TEST_CURSOR = "dXNlcjpVMDYxTkZUVDI=";
+
 	static final LocalDateTime currentTime = LocalDateTime.of(2025, 5, 5, 10, 10);
+	static final String TEST_ACCESS_TOKEN = "Bearer <ACCESS_TOKEN>";
 
 	@DisplayName("멤버 팔로우")
 	@Test
@@ -42,8 +45,7 @@ class MemberControllerDocsTest extends RestDocsSupport {
 		// when  & then
 		mockMvc.perform(post("/api/members/follow")
 				.content(objectMapper.writeValueAsString(request))
-				.header("Authorization",
-					"Bearer eyJhbGciOiJIUzI1NiJ9.eyJoYW5kbGUiOiJ0d29vdGVyXzEyMyIsInRva2VuVHlwZSI6IkFDQ0VTUyIsImlhdCI6MTcxMjMyMzIzMiwiZXhwIjoxNzEyMzI1MDMyfQ.exampleToken")
+				.header("Authorization", TEST_ACCESS_TOKEN)
 				.contentType(MediaType.APPLICATION_JSON)
 			)
 			.andExpect(status().isCreated())
@@ -74,9 +76,7 @@ class MemberControllerDocsTest extends RestDocsSupport {
 
 		// when  & then
 		mockMvc.perform(delete("/api/members/follow/{targetMemberId}", targetMemberId)
-				.header("Authorization",
-					"Bearer eyJhbGciOiJIUzI1NiJ9.eyJoYW5kbGUiOiJ0d29vdGVyXzEyMyIsInRva2VuVHlwZSI6IkFDQ0VTUyIsImlhdCI6MTcxMjMyMzIzMiwiZXhwIjoxNzEyMzI1MDMyfQ.exampleToken")
-			)
+				.header("Authorization", TEST_ACCESS_TOKEN))
 			.andExpect(status().isOk())
 			.andDo(document("unfollow-member",
 				preprocessRequest(prettyPrint()),
@@ -100,7 +100,6 @@ class MemberControllerDocsTest extends RestDocsSupport {
 		// given
 		MemberWithRelationResponse response = givenFollowersResponse();
 
-		String cursor = "dXNlcjpVMDYxTkZUVDI=";
 		Integer limit = 10;
 
 		given(followService.getFollowers(any(), any(), any(), any()))
@@ -109,7 +108,7 @@ class MemberControllerDocsTest extends RestDocsSupport {
 		// when & then
 		mockMvc.perform(
 				get("/api/members/{memberId}/followers", 1L)
-					.param("cursor", cursor)
+					.param("cursor", TEST_CURSOR)
 					.param("limit", limit.toString())
 					.contentType(MediaType.APPLICATION_JSON)
 			)
@@ -142,7 +141,6 @@ class MemberControllerDocsTest extends RestDocsSupport {
 		// given
 		MemberWithRelationResponse response = givenFollowersResponse();
 
-		String cursor = "dXNlcjpVMDYxTkZUVDI=";
 		Integer limit = 10;
 
 		given(followService.getFollowing(any(), any(), any(), any()))
@@ -151,7 +149,7 @@ class MemberControllerDocsTest extends RestDocsSupport {
 		// when & then
 		mockMvc.perform(
 				get("/api/members/{memberId}/followings", 1L)
-					.param("cursor", cursor)
+					.param("cursor", TEST_CURSOR)
 					.param("limit", limit.toString())
 					.contentType(MediaType.APPLICATION_JSON)
 			)

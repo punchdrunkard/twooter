@@ -17,6 +17,7 @@ import xyz.twooter.member.domain.Follow;
 import xyz.twooter.member.domain.Member;
 import xyz.twooter.post.domain.Post;
 import xyz.twooter.post.domain.PostLike;
+import xyz.twooter.post.domain.repository.projection.PostDetailProjection;
 import xyz.twooter.post.domain.repository.projection.TimelineItemProjection;
 import xyz.twooter.support.IntegrationTestSupport;
 
@@ -420,7 +421,100 @@ class PostRepositoryTest extends IntegrationTestSupport {
 		}
 	}
 
+	@Nested
+	@DisplayName("findRepliesById 메서드는")
+	class FindRepliesById {
+
+		@DisplayName("성공 - 답글이 있는 포스트 조회, 답글은 시간순으로 정렬")
+		@Test
+		void shouldReturnRepliesWhenExists() {
+			// given
+			Member member = createMember();
+			Post parentPost = createPost(targetUser, "부모 포스트", baseTime);
+			Post reply1 = createReply(member, parentPost.getId(), baseTime.plusMinutes(1)); // 먼저 생성
+			Post reply2 = createReply(member, parentPost.getId(), baseTime.plusMinutes(2)); // 나중에 생성
+
+			// when
+			List<PostDetailProjection> replies = postRepository.findRepliesByIdWithPagination(
+				parentPost.getId(), null, null, null, 10);
+
+			// then
+			assertThat(replies).hasSize(2);
+			assertThat(replies.get(0).getPostId()).isEqualTo(reply1.getId());
+			assertThat(replies.get(1).getPostId()).isEqualTo(reply2.getId());
+		}
+
+		@DisplayName("성공 - 답글이 없는 포스트를 조회하면 빈 리스트 반환")
+		@Test
+		void shouldEmptyListWhenNoReplies() {
+			// given
+			Post parentPostWithNoReplies = createPost(targetUser, "부모 포스트", baseTime);
+
+			// when
+			List<PostDetailProjection> replies = postRepository.findRepliesByIdWithPagination(
+				parentPostWithNoReplies.getId(), null, null, null, 10);
+
+			// then
+			assertThat(replies).isEmpty();
+		}
+
+		@DisplayName("성공 - 주어진 커서 다음부터의 데이터를 조회")
+		@Test
+		void shouldGetNextDataFromCursorWhenCursorIsGiven() {
+			// given
+			Member member = createMember();
+			Post parentPost = createPost(targetUser, "부모 포스트", baseTime);
+			Post reply1 = createReply(member, parentPost.getId(), baseTime.plusMinutes(1)); // 가장 오래된 글
+			Post reply2 = createReply(member, parentPost.getId(), baseTime.plusMinutes(2));
+			Post reply3 = createReply(member, parentPost.getId(), baseTime.plusMinutes(3));
+			Post reply4 = createReply(member, parentPost.getId(), baseTime.plusMinutes(4));
+
+			// when
+			List<PostDetailProjection> replies = postRepository.findRepliesByIdWithPagination(
+				parentPost.getId(), null, reply1.getCreatedAt(), reply1.getId(), 10);
+
+			// then
+			assertThat(replies).hasSize(3); // reply2, reply3, reply4가 조회되어야 함
+			assertThat(replies.stream().map(PostDetailProjection::getPostId)
+				.collect(Collectors.toList())).containsExactly(reply2.getId(), reply3.getId(), reply4.getId());
+		}
+
+		@DisplayName("성공 - limit 개수만큼 조회")
+		@Test
+		void shouldReturnLimitsDataWhenTheLimitIsSet() {
+			// given
+			Member member = createMember();
+			Post parentPost = createPost(targetUser, "부모 포스트", baseTime);
+			Post reply1 = createReply(member, parentPost.getId(), baseTime.plusMinutes(1));
+			Post reply2 = createReply(member, parentPost.getId(), baseTime.plusMinutes(2));
+			Post reply3 = createReply(member, parentPost.getId(), baseTime.plusMinutes(3));
+			Post reply4 = createReply(member, parentPost.getId(), baseTime.plusMinutes(4));
+			Post reply5 = createReply(member, parentPost.getId(), baseTime.plusMinutes(5));
+
+			// when
+			List<PostDetailProjection> replies = postRepository.findRepliesByIdWithPagination(
+				parentPost.getId(), null, null, null, 3);
+
+			// then
+			assertThat(replies).hasSize(3); // limit이 3이므로 3개의 답글만 조회되어야 함
+			assertThat(replies.stream().map(PostDetailProjection::getPostId)
+				.collect(Collectors.toList())).containsExactly(
+				reply1.getId(), reply2.getId(), reply3.getId());
+		}
+	}
+
 	// Helper Methods
+	private Member createMember() {
+		Member member = Member.builder()
+			.handle("test_handle")
+			.nickname("테스트유저")
+			.email("test@test.test")
+			.build();
+
+		entityManager.persist(member);
+		return member;
+	}
+
 	private Member createMember(String handle, String nickname, String email) {
 		Member member = Member.builder()
 			.handle(handle)
@@ -432,12 +526,15 @@ class PostRepositoryTest extends IntegrationTestSupport {
 		return member;
 	}
 
-	private Post createPost(Member author, String content, LocalDateTime createdAt) {
-		Post post = Post.builder()
-			.authorId(author.getId())
-			.content(content)
-			.build();
+	private Post createReply(Member author, Long parentId, LocalDateTime createdAt) {
+		Post reply = Post.createReply(author.getId(), "답글 내용", parentId);
+		entityManager.persist(reply);
+		setCreatedAt(reply.getId(), createdAt);
+		return reply;
+	}
 
+	private Post createPost(Member author, String content, LocalDateTime createdAt) {
+		Post post = Post.createPost(author.getId(), content);
 		entityManager.persist(post);
 		entityManager.flush(); // ID 생성을 위해 flush
 		setCreatedAt(post.getId(), createdAt);
@@ -477,6 +574,9 @@ class PostRepositoryTest extends IntegrationTestSupport {
 			.setParameter("dateTime", dateTime)
 			.setParameter("id", postId)
 			.executeUpdate();
+
+		entityManager.flush();
+		entityManager.refresh(postRepository.findById(postId).orElseThrow());
 	}
 
 	private Follow createFollow(Member follower, Member followee) {

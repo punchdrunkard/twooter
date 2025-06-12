@@ -3,14 +3,14 @@ package xyz.twooter.post.presentation.dto.response;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import lombok.Builder;
 import lombok.Getter;
+import lombok.experimental.SuperBuilder;
 import xyz.twooter.media.presentation.dto.response.MediaSimpleResponse;
 import xyz.twooter.member.presentation.dto.response.MemberSummaryResponse;
 import xyz.twooter.post.domain.Post;
 
-@Builder
 @Getter
+@SuperBuilder
 public class PostCreateResponse {
 	private Long id;
 	private String content;
@@ -23,7 +23,7 @@ public class PostCreateResponse {
 		MediaSimpleResponse[] mediaResponses = mediaList.stream()
 			.map(media -> MediaSimpleResponse.builder()
 				.mediaId(media.getMediaId())
-				.mediaUrl(media.getMediaUrl())  // 또는 .getUrl() 등 실제 경로
+				.mediaUrl(media.getMediaUrl())
 				.build())
 			.toArray(MediaSimpleResponse[]::new);
 

@@ -26,6 +26,7 @@ class TimelineControllerTest extends ControllerTestSupport {
 
 	private static final LocalDateTime TEST_DATE = LocalDateTime.of(2025, 5, 5, 0, 0);
 	private static final String VALID_CURSOR = "dXNlcjpVMDYxTkZUVDI=";
+	public static final String TEST_END_POINT = "https://cdn.twooter.xyz/media/";
 
 	@Nested
 	@DisplayName("내 타임라인 조회 API")
@@ -163,7 +164,7 @@ class TimelineControllerTest extends ControllerTestSupport {
 		);
 
 		PaginationMetadata metadata = PaginationMetadata.builder()
-			.nextCursor("dGVhbTpDMDYxRkE1UEI=")
+			.nextCursor(VALID_CURSOR)
 			.hasNext(true)
 			.build();
 
@@ -218,7 +219,7 @@ class TimelineControllerTest extends ControllerTestSupport {
 		);
 
 		PaginationMetadata metadata = PaginationMetadata.builder()
-			.nextCursor("dGVhbTpDMDYxRkE1UEI=")
+			.nextCursor(VALID_CURSOR)
 			.hasNext(true)
 			.build();
 
@@ -239,8 +240,8 @@ class TimelineControllerTest extends ControllerTestSupport {
 
 	private PostResponse createPostResponse(Long id, MemberBasic author, String content) {
 		List<MediaEntity> mediaList = List.of(
-			MediaEntity.builder().id(101L).path("https://cdn.twooter.xyz/media/101.jpg").build(),
-			MediaEntity.builder().id(102L).path("https://cdn.twooter.xyz/media/102.jpg").build()
+			MediaEntity.builder().mediaId(101L).mediaUrl(TEST_END_POINT + "101.jpg").build(),
+			MediaEntity.builder().mediaId(102L).mediaUrl(TEST_END_POINT + "102.jpg").build()
 		);
 
 		return PostResponse.builder()
@@ -262,7 +263,7 @@ class TimelineControllerTest extends ControllerTestSupport {
 		return MemberBasic.builder()
 			.handle(handle)
 			.nickname(nickname)
-			.avatarPath("https://cdn.twooter.xyz/media/avatar")
+			.avatarPath(TEST_END_POINT + "avatar")
 			.build();
 	}
 }

@@ -31,11 +31,13 @@ import xyz.twooter.support.security.WithMockCustomUser;
 @WithMockCustomUser
 class TimelineControllerDocsTest extends RestDocsSupport {
 
+	static final String TEST_ACCESS_TOKEN = "Bearer <ACCESS_TOKEN>";
+	static final String TEST_CURSOR = "dXNlcjpVMDYxTkZUVDI=";
+
 	@DisplayName("나의 타임라인 조회 API")
 	@Test
 	void getMyTimeline() throws Exception {
 		// given
-		String cursor = "dXNlcjpVMDYxTkZUVDI=";
 		Integer limit = 10;
 		TimelineResponse response = givenTimelineResponse();
 
@@ -44,10 +46,9 @@ class TimelineControllerDocsTest extends RestDocsSupport {
 		// when & then
 		mockMvc.perform(
 				get("/api/timeline/me")
-					.param("cursor", cursor)
+					.param("cursor", TEST_CURSOR)
 					.param("limit", String.valueOf(limit))
-					.header("Authorization",
-						"Bearer eyJhbGciOiJIUzI1NiJ9.eyJoYW5kbGUiOiJ0d29vdGVyXzEyMyIsInRva2VuVHlwZSI6IkFDQ0VTUyIsImlhdCI6MTcxMjMyMzIzMiwiZXhwIjoxNzEyMzI1MDMyfQ.exampleToken")
+					.header("Authorization", TEST_ACCESS_TOKEN)
 					.contentType(MediaType.APPLICATION_JSON)
 			)
 			.andExpect(status().isOk())
@@ -81,7 +82,6 @@ class TimelineControllerDocsTest extends RestDocsSupport {
 	@Test
 	void getTimelineByUserId() throws Exception {
 		// given
-		String cursor = "dXNlcjpVMDYxTkZUVDI=";
 		Integer limit = 10;
 		TimelineResponse response = givenTimelineResponse();
 
@@ -90,7 +90,7 @@ class TimelineControllerDocsTest extends RestDocsSupport {
 		// when & then
 		mockMvc.perform(
 				get("/api/timeline/user/{userId}", 1L)
-					.param("cursor", cursor)
+					.param("cursor", TEST_CURSOR)
 					.param("limit", String.valueOf(limit))
 					.contentType(MediaType.APPLICATION_JSON)
 			)
@@ -125,7 +125,6 @@ class TimelineControllerDocsTest extends RestDocsSupport {
 	@Test
 	void getHomeTimeline() throws Exception {
 		// given
-		String cursor = "dXNlcjpVMDYxTkZUVDI=";
 		Integer limit = 10;
 		TimelineResponse response = givenTimelineResponse();
 
@@ -134,10 +133,9 @@ class TimelineControllerDocsTest extends RestDocsSupport {
 		// when & then
 		mockMvc.perform(
 				get("/api/timeline/home")
-					.param("cursor", cursor)
+					.param("cursor", TEST_CURSOR)
 					.param("limit", String.valueOf(limit))
-					.header("Authorization",
-						"Bearer eyJhbGciOiJIUzI1NiJ9.eyJoYW5kbGUiOiJ0d29vdGVyXzEyMyIsInRva2VuVHlwZSI6IkFDQ0VTUyIsImlhdCI6MTcxMjMyMzIzMiwiZXhwIjoxNzEyMzI1MDMyfQ.exampleToken")
+					.header("Authorization", TEST_ACCESS_TOKEN)
 					.contentType(MediaType.APPLICATION_JSON)
 			)
 			.andExpect(status().isOk())
@@ -206,8 +204,8 @@ class TimelineControllerDocsTest extends RestDocsSupport {
 
 	private List<FieldDescriptor> mediaEntityFields() {
 		return List.of(
-			fieldWithPath("id").type(JsonFieldType.NUMBER).description("미디어 ID"),
-			fieldWithPath("path").type(JsonFieldType.STRING).description("미디어 경로 URL")
+			fieldWithPath("mediaId").type(JsonFieldType.NUMBER).description("미디어 ID"),
+			fieldWithPath("mediaUrl").type(JsonFieldType.STRING).description("미디어 경로 URL")
 		);
 	}
 
@@ -234,10 +232,22 @@ class TimelineControllerDocsTest extends RestDocsSupport {
 			.avatarPath("https://cdn.twooter.xyz/media/avatar2")
 			.build();
 
-		MediaEntity media1 = MediaEntity.builder().id(101L).path("https://cdn.twooter.xyz/media/101.jpg").build();
-		MediaEntity media2 = MediaEntity.builder().id(102L).path("https://cdn.twooter.xyz/media/102.jpg").build();
-		MediaEntity media3 = MediaEntity.builder().id(103L).path("https://cdn.twooter.xyz/media/101.jpg").build();
-		MediaEntity media4 = MediaEntity.builder().id(104L).path("https://cdn.twooter.xyz/media/102.jpg").build();
+		MediaEntity media1 = MediaEntity.builder()
+			.mediaId(101L)
+			.mediaUrl("https://cdn.twooter.xyz/media/101.jpg")
+			.build();
+		MediaEntity media2 = MediaEntity.builder()
+			.mediaId(102L)
+			.mediaUrl("https://cdn.twooter.xyz/media/102.jpg")
+			.build();
+		MediaEntity media3 = MediaEntity.builder()
+			.mediaId(103L)
+			.mediaUrl("https://cdn.twooter.xyz/media/101.jpg")
+			.build();
+		MediaEntity media4 = MediaEntity.builder()
+			.mediaId(104L)
+			.mediaUrl("https://cdn.twooter.xyz/media/102.jpg")
+			.build();
 
 		PostResponse post1 = PostResponse.builder()
 			.id(1L)

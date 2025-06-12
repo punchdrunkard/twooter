@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,16 +20,20 @@ import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.restdocs.payload.JsonFieldType;
 
+import xyz.twooter.common.infrastructure.pagination.PaginationMetadata;
 import xyz.twooter.docs.RestDocsSupport;
 import xyz.twooter.media.presentation.dto.response.MediaSimpleResponse;
 import xyz.twooter.member.presentation.dto.response.MemberBasic;
 import xyz.twooter.member.presentation.dto.response.MemberSummaryResponse;
 import xyz.twooter.post.presentation.dto.request.PostCreateRequest;
+import xyz.twooter.post.presentation.dto.request.ReplyCreateRequest;
 import xyz.twooter.post.presentation.dto.response.MediaEntity;
 import xyz.twooter.post.presentation.dto.response.PostCreateResponse;
 import xyz.twooter.post.presentation.dto.response.PostDeleteResponse;
 import xyz.twooter.post.presentation.dto.response.PostLikeResponse;
+import xyz.twooter.post.presentation.dto.response.PostReplyCreateResponse;
 import xyz.twooter.post.presentation.dto.response.PostResponse;
+import xyz.twooter.post.presentation.dto.response.PostThreadResponse;
 import xyz.twooter.post.presentation.dto.response.RepostCreateResponse;
 import xyz.twooter.support.security.WithMockCustomUser;
 
@@ -42,7 +47,7 @@ class PostControllerDocsTest extends RestDocsSupport {
 		.nickname("테이블 청소 마스터")
 		.avatarPath("https://cdn.twooter.xyz/media/avatar")
 		.build();
-	final String TEST_ACCESS_TOKEN = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJoYW5kbGUiOiJ0d29vdGVyXzEyMyIsInRva2VuVHlwZSI6IkFDQ0VTUyIsImlhdCI6MTcxMjMyMzIzMiwiZXhwIjoxNzEyMzI1MDMyfQ.exampleToken";
+	static final String TEST_ACCESS_TOKEN = "Bearer <ACCESS_TOKEN>";
 
 	@DisplayName("포스트 생성 API")
 	@Test
@@ -88,7 +93,7 @@ class PostControllerDocsTest extends RestDocsSupport {
 					fieldWithPath("createdAt").type(JsonFieldType.STRING)
 						.description("포스트 생성 시간")
 				)
-					.andWithPrefix("author.", authorFields())
+					.andWithPrefix("author.", authorEntityFieldsWithEmail())
 					.andWithPrefix("media[].", mediaFields()),
 				responseHeaders(
 					headerWithName("Location").description("생성된 리소스의 URI")
@@ -143,7 +148,7 @@ class PostControllerDocsTest extends RestDocsSupport {
 						.description("삭제 여부")
 				)
 					.andWithPrefix("author.", authorEntityFields())
-					.andWithPrefix("mediaEntities[].", mediaEntityFields())
+					.andWithPrefix("mediaEntities[].", mediaFields())
 			));
 	}
 
@@ -263,15 +268,197 @@ class PostControllerDocsTest extends RestDocsSupport {
 			));
 	}
 
-	// === 필드 문서화 메서드 ===
-	private List<FieldDescriptor> authorFields() {
+	@DisplayName("답글 생성 API")
+	@Test
+	void reply() throws Exception {
+		// given
+		Long parentId = 1L;
+		ReplyCreateRequest request = ReplyCreateRequest.builder()
+			.content("답글 내용입니다.")
+			.parentId(parentId)
+			.media(new String[] {"https://cdn.twooter.xyz/media/201.jpg"})
+			.build();
+
+		PostReplyCreateResponse response = PostReplyCreateResponse.builder()
+			.id(2L)
+			.content("답글 내용입니다.")
+			.author(TEST_MEMBER_SUMMARY)
+			.media(new MediaSimpleResponse[] {
+				MediaSimpleResponse.builder()
+					.mediaId(201L)
+					.mediaUrl("https://cdn.twooter.xyz/media/201.jpg")
+					.build()
+			})
+			.parentId(parentId)
+			.createdAt(LocalDateTime.of(2025, 5, 5, 0, 0))
+			.build();
+
+		given(postService.createReply(any(), any())).willReturn(response);
+
+		// when & then
+		mockMvc.perform(
+				post("/api/posts/replies")
+					.content(objectMapper.writeValueAsString(request))
+					.header("Authorization", TEST_ACCESS_TOKEN)
+					.contentType(MediaType.APPLICATION_JSON)
+			)
+			.andExpect(status().isCreated())
+			.andExpect(jsonPath("$.id").value(response.getId()))
+			.andExpect(jsonPath("$.content").value(response.getContent()))
+			.andExpect(jsonPath("$.media").isArray())
+			.andDo(document("post-reply-create",
+				preprocessRequest(prettyPrint()),
+				preprocessResponse(prettyPrint()),
+				requestHeaders(
+					headerWithName("Authorization").description("액세스 토큰 (Bearer 타입)")
+				),
+				requestFields(
+					fieldWithPath("parentId").type(JsonFieldType.NUMBER)
+						.description("답글의 부모 포스트 ID (필수)"),
+					fieldWithPath("content").type(JsonFieldType.STRING)
+						.description("포스트 내용 (미디어가 없는 경우 필수, 최대 500자)"),
+					fieldWithPath("media").type(JsonFieldType.ARRAY).optional()
+						.description("첨부된 미디어 파일 URL (내용이 비어있는 경우 필수, 최대 4개), 파일 업로드 API를 이용해, 업로드 후 링크를 첨부")
+				),
+				responseFields(
+					fieldWithPath("id").type(JsonFieldType.NUMBER)
+						.description("생성된 포스트 ID"),
+					fieldWithPath("content").type(JsonFieldType.STRING)
+						.description("포스트 내용"),
+					fieldWithPath("author").type(JsonFieldType.OBJECT)
+						.description("포스트 작성자 정보"),
+					fieldWithPath("media").type(JsonFieldType.ARRAY)
+						.description("첨부된 미디어 정보 목록"),
+					fieldWithPath("createdAt").type(JsonFieldType.STRING)
+						.description("포스트 생성 시간"),
+					fieldWithPath("parentId").type(JsonFieldType.NUMBER)
+						.description("생성된 답글의 부모 ID")
+				)
+					.andWithPrefix("author.", authorEntityFieldsWithEmail())
+					.andWithPrefix("media[].", mediaFields()),
+				responseHeaders(
+					headerWithName("Location").description("생성된 리소스의 URI")
+				)
+			));
+	}
+
+	@DisplayName("답글 조회 API")
+	@Test
+	void getReplies() throws Exception {
+		// given
+		Long parentPostId = 1L;
+		PaginationMetadata metadata = PaginationMetadata.builder()
+			.nextCursor("dGVhbTpDMDYxRkE1UEI=")
+			.hasNext(true)
+			.build();
+
+		PostThreadResponse response = PostThreadResponse.builder()
+			.posts(List.of(
+				givenReplyPostResponse(2L, parentPostId),
+				givenReplyPostResponse(3L, parentPostId),
+				givenReplyPostResponse(4L, parentPostId)
+			))
+			.metadata(metadata)
+			.build();
+
+		given(postService.getReplies(anyLong(), any(), any(), any())).willReturn(response);
+
+		// when & then
+		mockMvc.perform(
+				get("/api/posts/{postId}/replies", parentPostId)
+			)
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.posts").isArray())
+			.andExpect(jsonPath("$.metadata.hasNext").value(true))
+			.andExpect(jsonPath("$.metadata.nextCursor").value("dGVhbTpDMDYxRkE1UEI="))
+			.andDo(document("post-replies-get",
+				preprocessRequest(prettyPrint()),
+				preprocessResponse(prettyPrint()),
+				pathParameters(
+					parameterWithName("postId").description("답글을 조회할 부모 포스트 ID")
+				),
+				responseFields(
+					fieldWithPath("posts").type(JsonFieldType.ARRAY)
+						.description("답글 포스트 목록"),
+					fieldWithPath("metadata").type(JsonFieldType.OBJECT)
+						.description("페이지네이션 메타데이터")
+				)
+					.andWithPrefix("posts[].", postResponseFields())
+					.andWithPrefix("posts[].author.", authorEntityFields())
+					.andWithPrefix("posts[].mediaEntities[].", mediaFields())
+					.andWithPrefix("metadata.", paginationMetadataFields())
+			));
+	}
+
+	// === 추가 헬퍼 메서드 ===
+
+	/**
+	 * 답글 포스트 응답 객체 생성
+	 */
+	private PostResponse givenReplyPostResponse(Long replyId, Long parentId) {
+		MemberBasic author = MemberBasic.builder()
+			.id(456L)
+			.nickname("답글 작성자")
+			.handle("reply_author_" + replyId)
+			.avatarPath("https://cdn.twooter.xyz/media/avatar_reply.jpg")
+			.build();
+
+		MediaEntity media = MediaEntity.builder()
+			.mediaId(200L + replyId)
+			.mediaUrl("https://cdn.twooter.xyz/media/reply_" + replyId + ".jpg")
+			.build();
+
+		return PostResponse.builder()
+			.id(replyId)
+			.author(author)
+			.content("이것은 포스트 " + parentId + "에 대한 답글입니다. 답글 ID: " + replyId)
+			.likeCount(5L + replyId)
+			.isLiked(replyId % 2 == 0) // 짝수 ID는 좋아요 상태
+			.repostCount(2L)
+			.isReposted(false)
+			.viewCount(20L + replyId)
+			.mediaEntities(List.of(media))
+			.createdAt(LocalDateTime.of(2025, 5, 5, 0, (int)replyId.longValue()))
+			.isDeleted(false)
+			.build();
+	}
+
+	/**
+	 * PostResponse 필드 문서화
+	 */
+	private List<FieldDescriptor> postResponseFields() {
 		return List.of(
-			fieldWithPath("id").type(JsonFieldType.NUMBER).description("작성자 고유 ID"),
-			fieldWithPath("email").type(JsonFieldType.STRING).description("작성자 이메일"),
-			fieldWithPath("handle").type(JsonFieldType.STRING).description("작성자 핸들"),
-			fieldWithPath("nickname").type(JsonFieldType.STRING).description("작성자 닉네임"),
-			fieldWithPath("avatarPath").type(JsonFieldType.STRING).description("작성자 아바타 URL")
+			fieldWithPath("id").type(JsonFieldType.NUMBER)
+				.description("답글 포스트 ID"),
+			fieldWithPath("author").type(JsonFieldType.OBJECT)
+				.description("답글 작성자 정보"),
+			fieldWithPath("content").type(JsonFieldType.STRING)
+				.description("답글 내용"),
+			fieldWithPath("likeCount").type(JsonFieldType.NUMBER)
+				.description("좋아요 수"),
+			fieldWithPath("liked").type(JsonFieldType.BOOLEAN)
+				.description("현재 사용자의 좋아요 여부"),
+			fieldWithPath("repostCount").type(JsonFieldType.NUMBER)
+				.description("리포스트 수"),
+			fieldWithPath("reposted").type(JsonFieldType.BOOLEAN)
+				.description("현재 사용자의 리포스트 여부"),
+			fieldWithPath("viewCount").type(JsonFieldType.NUMBER)
+				.description("조회수"),
+			fieldWithPath("mediaEntities").type(JsonFieldType.ARRAY)
+				.description("첨부된 미디어 정보 목록"),
+			fieldWithPath("createdAt").type(JsonFieldType.STRING)
+				.description("답글 생성 시간"),
+			fieldWithPath("deleted").type(JsonFieldType.BOOLEAN)
+				.description("삭제 여부")
 		);
+	}
+
+	// === 필드 문서화 메서드 ===
+	private List<FieldDescriptor> authorEntityFieldsWithEmail() {
+		return Stream.concat(
+			authorEntityFields().stream(),
+			Stream.of(fieldWithPath("email").type(JsonFieldType.STRING).description("작성자 이메일"))
+		).toList();
 	}
 
 	private List<FieldDescriptor> mediaFields() {
@@ -287,13 +474,6 @@ class PostControllerDocsTest extends RestDocsSupport {
 			fieldWithPath("nickname").type(JsonFieldType.STRING).description("작성자 닉네임"),
 			fieldWithPath("avatarPath").type(JsonFieldType.STRING).description("작성자 아바타 URL"),
 			fieldWithPath("handle").type(JsonFieldType.STRING).description("작성자 핸들")
-		);
-	}
-
-	private List<FieldDescriptor> mediaEntityFields() {
-		return List.of(
-			fieldWithPath("id").type(JsonFieldType.NUMBER).description("미디어 ID"),
-			fieldWithPath("path").type(JsonFieldType.STRING).description("미디어 경로 URL")
 		);
 	}
 
@@ -337,13 +517,13 @@ class PostControllerDocsTest extends RestDocsSupport {
 			.build();
 
 		MediaEntity media1 = MediaEntity.builder()
-			.id(101L)
-			.path("https://cdn.twooter.xyz/media/101.jpg")
+			.mediaId(101L)
+			.mediaUrl("https://cdn.twooter.xyz/media/101.jpg")
 			.build();
 
 		MediaEntity media2 = MediaEntity.builder()
-			.id(101L)
-			.path("https://cdn.twooter.xyz/media/102.jpg")
+			.mediaId(102L)
+			.mediaUrl("https://cdn.twooter.xyz/media/102.jpg")
 			.build();
 
 		List<MediaEntity> mediaList = List.of(media1, media2);
@@ -360,5 +540,12 @@ class PostControllerDocsTest extends RestDocsSupport {
 			.mediaEntities(mediaList)
 			.createdAt(LocalDateTime.of(2025, 5, 5, 0, 0))
 			.build();
+	}
+
+	private List<FieldDescriptor> paginationMetadataFields() {
+		return List.of(
+			fieldWithPath("nextCursor").type(JsonFieldType.STRING).optional().description("다음 페이지를 가져오는 데 사용될 커서"),
+			fieldWithPath("hasNext").type(JsonFieldType.BOOLEAN).description("다음 페이지가 존재하는지 여부")
+		);
 	}
 }
