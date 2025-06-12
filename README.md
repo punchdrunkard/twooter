@@ -3,6 +3,23 @@
 Twitter를 모델로 한 타임라인 기반 SNS 백엔드 API 서비스입니다.
 특히 여러 테이블의 복합적인 조인이 필수적인 타임라인 피드를 효율적으로 처리하는 **데이터베이스 설계와 쿼리 최적화**에 중점을 두고 학습하며 개발을 진행했습니다.
 
+## 📑 Table of Contents
+
+- [✨ Key Features](#-key-features)
+- [🛠️ Tech Stack](#️-tech-stack)
+- [📄 API Documentation](#-api-documentation)
+- [🗄️ ERD](#erd)
+- [🏗️  Infrastructure](#infrastructure)
+- [⚙️ Getting Started](#️-getting-started)
+- [🪩 Key Learnings](#-key-learnings)
+  - [1. 데이터베이스 쿼리 최적화: 좋아요 수 반정규화](#1-데이터베이스-쿼리-최적화-좋아요-수-반정규화)
+  - [2. ERD 설계: 포스트와 리포스트 테이블 통합](#2-erd-설계-포스트와-리포스트-테이블-통합)
+  - [3. 아키텍처 리팩터링: 계층 간 의존성 분리](#3-아키텍처-리팩터링-계층-간-의존성-분리)
+  - [4. 무한 스크롤 구현: 커서 기반 페이지네이션](#4-무한-스크롤-구현-커서-기반-페이지네이션)
+  - [5. 테스트 전략: 성격에 맞는 테스트 분리](#5-테스트-전략-성격에-맞는-테스트-분리)
+- [🚀 Future Work](#-future-work)
+
+
 ## ✨ Key Features
 
 - **사용자 및 인증**
@@ -45,23 +62,23 @@ Twitter를 모델로 한 타임라인 기반 SNS 백엔드 API 서비스입니�
 ## 📄 API Documentation
 
 프로젝트의 모든 API 명세는 **Spring REST Docs**를 통해 자동화된 문서로 관리하고 있습니다.
-[**➡️ API 문서 확인하기 (twooter.xyz/docs/index.html)**](https://twooter.xyz/docs/index.html "null")
+[**➡️ API 문서 확인하기 (twooter.xyz/docs/index.html)**](https://twooter.xyz/docs/index.html)
 
-## ERD
+## 🗄️ ERD
 
 <iframe width="560" height="315" src='https://dbdiagram.io/e/67ef99834f7afba18456e665/684a559ba463a450da2e2cc5'> </iframe>
 
-https://dbdiagram.io/d/트우터-67ef99834f7afba18456e665
+[dbdiagram](https://dbdiagram.io/d/트우터-67ef99834f7afba18456e665)
 
-## Infrastructure
+## 🏗️ Infrastructure
 
-![Image](https://github.com/user-attachments/assets/3e37e067-5eb2-4fce-8178-624f37f93877)
+![Twooter-Infrastructure](https://github.com/user-attachments/assets/3e37e067-5eb2-4fce-8178-624f37f93877)
 
 ## ⚙️ Getting Started
 
 로컬 환경에서는 별도의 DB 설정 없이 **내장 H2 데이터베이스**와 **Embedded Redis**를 사용하여 즉시 프로젝트를 실행하고 테스트할 수 있습니다.
 
-```
+```bash
 # 1. Repository Clone
 $ git clone https://github.com/punchdrunkard/twooter.git
 
@@ -92,7 +109,7 @@ $ java -jar build/libs/twooter-0.0.1-SNAPSHOT.jar
 
 - **결과**: 불필요한 조인을 제거함으로써 포스트 조회 시 발생하는 비용을 상수 시간으로 줄여 **응답 성능을 획기적으로 개선**했습니다.
 
-    ```
+    ```sql
     -- 반정규화 이전 실행 계획 (요약)
     -> Nested loop left join (cost=12736 rows=125000) ... (Total Cost: 41538)
     
