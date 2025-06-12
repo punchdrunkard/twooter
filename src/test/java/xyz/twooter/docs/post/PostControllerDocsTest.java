@@ -522,7 +522,7 @@ class PostControllerDocsTest extends RestDocsSupport {
 			.build();
 
 		MediaEntity media2 = MediaEntity.builder()
-			.mediaId(101L)
+			.mediaId(102L)
 			.mediaUrl("https://cdn.twooter.xyz/media/102.jpg")
 			.build();
 
