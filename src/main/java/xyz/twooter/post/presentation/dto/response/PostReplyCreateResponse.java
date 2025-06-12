@@ -15,12 +15,14 @@ public class PostReplyCreateResponse extends PostCreateResponse {
 
 	public static PostReplyCreateResponse of(Post post, MemberSummaryResponse memberSummaryResponse,
 		List<MediaSimpleResponse> mediaList, Long parentId) {
-		MediaSimpleResponse[] mediaResponses = mediaList.stream()
-			.map(media -> MediaSimpleResponse.builder()
-				.mediaId(media.getMediaId())
-				.mediaUrl(media.getMediaUrl())
-				.build())
-			.toArray(MediaSimpleResponse[]::new);
+		MediaSimpleResponse[] mediaResponses =
+			(mediaList == null ? List.<MediaSimpleResponse>of() : mediaList)
+				.stream()
+				.map(media -> MediaSimpleResponse.builder()
+					.mediaId(media.getMediaId())
+					.mediaUrl(media.getMediaUrl())
+					.build())
+				.toArray(MediaSimpleResponse[]::new);
 
 		return PostReplyCreateResponse.builder()
 			.id(post.getId())
