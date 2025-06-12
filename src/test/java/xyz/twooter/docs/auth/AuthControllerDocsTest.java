@@ -8,6 +8,7 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import org.checkerframework.checker.units.qual.A;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
@@ -24,6 +25,10 @@ import xyz.twooter.docs.RestDocsSupport;
 import xyz.twooter.member.presentation.dto.response.MemberSummaryResponse;
 
 class AuthControllerDocsTest extends RestDocsSupport {
+
+	static final String TEST_ACCESS_TOKEN = "Bearer <ACCESS_TOKEN>";
+	public static final String REFRESH_TOKEN = "<REFRESH_TOKEN>";
+	public static final String ACCESS_TOKEN = "<ACCESS_TOKEN>";
 
 	@DisplayName("회원가입 API")
 	@Test
@@ -94,11 +99,12 @@ class AuthControllerDocsTest extends RestDocsSupport {
 			.avatarPath("testpath")
 			.build();
 
-		SignInResponse response = new SignInResponse(
-			"eyJhbGciOiJIUzI1NiJ9.eyJoYW5kbGUiOiJ0d29vdGVyXzEyMyIsInRva2VuVHlwZSI6IkFDQ0VTUyIsImlhdCI6MTcxMjMyMzIzMiwiZXhwIjoxNzEyMzI1MDMyfQ.exampleToken",
-			"eyJhbGciOiJIUzI1NiJ9.eyJoYW5kbGUiOiJ0d29vdGVyXzEyMyIsInRva2VuVHlwZSI6IlJFRlJFU0giLCJpYXQiOjE3MTIzMjMyMzIsImV4cCI6MTcxMjkyODAzMn0.refreshExampleToken",
-			memberSummaryResponse
-		);
+		SignInResponse response =
+			new SignInResponse(
+				ACCESS_TOKEN,
+				REFRESH_TOKEN,
+				memberSummaryResponse
+			);
 
 		given(authService.signIn(any())).willReturn(response);
 
@@ -138,13 +144,10 @@ class AuthControllerDocsTest extends RestDocsSupport {
 	void reissueToken() throws Exception {
 		// given
 		TokenReissueRequest request = TokenReissueRequest.builder()
-			.refreshToken(
-				"eyJhbGciOiJIUzI1NiJ9.eyJoYW5kbGUiOiJ0d29vdGVyXzEyMyIsInRva2VuVHlwZSI6IlJFRlJFU0giLCJpYXQiOjE3MTIzMjMyMzIsImV4cCI6MTcxMjkyODAzMn0.refreshExampleToken")
+			.refreshToken(REFRESH_TOKEN)
 			.build();
 
-		TokenReissueResponse response = new TokenReissueResponse(
-			"eyJhbGciOiJIUzI1NiJ9.eyJoYW5kbGUiOiJ0d29vdGVyXzEyMyIsInRva2VuVHlwZSI6IkFDQ0VTUyIsImlhdCI6MTcxMjMyMzIzMiwiZXhwIjoxNzEyMzI1MDMyfQ.newAccessToken",
-			"eyJhbGciOiJIUzI1NiJ9.eyJoYW5kbGUiOiJ0d29vdGVyXzEyMyIsInRva2VuVHlwZSI6IlJFRlJFU0giLCJpYXQiOjE3MTIzMjMyMzIsImV4cCI6MTcxMjkyODAzMn0.newRefreshToken");
+		TokenReissueResponse response = new TokenReissueResponse("<NEW_ACCESS_TOKEN>", "<NEW_REFRESH_TOKEN>");
 
 		given(authService.reissueToken(any())).willReturn(response);
 
@@ -174,15 +177,14 @@ class AuthControllerDocsTest extends RestDocsSupport {
 	@Test
 	void logout() throws Exception {
 		// given
-		String accessToken = "eyJhbGciOiJIUzI1NiJ9.eyJoYW5kbGUiOiJ0d29vdGVyXzEyMyIsInRva2VuVHlwZSI6IkFDQ0VTUyIsImlhdCI6MTcxMjMyMzIzMiwiZXhwIjoxNzEyMzI1MDMyfQ.exampleToken";
 		LogoutResponse response = new LogoutResponse("user_handle");
 
-		given(authService.logout(accessToken)).willReturn(response);
+		given(authService.logout(ACCESS_TOKEN)).willReturn(response);
 
 		// when & then
 		mockMvc.perform(
 				post("/api/auth/logout")
-					.header("Authorization", "Bearer " + accessToken)
+					.header("Authorization", "Bearer " + ACCESS_TOKEN)
 					.contentType(MediaType.APPLICATION_JSON)
 			)
 			.andExpect(status().isOk())

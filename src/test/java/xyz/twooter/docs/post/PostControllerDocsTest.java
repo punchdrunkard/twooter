@@ -47,7 +47,7 @@ class PostControllerDocsTest extends RestDocsSupport {
 		.nickname("테이블 청소 마스터")
 		.avatarPath("https://cdn.twooter.xyz/media/avatar")
 		.build();
-	final String TEST_ACCESS_TOKEN = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJoYW5kbGUiOiJ0d29vdGVyXzEyMyIsInRva2VuVHlwZSI6IkFDQ0VTUyIsImlhdCI6MTcxMjMyMzIzMiwiZXhwIjoxNzEyMzI1MDMyfQ.exampleToken";
+	static final String TEST_ACCESS_TOKEN = "Bearer <ACCESS_TOKEN>";
 
 	@DisplayName("포스트 생성 API")
 	@Test

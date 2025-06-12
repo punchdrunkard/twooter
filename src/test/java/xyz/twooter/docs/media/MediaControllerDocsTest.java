@@ -17,6 +17,8 @@ import xyz.twooter.media.presentation.dto.request.SignedUrlResponse;
 
 class MediaControllerDocsTest extends RestDocsSupport {
 
+	static final String TEST_ACCESS_TOKEN = "Bearer <ACCESS_TOKEN>";
+
 	@DisplayName("파일 업로드용 Signed URL을 발급한다.")
 	@Test
 	void getUploadUrl() throws Exception {
@@ -35,9 +37,7 @@ class MediaControllerDocsTest extends RestDocsSupport {
 		mockMvc.perform(get("/api/media/upload-url")
 				.param("filename", filename)
 				.param("contentType", contentType)
-				.header("Authorization",
-					"Bearer eyJhbGciOiJIUzI1NiJ9.eyJoYW5kbGUiOiJ0d29vdGVyXzEyMyIsInRva2VuVHlwZSI6IkFDQ0VTUyIsImlhdCI6MTcxMjMyMzIzMiwiZXhwIjoxNzEyMzI1MDMyfQ.exampleToken")
-			)
+				.header("Authorization", TEST_ACCESS_TOKEN))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.url").value(response.getUrl()))
 			.andDo(document("media-get-upload-url",

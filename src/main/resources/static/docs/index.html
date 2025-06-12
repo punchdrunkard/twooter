@@ -817,11 +817,11 @@ Host: localhost:8080
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
 Content-Type: application/json
-Content-Length: 497
+Content-Length: 238
 
 {
-  "accessToken" : "eyJhbGciOiJIUzI1NiJ9.eyJoYW5kbGUiOiJ0d29vdGVyXzEyMyIsInRva2VuVHlwZSI6IkFDQ0VTUyIsImlhdCI6MTcxMjMyMzIzMiwiZXhwIjoxNzEyMzI1MDMyfQ.exampleToken",
-  "refreshToken" : "eyJhbGciOiJIUzI1NiJ9.eyJoYW5kbGUiOiJ0d29vdGVyXzEyMyIsInRva2VuVHlwZSI6IlJFRlJFU0giLCJpYXQiOjE3MTIzMjMyMzIsImV4cCI6MTcxMjkyODAzMn0.refreshExampleToken",
+  "accessToken" : "&lt;ACCESS_TOKEN&gt;",
+  "refreshToken" : "&lt;REFRESH_TOKEN&gt;",
   "member" : {
     "id" : 123,
     "handle" : "twooter_123",
@@ -911,11 +911,11 @@ Content-Length: 497
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">POST /api/auth/reissue HTTP/1.1
 Content-Type: application/json
-Content-Length: 173
+Content-Length: 40
 Host: localhost:8080
 
 {
-  "refreshToken" : "eyJhbGciOiJIUzI1NiJ9.eyJoYW5kbGUiOiJ0d29vdGVyXzEyMyIsInRva2VuVHlwZSI6IlJFRlJFU0giLCJpYXQiOjE3MTIzMjMyMzIsImV4cCI6MTcxMjkyODAzMn0.refreshExampleToken"
+  "refreshToken" : "&lt;REFRESH_TOKEN&gt;"
 }</code></pre>
 </div>
 </div>
@@ -953,11 +953,11 @@ Host: localhost:8080
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
 Content-Type: application/json
-Content-Length: 333
+Content-Length: 84
 
 {
-  "accessToken" : "eyJhbGciOiJIUzI1NiJ9.eyJoYW5kbGUiOiJ0d29vdGVyXzEyMyIsInRva2VuVHlwZSI6IkFDQ0VTUyIsImlhdCI6MTcxMjMyMzIzMiwiZXhwIjoxNzEyMzI1MDMyfQ.newAccessToken",
-  "refreshToken" : "eyJhbGciOiJIUzI1NiJ9.eyJoYW5kbGUiOiJ0d29vdGVyXzEyMyIsInRva2VuVHlwZSI6IlJFRlJFU0giLCJpYXQiOjE3MTIzMjMyMzIsImV4cCI6MTcxMjkyODAzMn0.newRefreshToken"
+  "accessToken" : "&lt;NEW_ACCESS_TOKEN&gt;",
+  "refreshToken" : "&lt;NEW_REFRESH_TOKEN&gt;"
 }</code></pre>
 </div>
 </div>
@@ -1004,7 +1004,7 @@ Content-Length: 333
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">POST /api/auth/logout HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJoYW5kbGUiOiJ0d29vdGVyXzEyMyIsInRva2VuVHlwZSI6IkFDQ0VTUyIsImlhdCI6MTcxMjMyMzIzMiwiZXhwIjoxNzEyMzI1MDMyfQ.exampleToken
+Authorization: Bearer &lt;ACCESS_TOKEN&gt;
 Host: localhost:8080</code></pre>
 </div>
 </div>
@@ -1095,7 +1095,7 @@ Content-Length: 34
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">POST /api/members/follow HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJoYW5kbGUiOiJ0d29vdGVyXzEyMyIsInRva2VuVHlwZSI6IkFDQ0VTUyIsImlhdCI6MTcxMjMyMzIzMiwiZXhwIjoxNzEyMzI1MDMyfQ.exampleToken
+Authorization: Bearer &lt;ACCESS_TOKEN&gt;
 Content-Length: 26
 Host: localhost:8080
 
@@ -1215,7 +1215,7 @@ Content-Length: 66
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">DELETE /api/members/follow/1 HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJoYW5kbGUiOiJ0d29vdGVyXzEyMyIsInRva2VuVHlwZSI6IkFDQ0VTUyIsImlhdCI6MTcxMjMyMzIzMiwiZXhwIjoxNzEyMzI1MDMyfQ.exampleToken
+Authorization: Bearer &lt;ACCESS_TOKEN&gt;
 Host: localhost:8080</code></pre>
 </div>
 </div>
@@ -1278,7 +1278,7 @@ Content-Length: 75
 
 {
   "targetMemberId" : 1,
-  "unfollowedAt" : "2025-06-11T18:09:45.300624"
+  "unfollowedAt" : "2025-06-12T14:54:45.009691"
 }</code></pre>
 </div>
 </div>
@@ -1736,7 +1736,7 @@ Content-Length: 779
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /api/timeline/home?cursor=dXNlcjpVMDYxTkZUVDI%3D&amp;limit=10 HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJoYW5kbGUiOiJ0d29vdGVyXzEyMyIsInRva2VuVHlwZSI6IkFDQ0VTUyIsImlhdCI6MTcxMjMyMzIzMiwiZXhwIjoxNzEyMzI1MDMyfQ.exampleToken
+Authorization: Bearer &lt;ACCESS_TOKEN&gt;
 Host: localhost:8080</code></pre>
 </div>
 </div>
@@ -2082,7 +2082,7 @@ Content-Length: 1932
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /api/timeline/me?cursor=dXNlcjpVMDYxTkZUVDI%3D&amp;limit=10 HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJoYW5kbGUiOiJ0d29vdGVyXzEyMyIsInRva2VuVHlwZSI6IkFDQ0VTUyIsImlhdCI6MTcxMjMyMzIzMiwiZXhwIjoxNzEyMzI1MDMyfQ.exampleToken
+Authorization: Bearer &lt;ACCESS_TOKEN&gt;
 Host: localhost:8080</code></pre>
 </div>
 </div>
@@ -2743,7 +2743,7 @@ Content-Length: 1932
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">POST /api/posts HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJoYW5kbGUiOiJ0d29vdGVyXzEyMyIsInRva2VuVHlwZSI6IkFDQ0VTUyIsImlhdCI6MTcxMjMyMzIzMiwiZXhwIjoxNzEyMzI1MDMyfQ.exampleToken
+Authorization: Bearer &lt;ACCESS_TOKEN&gt;
 Content-Length: 190
 Host: localhost:8080
 
@@ -2998,7 +2998,7 @@ Content-Length: 669
     "mediaId" : 101,
     "mediaUrl" : "https://cdn.twooter.xyz/media/101.jpg"
   }, {
-    "mediaId" : 101,
+    "mediaId" : 102,
     "mediaUrl" : "https://cdn.twooter.xyz/media/102.jpg"
   } ],
   "createdAt" : "2025-05-05T00:00:00",
@@ -3143,7 +3143,7 @@ Content-Length: 669
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">PATCH /api/posts/1/like HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJoYW5kbGUiOiJ0d29vdGVyXzEyMyIsInRva2VuVHlwZSI6IkFDQ0VTUyIsImlhdCI6MTcxMjMyMzIzMiwiZXhwIjoxNzEyMzI1MDMyfQ.exampleToken
+Authorization: Bearer &lt;ACCESS_TOKEN&gt;
 Host: localhost:8080
 Content-Type: application/x-www-form-urlencoded</code></pre>
 </div>
@@ -3256,7 +3256,7 @@ Content-Length: 38
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">POST /api/posts/1/repost HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJoYW5kbGUiOiJ0d29vdGVyXzEyMyIsInRva2VuVHlwZSI6IkFDQ0VTUyIsImlhdCI6MTcxMjMyMzIzMiwiZXhwIjoxNzEyMzI1MDMyfQ.exampleToken
+Authorization: Bearer &lt;ACCESS_TOKEN&gt;
 Host: localhost:8080
 Content-Type: application/x-www-form-urlencoded</code></pre>
 </div>
@@ -3378,7 +3378,7 @@ Content-Length: 84
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">POST /api/posts/replies HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJoYW5kbGUiOiJ0d29vdGVyXzEyMyIsInRva2VuVHlwZSI6IkFDQ0VTUyIsImlhdCI6MTcxMjMyMzIzMiwiZXhwIjoxNzEyMzI1MDMyfQ.exampleToken
+Authorization: Bearer &lt;ACCESS_TOKEN&gt;
 Content-Length: 118
 Host: localhost:8080
 
@@ -3859,7 +3859,7 @@ Content-Length: 1851
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /api/media/upload-url?filename=test.jpg&amp;contentType=image%2Fjpeg HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJoYW5kbGUiOiJ0d29vdGVyXzEyMyIsInRva2VuVHlwZSI6IkFDQ0VTUyIsImlhdCI6MTcxMjMyMzIzMiwiZXhwIjoxNzEyMzI1MDMyfQ.exampleToken
+Authorization: Bearer &lt;ACCESS_TOKEN&gt;
 Host: localhost:8080</code></pre>
 </div>
 </div>
