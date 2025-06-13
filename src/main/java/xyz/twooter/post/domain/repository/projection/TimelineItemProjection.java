@@ -19,7 +19,6 @@ public class TimelineItemProjection {
 	private final String originalPostAuthorAvatarPath;
 	private final Long likeCount;
 	private final Long repostCount;
-	private final Long viewCount;
 	private final Boolean isLiked;
 	private final Boolean isReposted;
 	private final Boolean isDeleted;
@@ -45,7 +44,6 @@ public class TimelineItemProjection {
 		// 통계: 원본 포스트 기준
 		Long likeCount,
 		Long repostCount,
-		Long viewCount,
 		// 상호작용 관련 정보 - 현재 사용자 기준
 		Boolean isLiked,
 		Boolean isReposted,
@@ -66,7 +64,6 @@ public class TimelineItemProjection {
 		this.originalPostAuthorAvatarPath = originalPostAuthorAvatarPath;
 		this.likeCount = likeCount;
 		this.repostCount = repostCount;
-		this.viewCount = viewCount;
 		this.isLiked = isLiked;
 		this.isReposted = isReposted;
 		this.isDeleted = isDeleted;
@@ -79,7 +76,7 @@ public class TimelineItemProjection {
 
 	// 편의 메서드들
 	public Long getPostId() {
-		return originalPostId; // 타임라인에서 표시할 포스트 ID
+		return originalPostId;
 	}
 
 	public boolean isRepost() {

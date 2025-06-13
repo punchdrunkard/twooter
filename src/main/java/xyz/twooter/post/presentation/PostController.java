@@ -41,7 +41,6 @@ public class PostController {
 
 	@GetMapping("/{postId}")
 	public ResponseEntity<PostResponse> getPost(@PathVariable Long postId, @CurrentMember Member member) {
-		postService.incrementViewCount(postId);
 		PostResponse response = postService.getPost(postId, member);
 		return ResponseEntity.ok(response);
 	}

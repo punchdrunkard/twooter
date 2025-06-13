@@ -120,7 +120,6 @@ public class PostRepositoryImpl implements PostCustomRepository {
 			// 통계: 원본 포스트 기준
 			originalPost.likeCount.coalesce(post.likeCount),
 			originalPost.repostCount.coalesce(post.repostCount),
-			originalPost.viewCount.coalesce(post.viewCount),
 
 			viewerLike.id.isNotNull(),
 			viewerRepost.id.isNotNull(),
