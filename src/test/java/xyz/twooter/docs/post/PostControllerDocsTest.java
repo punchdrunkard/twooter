@@ -138,8 +138,6 @@ class PostControllerDocsTest extends RestDocsSupport {
 						.description("리포스트 수"),
 					fieldWithPath("reposted").type(JsonFieldType.BOOLEAN)
 						.description("현재 사용자의 리포스트 여부"),
-					fieldWithPath("viewCount").type(JsonFieldType.NUMBER)
-						.description("조회수"),
 					fieldWithPath("mediaEntities").type(JsonFieldType.ARRAY)
 						.description("첨부된 미디어 정보 목록"),
 					fieldWithPath("createdAt").type(JsonFieldType.STRING)
@@ -416,7 +414,6 @@ class PostControllerDocsTest extends RestDocsSupport {
 			.isLiked(replyId % 2 == 0) // 짝수 ID는 좋아요 상태
 			.repostCount(2L)
 			.isReposted(false)
-			.viewCount(20L + replyId)
 			.mediaEntities(List.of(media))
 			.createdAt(LocalDateTime.of(2025, 5, 5, 0, (int)replyId.longValue()))
 			.isDeleted(false)
@@ -442,8 +439,6 @@ class PostControllerDocsTest extends RestDocsSupport {
 				.description("리포스트 수"),
 			fieldWithPath("reposted").type(JsonFieldType.BOOLEAN)
 				.description("현재 사용자의 리포스트 여부"),
-			fieldWithPath("viewCount").type(JsonFieldType.NUMBER)
-				.description("조회수"),
 			fieldWithPath("mediaEntities").type(JsonFieldType.ARRAY)
 				.description("첨부된 미디어 정보 목록"),
 			fieldWithPath("createdAt").type(JsonFieldType.STRING)
@@ -536,7 +531,6 @@ class PostControllerDocsTest extends RestDocsSupport {
 			.isLiked(true)
 			.repostCount(3L)
 			.isReposted(false)
-			.viewCount(42L)
 			.mediaEntities(mediaList)
 			.createdAt(LocalDateTime.of(2025, 5, 5, 0, 0))
 			.build();

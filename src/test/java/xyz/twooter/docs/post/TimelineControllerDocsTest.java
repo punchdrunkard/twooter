@@ -184,7 +184,6 @@ class TimelineControllerDocsTest extends RestDocsSupport {
 			fieldWithPath("content").type(JsonFieldType.STRING).description("포스트 내용"),
 			fieldWithPath("likeCount").type(JsonFieldType.NUMBER).description("좋아요 수"),
 			fieldWithPath("repostCount").type(JsonFieldType.NUMBER).description("리포스트 수"),
-			fieldWithPath("viewCount").type(JsonFieldType.NUMBER).description("조회수"),
 			fieldWithPath("mediaEntities").type(JsonFieldType.ARRAY).description("첨부된 미디어 정보 목록"),
 			fieldWithPath("createdAt").type(JsonFieldType.STRING).description("포스트 생성 시간"),
 			fieldWithPath("liked").type(JsonFieldType.BOOLEAN).description("현재 사용자의 좋아요 여부"),
@@ -255,7 +254,6 @@ class TimelineControllerDocsTest extends RestDocsSupport {
 			.content("새 책상을 정리하다가 유용해 보이는 오래된 자료를 발견해서 이메일로 보냅니다.")
 			.likeCount(15L)
 			.repostCount(3L)
-			.viewCount(42L)
 			.mediaEntities(List.of(media1, media2))
 			.createdAt(LocalDateTime.of(2025, 5, 5, 0, 0))
 			.isLiked(true)
@@ -275,7 +273,6 @@ class TimelineControllerDocsTest extends RestDocsSupport {
 			.content("비고: 누가 남긴 자료인지 모르겠네요.")
 			.likeCount(15L)
 			.repostCount(3L)
-			.viewCount(42L)
 			.mediaEntities(List.of(media3, media4))
 			.createdAt(LocalDateTime.of(2025, 5, 5, 10, 10))
 			.isLiked(true)

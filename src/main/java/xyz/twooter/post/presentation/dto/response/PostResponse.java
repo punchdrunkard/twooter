@@ -22,7 +22,6 @@ public class PostResponse {
 	private boolean isLiked;
 	private long repostCount;
 	private boolean isReposted;
-	private long viewCount;
 	@Builder.Default
 	private List<MediaEntity> mediaEntities = new ArrayList<>();
 	private LocalDateTime createdAt;
@@ -38,7 +37,6 @@ public class PostResponse {
 			.isLiked(false)
 			.repostCount(0L)
 			.isReposted(false)
-			.viewCount(0L)
 			.createdAt(createdAt)
 			.isDeleted(true)
 			.build();
@@ -54,7 +52,6 @@ public class PostResponse {
 			.isLiked(false)
 			.repostCount(0L)
 			.isReposted(false)
-			.viewCount(0L)
 			.createdAt(null)
 			.isDeleted(true)
 			.build();

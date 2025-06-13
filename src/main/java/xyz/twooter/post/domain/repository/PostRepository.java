@@ -18,7 +18,7 @@ public interface PostRepository extends JpaRepository<Post, Long>, PostCustomRep
 		SELECT new xyz.twooter.post.domain.repository.projection.PostDetailProjection(
 		    p.id, p.content,
 		    m.id, m.handle, m.nickname, m.avatarPath,
-		    p.createdAt, p.viewCount, p.likeCount, p.repostCount,
+		    p.createdAt, p.likeCount, p.repostCount,
 		    CASE WHEN :memberId IS NULL THEN false
 		         ELSE EXISTS (SELECT 1 FROM PostLike pl WHERE pl.postId = p.id AND pl.memberId = :memberId) 
 		    END,
@@ -37,7 +37,7 @@ public interface PostRepository extends JpaRepository<Post, Long>, PostCustomRep
 		SELECT new xyz.twooter.post.domain.repository.projection.PostDetailProjection(
 		    p.id, p.content,
 		    m.id, m.handle, m.nickname, m.avatarPath,
-		    p.createdAt, p.viewCount, p.likeCount, p.repostCount,
+		    p.createdAt, p.likeCount, p.repostCount,
 		    CASE WHEN :memberId IS NULL THEN false
 		         ELSE EXISTS (SELECT 1 FROM PostLike pl WHERE pl.postId = p.id AND pl.memberId = :memberId)
 		    END,
@@ -63,10 +63,6 @@ public interface PostRepository extends JpaRepository<Post, Long>, PostCustomRep
 		@Param("cursorCreatedAt") LocalDateTime cursorCreatedAt,
 		@Param("cursorId") Long cursorId,
 		@Param("limit") int limit);
-
-	@Modifying
-	@Query("UPDATE Post p SET p.viewCount = p.viewCount + 1 WHERE p.id = :postId")
-	void incrementViewCount(@Param("postId") Long postId);
 
 	@Query("SELECT p.isDeleted FROM  Post p WHERE p.id = :postId")
 	boolean findIsDeletedById(Long postId);

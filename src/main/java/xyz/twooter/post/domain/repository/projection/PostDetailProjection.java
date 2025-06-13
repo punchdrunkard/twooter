@@ -16,7 +16,6 @@ public class PostDetailProjection {
 	private final String authorNickname;
 	private final String authorAvatarPath;
 	private final LocalDateTime createdAt;
-	private final Long viewCount;
 	private final Long likeCount;
 	private final Long repostCount;
 	private final Boolean isLiked;

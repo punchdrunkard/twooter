@@ -469,7 +469,6 @@ class PostControllerTest extends ControllerTestSupport {
 			.isLiked(true)
 			.repostCount(3L)
 			.isReposted(false)
-			.viewCount(42L)
 			.mediaEntities(mediaList)
 			.createdAt(TEST_DATE)
 			.build();

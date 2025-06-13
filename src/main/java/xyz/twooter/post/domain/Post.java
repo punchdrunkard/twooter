@@ -37,9 +37,6 @@ public class Post extends BaseTimeEntity {
 	@Column(name = "repost_of_id")
 	private Long repostOfId;
 
-	@Column(name = "view_count", nullable = false)
-	private Long viewCount = 0L;
-
 	// ✅ 반정규화 필드들
 	@Column(name = "like_count", nullable = false)
 	private Long likeCount = 0L;
@@ -82,21 +79,14 @@ public class Post extends BaseTimeEntity {
 		this.isDeleted = true;
 	}
 
-	public Long incrementViewCount() {
-		this.viewCount++;
-		return this.viewCount;
-	}
-
 	// ==== 생성자 ====
 	@Builder
-	private Post(Long authorId, String content, Long parentPostId, Long quotedPostId, Long repostOfId,
-		Long viewCount, Long likeCount, Long repostCount) {
+	private Post(Long authorId, String content, Long parentPostId, Long quotedPostId, Long repostOfId, Long likeCount, Long repostCount) {
 		this.authorId = authorId;
 		this.content = content;
 		this.parentPostId = parentPostId;
 		this.quotedPostId = quotedPostId;
 		this.repostOfId = repostOfId;
-		this.viewCount = viewCount != null ? viewCount : 0L;
 		this.likeCount = likeCount != null ? likeCount : 0L;
 		this.repostCount = repostCount != null ? repostCount : 0L;
 	}

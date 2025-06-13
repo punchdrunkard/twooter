@@ -110,7 +110,6 @@ public class PostService {
 			.isLiked(projection.getIsLiked())
 			.repostCount(projection.getRepostCount())
 			.isReposted(projection.getIsReposted())
-			.viewCount(projection.getViewCount())
 			.mediaEntities(mediaEntities)
 			.createdAt(projection.getCreatedAt())
 			.isDeleted(false)
@@ -229,10 +228,9 @@ public class PostService {
 			.isLiked(projection.getIsLiked())
 			.repostCount(projection.getRepostCount())
 			.isReposted(projection.getIsReposted())
-			.viewCount(projection.getViewCount())
 			.mediaEntities(mediaEntities)
 			.createdAt(projection.getCreatedAt())
-			.isDeleted(projection.getIsDeleted()) // 🔧 실제 삭제 상태 매핑
+			.isDeleted(projection.getIsDeleted())
 			.build();
 	}
 
@@ -260,16 +258,8 @@ public class PostService {
 		}
 	}
 
-	@Transactional
-	public void incrementViewCount(Long postId) {
-		postRepository.incrementViewCount(postId);
-	}
-
 	private Post createAndSavePost(PostCreateRequest request, Member member) {
-		Post post = Post.builder()
-			.authorId(member.getId())
-			.content(request.getContent())
-			.build();
+		Post post = Post.createPost(member.getId(), request.getContent());
 		return postRepository.save(post);
 	}
 

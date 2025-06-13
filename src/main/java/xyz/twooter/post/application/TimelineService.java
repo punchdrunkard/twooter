@@ -132,7 +132,6 @@ public class TimelineService {
 			.isLiked(projection.getIsLiked())
 			.repostCount(projection.getRepostCount())
 			.isReposted(projection.getIsReposted())
-			.viewCount(projection.getViewCount())
 			.mediaEntities(mediaEntities)
 			.createdAt(projection.getOriginalPostCreatedAt())
 			.isDeleted(projection.getIsDeleted())
