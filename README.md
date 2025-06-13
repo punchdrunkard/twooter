@@ -8,8 +8,8 @@ Twitter를 모델로 한 타임라인 기반 SNS 백엔드 API 서비스입니�
 - [✨ Key Features](#-key-features)
 - [🛠️ Tech Stack](#️-tech-stack)
 - [📄 API Documentation](#-api-documentation)
-- [🗄️ ERD](#erd)
-- [🏗️  Infrastructure](#infrastructure)
+- [🗄️ ERD](#-erd)
+- [🏗️  Infrastructure](#-infrastructure)
 - [⚙️ Getting Started](#️-getting-started)
 - [🪩 Key Learnings](#-key-learnings)
   - [1. 데이터베이스 쿼리 최적화: 좋아요 수 반정규화](#1-데이터베이스-쿼리-최적화-좋아요-수-반정규화)
@@ -62,11 +62,13 @@ Twitter를 모델로 한 타임라인 기반 SNS 백엔드 API 서비스입니�
 ## 📄 API Documentation
 
 프로젝트의 모든 API 명세는 **Spring REST Docs**를 통해 자동화된 문서로 관리하고 있습니다.
+
 [**➡️ API 문서 확인하기 (twooter.xyz/docs/index.html)**](https://twooter.xyz/docs/index.html)
 
 ## 🗄️ ERD
 
-<iframe width="560" height="315" src='https://dbdiagram.io/e/67ef99834f7afba18456e665/684a559ba463a450da2e2cc5'> </iframe>
+![트우터](https://github.com/user-attachments/assets/ce764f99-5fd2-4a1d-92b8-6cc25a19b5a7)
+
 
 [dbdiagram](https://dbdiagram.io/d/트우터-67ef99834f7afba18456e665)
 
