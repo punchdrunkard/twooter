@@ -1,26 +1,18 @@
 # 🐦 twooter (타임라인 기반 SNS 서비스)
 
 Twitter를 모델로 한 타임라인 기반 SNS 백엔드 API 서비스입니다.
-특히 여러 테이블의 복합적인 조인이 필수적인 타임라인 피드를 효율적으로 처리하는 **데이터베이스 설계와 쿼리 최적화**에 중점을 두고 학습하며 개발을 진행했습니다.
 
-## 📑 Table of Contents
+## Table of Contents
 
-- [✨ Key Features](#-key-features)
-- [🛠️ Tech Stack](#️-tech-stack)
-- [📄 API Documentation](#-api-documentation)
-- [🗄️ ERD](#-erd)
-- [🏗️  Infrastructure](#-infrastructure)
-- [⚙️ Getting Started](#️-getting-started)
-- [🪩 Key Learnings](#-key-learnings)
-  - [1. 데이터베이스 쿼리 최적화: 좋아요 수 반정규화](#1-데이터베이스-쿼리-최적화-좋아요-수-반정규화)
-  - [2. ERD 설계: 포스트와 리포스트 테이블 통합](#2-erd-설계-포스트와-리포스트-테이블-통합)
-  - [3. 아키텍처 리팩터링: 계층 간 의존성 분리](#3-아키텍처-리팩터링-계층-간-의존성-분리)
-  - [4. 무한 스크롤 구현: 커서 기반 페이지네이션](#4-무한-스크롤-구현-커서-기반-페이지네이션)
-  - [5. 테스트 전략: 성격에 맞는 테스트 분리](#5-테스트-전략-성격에-맞는-테스트-분리)
-- [🚀 Future Work](#-future-work)
+- [Key Features](#-key-features)
+- [Tech Stack](#-tech-stack)
+- [API Documentation](#-api-documentation)
+- [ERD](#-erd)
+- [Infrastructure](#-infrastructure)
+- [Getting Started](#-getting-started)
+- [시스템 구성 요소](#-시스템-구성-요소)
 
-
-## ✨ Key Features
+## Key Features
 
 - **사용자 및 인증**
     - JWT (Access/Refresh Token) 기반의 회원가입 및 로그인/로그아웃
@@ -37,9 +29,9 @@ Twitter를 모델로 한 타임라인 기반 SNS 백엔드 API 서비스입니�
     - **사용자 타임라인**: 특정 사용자가 작성/리포스트한 글을 시간순으로 조회
 
 - **미디어 처리**
-    - `Google Cloud Storage(GCS)`의 `Signed URL`을 활용한 안전하고 효율적인 파일 업로드 기능
+    - `Google Cloud Storage(GCS)`의 `Signed URL`을 활용한 파일 업로드
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Backend
 
@@ -59,20 +51,19 @@ Twitter를 모델로 한 타임라인 기반 SNS 백엔드 API 서비스입니�
 - **Deployment**: Docker, Nginx
 - **Server**: GCP VM Instance
 
-## 📄 API Documentation
+## API Documentation
 
 프로젝트의 모든 API 명세는 **Spring REST Docs**를 통해 자동화된 문서로 관리하고 있습니다.
 
 [**➡️ API 문서 확인하기 (twooter.xyz/docs/index.html)**](https://twooter.xyz/docs/index.html)
 
-## 🗄️ ERD
+## ERD
 
-![트우터](https://github.com/user-attachments/assets/ce764f99-5fd2-4a1d-92b8-6cc25a19b5a7)
+<img width="1102" height="864" alt="twooter-erd" src="https://github.com/user-attachments/assets/33963996-d20a-4aab-913c-4928cb5d24d4" />
 
+[`dbdiagram.io` 링크](https://dbdiagram.io/d/twooter-67ef99834f7afba18456e665)
 
-[dbdiagram](https://dbdiagram.io/d/트우터-67ef99834f7afba18456e665)
-
-## 🏗️ Infrastructure
+## Infrastructure
 
 ![Twooter-Infrastructure](https://github.com/user-attachments/assets/3e37e067-5eb2-4fce-8178-624f37f93877)
 
@@ -97,63 +88,141 @@ $ java -jar build/libs/twooter-0.0.1-SNAPSHOT.jar
 
 > 실행 후 프로젝트 루트의 `.http` 파일을 사용하여 주요 API들을 바로 테스트해볼 수 있습니다.
 
-## 🪩 Key Learnings
+## 시스템 구성 요소 
+<img width="1296" height="469" alt="image" src="https://github.com/user-attachments/assets/461c4a84-59ef-41e1-9f26-84b2b30b2cd7" />
 
-프로젝트를 진행하며 마주쳤던 주요 기술적 문제와 해결 과정을 기록했습니다.
+### App Server (Spring Boot)
+- API 엔드 포인트
+- 이벤트 발행자 (Publisher) : 글 작성, 삭제, 팔로우 등의 상태 변경이 발생하는 경우, 비동기 처리를 위해 Redis Queue에 메시지를 발행한다.
+- 백그라운드 리스너 (Consumer) : TimelineQueueListener를 통해 Redis Queue의 메시지를 구독하고, Fan-out 로직을 비동기적으로 수행
 
-### 1. 데이터베이스 쿼리 최적화: `좋아요 수` 반정규화
+### Persistence Layer  
+#### Redis (Cache & MQ)
+- 타임라인 캐시 (Sorted Set) : 각 사용자 별로 캐시된 타임라인 (게시물 ID의 목록)을 저장, Sorted Set의 자동 정렬 기능을 사용하여 최신순 유지 
+- 경량 메시지 큐 (List) : 시간이 오래 걸리는 팬아웃 작업을 API 서버의 주 응답 경로에서 분리하기 위한 Buffer 역할
+#### MySQL (RDB)
+- 모든 원본 데이터 저장 (데이터의 영속성, 정합성, 안정성을 보장) 
 
-- **문제 상황**: 포스트 조회 시 `좋아요 수`와 `리포스트 수`를 가져오기 위해 `Post`, `PostLike`, `Repost` 테이블을 조인했습니다. 포스트 5,000개, 좋아요 500개, 리트윗
-  250개 기준, 실행 계획 분석 결과 `Nested Loop Join`으로 인해 125,000개의 행을 스캔하며 비효율적인 `Cost (41,538)`가 발생하는 것을 확인했습니다.
+## 주요 동작 Sequence Diagram
+### Read Path
+```mermaid
+sequenceDiagram
+    participant Client
+    participant API Server
+    participant Redis Cache
+    participant DB (MySQL)
 
-- **해결 과정**: 읽기 작업이 압도적으로 많은 SNS 서비스의 특성을 고려하여 **반정규화(Denormalization)** 를 적용했습니다. `Post` 테이블에 `likeCount`
-  와 `repostCount` 컬럼을 추가하고, 좋아요/리포스트 이벤트 발생 시 해당 카운트를 1씩 증감시키는 방식으로 변경했습니다.
+    Client->>API Server: GET /api/timeline/home
+    API Server->>Redis Cache: 타임라인 Post ID 요청
 
-- **결과**: 불필요한 조인을 제거함으로써 포스트 조회 시 발생하는 비용을 상수 시간으로 줄여 **응답 성능을 획기적으로 개선**했습니다.
+    alt Cache Hit 
+        Redis Cache-->>API Server: [Post ID 목록]
+        API Server->>DB (MySQL): Post ID 목록으로 상세 정보 요청
+        DB (MySQL)-->>API Server: [Post 상세 정보]
+        API Server-->>Client: 200 OK 
+    else Cache Miss 
+        Redis Cache-->>API Server: (empty)
+        API Server->>DB (MySQL): Follow 를 join 하는 쿼리 생성
+        DB (MySQL)-->>API Server: [타임라인 아이템 목록]
+        API Server->>Redis Cache: 다음을 위해 캐시에 저장
+        API Server-->>Client: 200 OK 
+    end
+```
 
-    ```sql
-    -- 반정규화 이전 실행 계획 (요약)
-    -> Nested loop left join (cost=12736 rows=125000) ... (Total Cost: 41538)
-    
-    -- 반정규화 이후 실행 계획 (요약)
-    -> Rows fetched before execution (cost=0..0 rows=1) ... (상수 비용)
-    
-    ```
+### Write Path (Post / Repost)
+```mermaid
+sequenceDiagram
+    participant Client
+    participant API Server
+    participant DB (MySQL)
+    participant Redis Queue
+    participant Timeline Listener
+    participant Redis Cache
 
-### 2. ERD 설계: 포스트와 리포스트 테이블 통합
+    Client->>API Server: POST /api/posts (새 글 작성)
+    API Server->>DB (MySQL): INSERT INTO post
+    DB (MySQL)-->>API Server: 저장 성공
+    API Server-->>Client: 201 Created 응답
+    API Server->>Redis Queue: LPUSH (POST_CREATED 메시지 발행)
 
-- **고민**: `Post`와 `Repost`는 비즈니스적으로 다른 개념이지만, 응답 DTO의 형태가 거의 동일했습니다. 두 테이블을 분리하면 타임라인 조회 시 항상 `UNION` 또는 별도의 쿼리가 필요하여
-  복잡성과 비효율을 야기했습니다.
+    par 비동기 처리 (백그라운드 작업)
+        Timeline Listener->>Redis Queue: BRPOP (메시지 수신)
+        Redis Queue-->>Timeline Listener: 메시지 전달
+        Timeline Listener->>DB (MySQL): 작성자의 팔로워 조회
+        DB (MySQL)-->>Timeline Listener: 팔로워 ID 목록
+        Timeline Listener->>Redis Cache: ZADD (작성자 및 팔로워 타임라인 캐시 업데이트)
+    end
+```
 
-- **선택 및 이유**: `Post` 테이블에 `originalPostId` (리포스트의 원본 포스트 ID)와 같은 nullable 컬럼을 추가하여 두 테이블을 통합했습니다. 일부 컬럼이 비게 되지만, 불필요한
-  조인을 제거하고 타임라인 로직을 단순화하는 이점이 더 크다고 판단하여 통합을 결정했습니다.
+### Follow Path
+```mermaid
+sequenceDiagram
+    participant Client
+    participant API Server
+    participant DB (MySQL)
+    participant Redis Queue
+    participant Timeline Listener
+    participant Redis Cache
 
-### 3. 아키텍처 리팩터링: 계층 간 의존성 분리
+    Client->>API Server: POST /api/members/follow
+    API Server->>DB (MySQL): INSERT INTO follow
+    DB (MySQL)-->>API Server: 저장 성공
+    API Server-->>Client: 201 Created 응답
+    API Server->>Redis Queue: LPUSH (FOLLOW_CREATED 메시지 발행)
 
-- **문제 상황**: Repository 계층에서 DTO 조회를 위해 프로젝션을 사용할 때, Presentation 계층의 DTO를 직접 참조하여 **계층 간 의존성 방향(Presentation → Domain →
-  Data)을 위반**하는 문제가 발생했습니다.
+    par 비동기 처리
+        Timeline Listener->>Redis Queue: BRPOP (메시지 수신)
+        Redis Queue-->>Timeline Listener: 메시지 전달
+        Timeline Listener->>DB (MySQL): SELECT recent posts (상대방의 최신 글 조회)
+        DB (MySQL)-->>Timeline Listener: [Post 목록]
+        Timeline Listener->>Redis Cache: ZADD (팔로워의 타임라인 캐시에 글 추가)
+    end
+```
 
-- **해결 과정**: Domain 계층에 프로젝션 전용 내부 DTO(`PostProjection`)를 정의했습니다. 이후 Presentation 계층의 DTO에서는 `from(PostProjection)` 정적
-  팩토리 메소드를 만들어, 변환의 책임을 Presentation 계층으로 명확히 이전하고 계층 간 경계를 분리했습니다. 이를 통해 **도메인의 순수성을 지키고 응집도 높은 아키텍처**를 구축할 수 있었습니다.
+### UnFollow Path
+```mermaid
+sequenceDiagram
+    participant Client
+    participant API Server
+    participant DB (MySQL)
+    participant Redis Queue
+    participant Timeline Listener
+    participant Redis Cache
 
-### 4. 무한 스크롤 구현: 커서 기반 페이지네이션
+    Client->>API Server: DELETE /api/members/follow/{id}
+    API Server->>DB (MySQL): DELETE FROM follow
+    DB (MySQL)-->>API Server: 삭제 성공
+    API Server-->>Client: 200 OK 응답
+    API Server->>Redis Queue: LPUSH (UNFOLLOW_CREATED 메시지 발행)
 
-- **문제 상황**: 타임라인과 같이 데이터가 실시간으로 추가/삭제되는 환경에서 기존의 오프셋 기반 페이지네이션(`page`, `size`)은 데이터 중복/누락 문제(페이지네이션 드리프트)를 야기할 수 있습니다.
+    par 비동기 처리
+        Timeline Listener->>Redis Queue: BRPOP (메시지 수신)
+        Redis Queue-->>Timeline Listener: 메시지 전달
+        Timeline Listener->>Redis Cache: DEL (팔로워의 타임라인 캐시 전체 삭제)
+    end
+```
 
-- **해결 과정**: 마지막으로 조회된 데이터의 ID(`lastPostId`)를 기준으로 다음 N개의 데이터를 가져오는 **커서 기반 페이지네이션(Cursor-based Pagination)** 을 구현했습니다.
-  이를 통해 데이터 변경과 무관하게 일관된 순서의 데이터를 사용자에게 제공할 수 있었습니다.
+### Delete Path 
+```mermaid
+sequenceDiagram
+    participant Client
+    participant API Server
+    participant DB (MySQL)
+    participant Redis Queue
+    participant Timeline Listener
+    participant Redis Cache
 
-### 5. 테스트 전략: 성격에 맞는 테스트 분리
+    Client->>API Server: DELETE /api/posts/{id}
+    API Server->>DB (MySQL): UPDATE post SET is_deleted=true
+    DB (MySQL)-->>API Server: 수정 성공
+    API Server-->>Client: 200 OK 응답
+    API Server->>Redis Queue: LPUSH (POST_DELETED 메시지 발행)
 
-- **고민**: 모든 테스트를 통합 테스트로 작성할 경우 테스트 속도가 느려지고, 특정 계층의 로직만 독립적으로 검증하기 어렵습니다.
-- **과정**:  `@WebMvcTest` 등 Spring Boot의 슬라이스 테스트 어노테이션을 적극 활용하여 각 계층의 관심사를 분리하여 테스트를 작성했습니다. 공통 로직은 `support` 패키지로 분리하여
-  재사용성을 높였습니다.
-
-## 🚀 Future Work
-
-- [ ] 좋아요 / 리포스트 갯수 주기적 처리
-- [ ] 부하 테스트 및 성능 측정
-- [ ] 검색, 실시간 트렌드 기능 구현
-- [ ] 팔로워 추천 알고리즘 구현
-- [ ] 모니터링 및 로깅 강화
-- [ ] WebSocket을 이용한 실시간 알림 기능 (새 팔로워, 좋아요, 멘션 등)
+    par 비동기 처리
+        Timeline Listener->>Redis Queue: BRPOP (메시지 수신)
+        Redis Queue-->>Timeline Listener: 메시지 전달
+        Timeline Listener->>DB (MySQL): SELECT followers (작성자의 팔로워 조회)
+        DB (MySQL)-->>Timeline Listener: 팔로워 ID 목록
+        Timeline Listener->>Redis Cache: ZREM (모든 관련 타임라인 캐시에서 Post ID 삭제)
+    end
+```
