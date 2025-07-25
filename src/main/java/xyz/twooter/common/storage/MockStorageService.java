@@ -3,7 +3,7 @@ package xyz.twooter.common.storage;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-@Profile({"local", "test"})
+@Profile("!prod")
 @Service
 public class MockStorageService implements StorageService {
 

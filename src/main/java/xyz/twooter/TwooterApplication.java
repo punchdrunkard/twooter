@@ -21,7 +21,7 @@ public class TwooterApplication {
 		SpringApplication.run(TwooterApplication.class, args);
 	}
 
-	@Profile("prod")
+	@Profile({"prod", "load-test"})
 	@Bean
 	public ApplicationRunner runner(DataSource dataSource) {
 		return args -> {
