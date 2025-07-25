@@ -145,4 +145,18 @@ public class PostRepositoryImpl implements PostCustomRepository {
 				.otherwise((String)null)
 		);
 	}
+
+	@Override
+    public List<TimelineItemProjection> findTimelineItemsByPostIds(List<Long> postIds, Long viewerId) {
+        if (postIds == null || postIds.isEmpty()) {
+            return List.of();
+        }
+
+        return applyCommonTimelineQuery(viewerId)
+                .where(
+                    post.id.in(postIds),
+                    commonPostConditions()
+                )
+                .fetch();
+    }
 }

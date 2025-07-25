@@ -21,4 +21,6 @@ public interface PostCustomRepository {
 		Long cursorId, // null이 될 수 있음 (첫 페이지)
 		int limit
 	);
+
+	List<TimelineItemProjection> findTimelineItemsByPostIds(List<Long> postIds, Long viewerId);
 }

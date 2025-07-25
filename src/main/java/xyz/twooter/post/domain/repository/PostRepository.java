@@ -78,5 +78,10 @@ public interface PostRepository extends JpaRepository<Post, Long>, PostCustomRep
 	void decrementRepostCount(@Param("postId") Long postId);
 
 	Long findRepostOfIdById(Long postId);
+
+	List<Post> findTop50ByAuthorIdAndIsDeletedFalseAndRepostOfIdIsNullOrderByIdDesc(Long authorId);
+
+	@Query("SELECT p.id FROM Post p WHERE p.authorId = :authorId AND p.isDeleted = false")
+	List<Long> findAllIdsByAuthorId(@Param("authorId") Long authorId);
 }
 
