@@ -37,7 +37,6 @@ public class Post extends BaseTimeEntity {
 	@Column(name = "repost_of_id")
 	private Long repostOfId;
 
-	// ✅ 반정규화 필드들
 	@Column(name = "like_count", nullable = false)
 	private Long likeCount = 0L;
 
@@ -46,13 +45,6 @@ public class Post extends BaseTimeEntity {
 
 	@Column(name = "is_deleted", nullable = false)
 	private Boolean isDeleted = false;
-
-	public String getDisplayContent() {
-		if (Boolean.TRUE.equals(this.isDeleted)) {
-			return null;
-		}
-		return this.content;
-	}
 
 	public boolean isDeleted() {
 		return Boolean.TRUE.equals(this.isDeleted);

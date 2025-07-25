@@ -38,6 +38,10 @@ out/
 
 ### Production information ###
 src/main/resources/application-prod.yml
+src/main/resources/application-load.test.yml
 
 ### QueryDsl ###
 **/generated
+
+### Performance Test
+/performance-test

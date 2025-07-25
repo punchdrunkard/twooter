@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import xyz.twooter.member.domain.ValidHandle;
-import xyz.twooter.member.domain.ValidPassword;
 
 @Builder
 @AllArgsConstructor
@@ -16,6 +15,5 @@ public class SignInRequest {
 	@ValidHandle
 	String handle;
 
-	@ValidPassword
 	private String password;
 }
