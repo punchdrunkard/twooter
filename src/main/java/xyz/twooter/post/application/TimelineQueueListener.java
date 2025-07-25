@@ -1,7 +1,5 @@
 package xyz.twooter.post.application;
 
-import static xyz.twooter.common.util.BackfillService.*;
-
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +28,7 @@ import xyz.twooter.post.domain.repository.PostRepository;
 @RequiredArgsConstructor
 @Slf4j
 public class TimelineQueueListener implements SmartLifecycle {
-
+	
 	private final RedisUtil redisUtil;
 	private final ObjectMapper objectMapper;
 	private final FollowRepository followRepository;
@@ -40,6 +38,7 @@ public class TimelineQueueListener implements SmartLifecycle {
 	private Thread listenerThread;
 	private volatile boolean isRunning = false;
 
+	public static final int TIMELINE_CACHE_LIMIT = 1000;
 	private static final String TIMELINE_QUEUE_KEY = "queue:timeline:fanout";
 	private static final String TIMELINE_ZSET_PREFIX = "timeline:user:";
 
