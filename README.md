@@ -4,13 +4,13 @@ Twitter를 모델로 한 타임라인 기반 SNS 백엔드 API 서비스입니�
 
 ## Table of Contents
 
-- [Key Features](#-key-features)
-- [Tech Stack](#-tech-stack)
-- [API Documentation](#-api-documentation)
-- [ERD](#-erd)
-- [Infrastructure](#-infrastructure)
-- [Getting Started](#-getting-started)
-- [시스템 구성 요소](#-시스템-구성-요소)
+- [Key Features](#key-features)
+- [Tech Stack](#tech-stack)
+- [API Documentation](#api-documentation)
+- [ERD](#erd)
+- [Infrastructure](#infrastructure)
+- [Getting Started](#getting-started)
+- [시스템 구성 요소](#시스템-구성-요소)
 
 ## Key Features
 
@@ -67,7 +67,7 @@ Twitter를 모델로 한 타임라인 기반 SNS 백엔드 API 서비스입니�
 
 ![Twooter-Infrastructure](https://github.com/user-attachments/assets/3e37e067-5eb2-4fce-8178-624f37f93877)
 
-## ⚙️ Getting Started
+## Getting Started
 
 로컬 환경에서는 별도의 DB 설정 없이 **내장 H2 데이터베이스**와 **Embedded Redis**를 사용하여 즉시 프로젝트를 실행하고 테스트할 수 있습니다.
 
