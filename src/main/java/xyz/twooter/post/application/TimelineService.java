@@ -4,13 +4,17 @@ import static xyz.twooter.common.infrastructure.pagination.CursorUtil.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import xyz.twooter.common.infrastructure.pagination.CursorUtil;
 import xyz.twooter.common.infrastructure.pagination.PaginationMetadata;
+import xyz.twooter.common.infrastructure.redis.RedisUtil;
 import xyz.twooter.media.application.MediaService;
 import xyz.twooter.member.domain.Member;
 import xyz.twooter.member.presentation.dto.response.MemberBasic;
@@ -25,83 +29,113 @@ import xyz.twooter.post.presentation.dto.response.TimelineResponse;
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
+@Slf4j
 public class TimelineService {
 
 	private final PostRepository postRepository;
-
 	private final MediaService mediaService;
-
 	private final CursorUtil cursorUtil;
+	private final RedisUtil redisUtil;
+	private static final String TIMELINE_ZSET_PREFIX = "timeline:user:";
 
 	public TimelineResponse getTimelineByUserId(String cursor, Integer limit, Member currentMember,
 		Long targetMemberId) {
-
 		Long memberId = currentMember == null ? null : currentMember.getId();
-
-		// 커서 디코딩 (null 가능)
 		CursorUtil.Cursor decodedCursor = extractCursor(cursor);
-
-		// 실제 조회할 개수 (다음 페이지 존재 여부 확인을 위해 +1)
 		int fetchLimit = limit + 1;
 
 		List<TimelineItemProjection> timelineItems = postRepository.findUserTimelineWithPagination(
 			targetMemberId,
 			memberId,
-			isCursorNotNull(decodedCursor) ? decodedCursor.getTimestamp() : null,
-			isCursorNotNull(decodedCursor) ? decodedCursor.getId() : null,
+			decodedCursor != null ? decodedCursor.getTimestamp() : null,
+			decodedCursor != null ? decodedCursor.getId() : null,
 			fetchLimit
 		);
 
-		return buildTimelineResponse(timelineItems, limit);
+		return buildTimelineResponseFromProjections(timelineItems, limit);
 	}
 
 	public TimelineResponse getHomeTimeline(String cursor, Integer limit, Member currentMember) {
-
 		Long memberId = currentMember.getId();
+		String timelineKey = TIMELINE_ZSET_PREFIX + memberId;
 
-		// 커서 디코딩 (null 가능)
-		CursorUtil.Cursor decodedCursor = extractCursor(cursor);
+		long start = (cursor != null && !cursor.isBlank()) ? Long.parseLong(cursor) : 0;
+		long end = start + limit;
 
-		// 실제 조회할 개수 (다음 페이지 존재 여부 확인을 위해 +1)
-		int fetchLimit = limit + 1;
+		Set<String> postIdsStr = redisUtil.zReverseRange(timelineKey, start, end);
 
-		List<TimelineItemProjection> timelineItems = postRepository.findHomeTimelineWithPagination(
-			memberId,
-			isCursorNotNull(decodedCursor) ? decodedCursor.getTimestamp() : null,
-			isCursorNotNull(decodedCursor) ? decodedCursor.getId() : null,
-			fetchLimit
-		);
+		if (postIdsStr == null || postIdsStr.isEmpty()) {
+			log.warn("Cache miss for user timeline: {}. Falling back to DB.", memberId);
+			CursorUtil.Cursor decodedCursor = extractCursor(cursor);
+			int fetchLimit = limit + 1;
+			List<TimelineItemProjection> timelineItems = postRepository.findHomeTimelineWithPagination(
+				memberId,
+				decodedCursor != null ? decodedCursor.getTimestamp() : null,
+				decodedCursor != null ? decodedCursor.getId() : null,
+				fetchLimit
+			);
+			return buildTimelineResponseFromProjections(timelineItems, limit);
+		}
 
-		return buildTimelineResponse(timelineItems, limit);
+		List<Long> postIds = postIdsStr.stream().map(Long::valueOf).toList();
+
+		boolean hasNext = postIds.size() > limit;
+		List<Long> responsePostIds = hasNext ? postIds.subList(0, limit) : postIds;
+
+		List<TimelineItemProjection> projections = postRepository.findTimelineItemsByPostIds(responsePostIds, memberId);
+
+		Map<Long, TimelineItemProjection> projectionMap = projections.stream()
+			.collect(Collectors.toMap(TimelineItemProjection::getOriginalPostId, p -> p));
+
+		List<TimelineItemProjection> sortedProjections = responsePostIds.stream()
+			.map(projectionMap::get)
+			.filter(p -> p != null)
+			.toList();
+
+		String nextCursor = hasNext ? String.valueOf(start + limit) : null;
+
+		return buildTimelineResponseFromProjections(sortedProjections, limit, hasNext, nextCursor);
 	}
 
-	private boolean isCursorNotNull(CursorUtil.Cursor decodedCursor) {
-		return decodedCursor != null;
-	}
-
-	private TimelineResponse buildTimelineResponse(List<TimelineItemProjection> projections, int requestedLimit) {
+	private TimelineResponse buildTimelineResponseFromProjections(List<TimelineItemProjection> projections,
+		int requestedLimit) {
 		boolean hasNext = projections.size() > requestedLimit;
-
-		// 실제 반환할 아이템들
 		List<TimelineItemProjection> responseItems = hasNext ?
 			projections.subList(0, requestedLimit) : projections;
 
-		// 모든 포스트 ID 수집
+		String nextCursor = null;
+		if (hasNext && !responseItems.isEmpty()) {
+			TimelineItemProjection lastItem = responseItems.get(responseItems.size() - 1);
+			nextCursor = cursorUtil.encode(lastItem.getFeedCreatedAt(), lastItem.getOriginalPostId());
+		}
+
+		return buildTimelineResponse(responseItems, hasNext, nextCursor);
+	}
+
+	private TimelineResponse buildTimelineResponseFromProjections(List<TimelineItemProjection> projections,
+		int requestedLimit, boolean hasNext, String nextCursor) {
+		List<TimelineItemProjection> responseItems = projections.size() > requestedLimit ?
+			projections.subList(0, requestedLimit) : projections;
+
+		return buildTimelineResponse(responseItems, hasNext, nextCursor);
+	}
+
+	private TimelineResponse buildTimelineResponse(List<TimelineItemProjection> responseItems, boolean hasNext,
+		String nextCursor) {
 		List<Long> postIds = responseItems.stream()
 			.map(TimelineItemProjection::getOriginalPostId)
 			.distinct()
 			.toList();
-
-		// 배치로 미디어 조회
 		Map<Long, List<MediaEntity>> mediaByPostId = mediaService.getMediaByPostIds(postIds);
 
-		// TimelineItemResponse 변환
 		List<TimelineItemResponse> timelineItems = responseItems.stream()
 			.map(projection -> convertToTimelineItemResponse(projection, mediaByPostId))
 			.toList();
 
-		// 페이지네이션 메타데이터 생성
-		PaginationMetadata metadata = buildPaginationMetadata(responseItems, hasNext);
+		PaginationMetadata metadata = PaginationMetadata.builder()
+			.hasNext(hasNext)
+			.nextCursor(nextCursor)
+			.build();
 
 		return TimelineResponse.builder()
 			.timeline(timelineItems)
@@ -113,7 +147,6 @@ public class TimelineService {
 		TimelineItemProjection projection,
 		Map<Long, List<MediaEntity>> mediaByPostId
 	) {
-		// 해당 포스트의 미디어 조회
 		List<MediaEntity> mediaEntities = mediaByPostId.getOrDefault(
 			projection.getOriginalPostId(),
 			List.of()
@@ -156,19 +189,4 @@ public class TimelineService {
 			.avatarPath(projection.getRepostAuthorAvatarPath())
 			.build();
 	}
-
-	private PaginationMetadata buildPaginationMetadata(List<TimelineItemProjection> items, boolean hasNext) {
-		String nextCursor = null;
-
-		if (hasNext && !items.isEmpty()) {
-			TimelineItemProjection lastItem = items.get(items.size() - 1);
-			nextCursor = cursorUtil.encode(lastItem.getFeedCreatedAt(), lastItem.getOriginalPostId());
-		}
-
-		return PaginationMetadata.builder()
-			.hasNext(hasNext)
-			.nextCursor(nextCursor)
-			.build();
-	}
-
 }

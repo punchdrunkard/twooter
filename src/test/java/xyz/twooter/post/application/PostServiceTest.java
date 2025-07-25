@@ -6,11 +6,16 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.persistence.EntityManager;
 import xyz.twooter.common.error.BusinessException;
@@ -42,7 +47,6 @@ class PostServiceTest extends IntegrationTestSupport {
 
 	@Autowired
 	private EntityManager entityManager;
-
 	@Autowired
 	private PostService postService;
 	@Autowired
@@ -56,8 +60,43 @@ class PostServiceTest extends IntegrationTestSupport {
 	@Autowired
 	private PostLikeRepository postLikeRepository;
 
+	@Autowired
+	private RedisTemplate<String, String> redisStringTemplate;
+	@Autowired
+	private ObjectMapper objectMapper;
+	private static final String TIMELINE_QUEUE_KEY = "queue:timeline:fanout";
+
+	@AfterEach
+	void tearDown() {
+		// 각 테스트 후 Redis 큐를 비워 다음 테스트에 영향을 주지 않도록 함
+		redisStringTemplate.delete(TIMELINE_QUEUE_KEY);
+	}
+
 	@Nested
 	class CreatePost {
+		@Test
+		@DisplayName("성공 - 포스트를 생성하면, 잠시 후 작성자의 타임라인 캐시에 포스트 ID가 추가된다.")
+		void shouldAddPostIdToAuthorTimelineCacheWhenCreatePost() throws InterruptedException {
+			// given
+			Member author = saveTestMember();
+			PostCreateRequest request = PostCreateRequest.builder()
+				.content("텍스트 포스트입니다.")
+				.build();
+
+			// when
+			PostCreateResponse response = postService.createPost(request, author);
+
+			// then: 비동기 작업이 완료될 때까지 잠시 대기 (테스트에서만 사용)
+			// 실제로는 Awaitility 같은 라이브러리를 사용하는 것이 더 좋습니다.
+			Thread.sleep(500); // 0.5초 대기
+
+			// then: Redis Sorted Set(타임라인 캐시)의 최종 결과를 검증
+			String authorTimelineKey = "timeline:user:" + author.getId();
+			Set<String> timelinePostIds = redisStringTemplate.opsForZSet().range(authorTimelineKey, 0, -1);
+
+			assertThat(timelinePostIds).hasSize(1);
+			assertThat(timelinePostIds.iterator().next()).isEqualTo(String.valueOf(response.getId()));
+		}
 
 		@Test
 		@DisplayName("성공 - 미디어 없이 포스트를 생성할 수 있다.")
@@ -114,9 +153,7 @@ class PostServiceTest extends IntegrationTestSupport {
 			Long invalidId = -1L;
 
 			// when // then
-			assertThrows(PostNotFoundException.class, () -> {
-				postService.getPost(invalidId, null);
-			});
+			assertThrows(PostNotFoundException.class, () -> postService.getPost(invalidId, null));
 		}
 
 		@DisplayName("성공 - 삭제된 포스트인 경우 삭제 응답을 반환한다.")
@@ -163,7 +200,6 @@ class PostServiceTest extends IntegrationTestSupport {
 			Post post = Post.createPost(author.getId(), "미디어 포함 포스트입니다.");
 			postRepository.save(post);
 
-			// 미디어 생성 및 연결
 			Media media1 = mediaRepository.save(createMedia("test1.jpg"));
 			Media media2 = mediaRepository.save(createMedia("test2.jpg"));
 
@@ -176,10 +212,7 @@ class PostServiceTest extends IntegrationTestSupport {
 			// then
 			assertThat(response.getMediaEntities()).hasSize(2);
 			assertThat(response.getMediaEntities()).extracting("mediaUrl")
-				.contains(
-					"https://cdn.twooter.xyz/test1.jpg",
-					"https://cdn.twooter.xyz/test2.jpg"
-				);
+				.contains("https://cdn.twooter.xyz/test1.jpg", "https://cdn.twooter.xyz/test2.jpg");
 		}
 
 		@DisplayName("성공 - 유저가 로그인하지 않은 경우, 본인의 리트윗/좋아요 정보를 제외한다.")
@@ -196,7 +229,6 @@ class PostServiceTest extends IntegrationTestSupport {
 			// then
 			assertFalse(response.isLiked());
 			assertFalse(response.isDeleted());
-
 		}
 
 		@DisplayName("성공 - 유저가 로그인한 경우, 본인의 리포스트/좋아요 정보를 포함한다.")
@@ -205,15 +237,9 @@ class PostServiceTest extends IntegrationTestSupport {
 			// given
 			Member author = saveTestMember();
 			Member currentMember = saveTestMember("currentMember");
-
 			Post post = Post.createPost(author.getId(), "테스트 포스트 내용입니다.");
 			postRepository.save(post);
-
-			PostLike like = PostLike.builder()
-				.postId(post.getId())
-				.memberId(currentMember.getId())
-				.build();
-
+			PostLike like = PostLike.builder().postId(post.getId()).memberId(currentMember.getId()).build();
 			postLikeRepository.save(like);
 
 			// when
@@ -227,22 +253,28 @@ class PostServiceTest extends IntegrationTestSupport {
 
 	@Nested
 	class Repost {
-
-		@DisplayName("성공")
 		@Test
-		void shouldReturnOriginalPostIdAndRepostIdWhenRepost() {
+		@DisplayName("성공 - 리포스트를 하면, 잠시 후 리포스트한 사용자의 타임라인 캐시에 리포스트 ID가 추가된다.")
+		void shouldAddRepostIdToReposterTimelineCacheWhenRepost() throws InterruptedException {
 			// given
-			Member author = saveTestMember();
+			Member author = saveTestMember("author");
 			Post originalPost = Post.createPost(author.getId(), "원본 포스트입니다.");
 			postRepository.save(originalPost);
-			Member currentMember = saveTestMember("currentMember");
+
+			Member reposter = saveTestMember("reposter");
 
 			// when
-			RepostCreateResponse response = postService.repost(originalPost.getId(), currentMember);
+			RepostCreateResponse response = postService.repostAndIncreaseCount(originalPost.getId(), reposter);
 
-			// then
-			assertThat(response.getOriginalPostId()).isEqualTo(originalPost.getId());
-			assertThat(response.getRepostId()).isNotNull();
+			// then: 비동기 작업 대기
+			Thread.sleep(500);
+
+			// then: Redis Sorted Set(타임라인 캐시)의 최종 결과를 검증
+			String reposterTimelineKey = "timeline:user:" + reposter.getId();
+			Set<String> timelinePostIds = redisStringTemplate.opsForZSet().range(reposterTimelineKey, 0, -1);
+
+			assertThat(timelinePostIds).hasSize(1);
+			assertThat(timelinePostIds.iterator().next()).isEqualTo(String.valueOf(response.getRepostId()));
 		}
 
 		@DisplayName("실패 - 존재하지 않는 포스트 ID로 리포스트 시도")
@@ -253,9 +285,8 @@ class PostServiceTest extends IntegrationTestSupport {
 			Member currentMember = saveTestMember("currentMember");
 
 			// when & then
-			assertThrows(PostNotFoundException.class, () -> {
-				postService.repost(invalidPostId, currentMember);
-			});
+			assertThrows(PostNotFoundException.class,
+				() -> postService.repostAndIncreaseCount(invalidPostId, currentMember));
 		}
 
 		@DisplayName("실패 - 삭제된 포스트 ID로 리포스트 시도")
@@ -269,33 +300,29 @@ class PostServiceTest extends IntegrationTestSupport {
 			originalPost.softDelete();
 
 			// when & then
-			assertThrows(PostNotFoundException.class, () -> {
-				postService.repost(originalPost.getId(), currentMember);
-			});
+			assertThrows(PostNotFoundException.class,
+				() -> postService.repostAndIncreaseCount(originalPost.getId(), currentMember));
 		}
 
 		@DisplayName("실패 - 중복 리포스트 시도")
 		@Test
 		void shouldThrowErrorWhenTryDuplicateRepost() {
-			// given (이미 리포스트가 존재할 때)
+			// given
 			Member author = saveTestMember("author");
 			Post originalPost = Post.createPost(author.getId(), "원본 포스트입니다.");
 			postRepository.save(originalPost);
-
 			Member currentMember = saveTestMember("currentMember");
 			Post repost = Post.createRepost(currentMember.getId(), originalPost.getId());
 			postRepository.save(repost);
 
 			// when & then
-			assertThrows(DuplicateRepostException.class, () -> {
-				postService.repost(originalPost.getId(), currentMember);
-			});
+			assertThrows(DuplicateRepostException.class,
+				() -> postService.repostAndIncreaseCount(originalPost.getId(), currentMember));
 		}
 	}
 
 	@Nested
 	class DeletePost {
-
 		@DisplayName("성공 - 본인이 작성한 포스트를 삭제할 수 있다.")
 		@Test
 		void shouldDeletePostWhenAuthorDeletes() {
@@ -309,8 +336,6 @@ class PostServiceTest extends IntegrationTestSupport {
 
 			// then
 			assertThat(response.getPostId()).isEqualTo(post.getId());
-
-			// DB 상태 검증
 			Optional<Post> deletedPost = postRepository.findById(post.getId());
 			assertThat(deletedPost).isPresent();
 			assertThat(deletedPost.get().isDeleted()).isTrue();
@@ -323,7 +348,6 @@ class PostServiceTest extends IntegrationTestSupport {
 			Member author = saveTestMember("author");
 			Post post = Post.createPost(author.getId(), "다른 사람이 작성한 포스트입니다.");
 			postRepository.save(post);
-
 			Member nonAuthor = saveTestMember("nonAuthor");
 
 			// when & then
@@ -344,10 +368,8 @@ class PostServiceTest extends IntegrationTestSupport {
 			Long invalidPostId = -1L;
 			Member author = saveTestMember();
 
-			// when &  then
-			assertThrows(PostNotFoundException.class, () -> {
-				postService.deletePost(invalidPostId, author);
-			});
+			// when & then
+			assertThrows(PostNotFoundException.class, () -> postService.deletePost(invalidPostId, author));
 		}
 
 		@DisplayName("성공 - 리포스트인 경우, 원본 포스트의 리포스트 수를 감소시킨다.")
@@ -357,14 +379,11 @@ class PostServiceTest extends IntegrationTestSupport {
 			Member author = saveTestMember("author");
 			Post originalPost = Post.createPost(author.getId(), "원본 포스트입니다.");
 			postRepository.save(originalPost);
-
 			Post repost = Post.createRepost(author.getId(), originalPost.getId());
 			postRepository.save(repost);
-
 			postRepository.incrementRepostCount(originalPost.getId());
 			entityManager.flush();
 			entityManager.clear();
-
 			Post afterIncrement = postRepository.findById(originalPost.getId()).orElseThrow();
 
 			// when
@@ -388,9 +407,7 @@ class PostServiceTest extends IntegrationTestSupport {
 			post.softDelete();
 
 			// when & then
-			assertThrows(PostNotFoundException.class, () -> {
-				postService.deletePost(post.getId(), member);
-			});
+			assertThrows(PostNotFoundException.class, () -> postService.deletePost(post.getId(), member));
 		}
 	}
 
@@ -436,9 +453,7 @@ class PostServiceTest extends IntegrationTestSupport {
 				.build();
 
 			// when & then
-			assertThrows(PostNotFoundException.class, () -> {
-				postService.createReply(request, currentMember);
-			});
+			assertThrows(PostNotFoundException.class, () -> postService.createReply(request, currentMember));
 		}
 
 		@DisplayName("실패 - 삭제된 부모 포스트에 답글을 작성하려는 경우")
@@ -449,7 +464,6 @@ class PostServiceTest extends IntegrationTestSupport {
 			Post parentPost = Post.createPost(author.getId(), "부모 포스트입니다.");
 			postRepository.save(parentPost);
 			parentPost.softDelete();
-
 			Member currentMember = saveTestMember("currentMember");
 			String replyContent = "답글 내용입니다.";
 			ReplyCreateRequest request = ReplyCreateRequest.builder()
@@ -459,27 +473,22 @@ class PostServiceTest extends IntegrationTestSupport {
 				.build();
 
 			// when & then
-			assertThrows(PostNotFoundException.class, () -> {
-				postService.createReply(request, currentMember);
-			});
+			assertThrows(PostNotFoundException.class, () -> postService.createReply(request, currentMember));
 		}
 	}
 
 	@Nested
 	class GetReplies {
-
 		@DisplayName("성공 - 부모 포스트에 대한 답글을 조회할 수 있다.")
 		@Test
 		void shouldReturnRepliesForParentPost() {
 			// given
 			Member author = saveTestMember("author");
-			Post parentPost = Post.createPost(author.getId(), "부모 포스���입니다.");
+			Post parentPost = Post.createPost(author.getId(), "부모 포스트입니다.");
 			postRepository.save(parentPost);
-
 			Member currentMember = saveTestMember("currentMember");
 			Post reply1 = Post.createReply(currentMember.getId(), "답글 내용입니다.", parentPost.getId());
 			Post reply2 = Post.createReply(author.getId(), "두 번째 답글입니다.", parentPost.getId());
-
 			postRepository.save(reply1);
 			postRepository.save(reply2);
 
@@ -497,19 +506,17 @@ class PostServiceTest extends IntegrationTestSupport {
 
 		@DisplayName("성공 - 미디어가 있는 답글들을 올바르게 조회한다.")
 		@Test
-		void shouldGetReplyWithMediaWHeeRepliesHaveMedia() {
+		void shouldGetReplyWithMediaWhenRepliesHaveMedia() {
 			// given
 			Member author = saveTestMember("author");
 			Post parentPost = Post.createPost(author.getId(), "부모 포스트입니다.");
 			postRepository.save(parentPost);
-
 			Member currentMember = saveTestMember("currentMember");
 			Post reply1 = Post.createReply(currentMember.getId(), "답글 내용입니다.", parentPost.getId());
 			Post reply2 = Post.createReply(author.getId(), "두 번째 답글입니다.", parentPost.getId());
 			postRepository.save(reply1);
 			postRepository.save(reply2);
 
-			// 미디어 생성 및 연결
 			Media media1 = mediaRepository.save(createMedia("reply1.jpg"));
 			Media media2 = mediaRepository.save(createMedia("reply2.jpg"));
 			Media media22 = mediaRepository.save(createMedia("reply2.jpg"));
@@ -524,8 +531,7 @@ class PostServiceTest extends IntegrationTestSupport {
 
 			// then
 			assertThat(replies).hasSize(2);
-			assertThat(replies.get(0).getMediaEntities().get(0).getMediaId())
-				.isEqualTo(media1.getId());
+			assertThat(replies.get(0).getMediaEntities().get(0).getMediaId()).isEqualTo(media1.getId());
 			assertThat(replies.get(1).getMediaEntities()).hasSize(2);
 		}
 
@@ -536,13 +542,12 @@ class PostServiceTest extends IntegrationTestSupport {
 			Member author = saveTestMember("author");
 			Post parentPost = Post.createPost(author.getId(), "부모 포스트입니다.");
 			postRepository.save(parentPost);
-
 			Member currentMember = saveTestMember("currentMember");
 			Post reply1 = Post.createReply(currentMember.getId(), "답글 내용입니다.", parentPost.getId());
 			Post reply2 = Post.createReply(author.getId(), "두 번째 답글입니다.", parentPost.getId());
 			postRepository.save(reply1);
 			postRepository.save(reply2);
-			reply2.softDelete(); // 두 번째 답글 삭제
+			reply2.softDelete();
 
 			// when
 			PostThreadResponse response = postService.getReplies(parentPost.getId(), currentMember, null, 10);
@@ -551,7 +556,6 @@ class PostServiceTest extends IntegrationTestSupport {
 			// then
 			assertThat(replies).hasSize(2);
 			assertThat(replies.get(0).getId()).isEqualTo(reply1.getId());
-
 			PostResponse deletedReply = replies.get(1);
 			assertThat(deletedReply.isDeleted()).isTrue();
 			assertThat(deletedReply.getContent()).isNull();
@@ -561,7 +565,6 @@ class PostServiceTest extends IntegrationTestSupport {
 	// === 헬퍼 ===
 	private Member saveTestMember(String handle) {
 		String email = handle + "@test.test";
-
 		Member member = Member.createDefaultMember(email, "password", handle);
 		return memberRepository.save(member);
 	}

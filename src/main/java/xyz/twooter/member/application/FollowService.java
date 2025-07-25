@@ -8,9 +8,14 @@ import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import xyz.twooter.auth.domain.exception.IllegalMemberIdException;
 import xyz.twooter.common.infrastructure.pagination.CursorUtil;
+import xyz.twooter.common.infrastructure.redis.RedisUtil;
 import xyz.twooter.member.domain.Follow;
 import xyz.twooter.member.domain.Member;
 import xyz.twooter.member.domain.exception.AlreadyFollowingException;
@@ -21,14 +26,20 @@ import xyz.twooter.member.presentation.dto.response.FollowResponse;
 import xyz.twooter.member.presentation.dto.response.MemberProfileWithRelation;
 import xyz.twooter.member.presentation.dto.response.MemberWithRelationResponse;
 import xyz.twooter.member.presentation.dto.response.UnFollowResponse;
+import xyz.twooter.post.application.dto.TimelineFanoutMessage;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@Slf4j
 public class FollowService {
 
 	private final MemberRepository memberRepository;
 	private final FollowRepository followRepository;
+
+	private final RedisUtil redisUtil;
+	private final ObjectMapper objectMapper;
+	private static final String TIMELINE_QUEUE_KEY = "queue:timeline:fanout";
 
 	@Transactional
 	public FollowResponse followMember(Member member, Long targetMemberId) {
@@ -42,25 +53,29 @@ public class FollowService {
 			.followerId(followerId)
 			.followeeId(followeeId)
 			.build();
-		return FollowResponse.from(followRepository.save(follow));
+
+		Follow savedFollow = followRepository.save(follow);
+
+		publishFanoutMessage(TimelineFanoutMessage.ofFollowCreation(followerId, followeeId));
+
+		return FollowResponse.from(savedFollow);
 	}
 
 	@Transactional
 	public UnFollowResponse unfollowMember(Member member, Long targetMemberId) {
 		validateTargetMemberExists(targetMemberId);
+
 		followRepository.deleteByFollowerIdAndFolloweeId(member.getId(), targetMemberId);
+		publishFanoutMessage(TimelineFanoutMessage.ofFollowDeletion(member.getId(), targetMemberId));
+
 		return UnFollowResponse.of(targetMemberId);
 	}
 
 	public MemberWithRelationResponse getFollowers(String cursor, Integer limit, Member currentMember,
 		Long targetMemberId) {
-
 		validateTargetMemberExists(targetMemberId);
 		Long viewerId = (currentMember != null) ? currentMember.getId() : null;
-
-		// 커서 디코딩 (null 가능)
 		CursorUtil.Cursor decodedCursor = extractCursor(cursor);
-		// 다음 페이지 존재 여부 확인을 위해 +1
 		int fetchLimit = limit + 1;
 
 		List<MemberProfileWithRelation> followers = followRepository.findFollowersWithRelation(
@@ -77,13 +92,9 @@ public class FollowService {
 
 	public MemberWithRelationResponse getFollowing(String cursor, Integer limit, Member currentMember,
 		Long targetMemberId) {
-
 		validateTargetMemberExists(targetMemberId);
 		Long viewerId = (currentMember != null) ? currentMember.getId() : null;
-
-		// 커서 디코딩 (null 가능)
 		CursorUtil.Cursor decodedCursor = extractCursor(cursor);
-		// 다음 페이지 존재 여부 확인을 위해 +1
 		int fetchLimit = limit + 1;
 
 		List<MemberProfileWithRelation> followings = followRepository.findFolloweesWithRelation(
@@ -98,9 +109,20 @@ public class FollowService {
 		return MemberWithRelationResponse.of(followings, limit);
 	}
 
+	// 공통 메시지 발행 헬퍼 메서드
+	private void publishFanoutMessage(TimelineFanoutMessage message) {
+		try {
+			String messageJson = objectMapper.writeValueAsString(message);
+			redisUtil.lPush(TIMELINE_QUEUE_KEY, messageJson);
+			log.info("Published fan-out message: {}", messageJson);
+		} catch (JsonProcessingException e) {
+			log.error("Failed to publish fan-out message: {}", message.toString(), e);
+		}
+	}
+
 	private void validateTargetMemberExists(Long memberId) {
 		if (Objects.isNull(memberId) || !memberRepository.existsById(memberId)) {
-			throw new IllegalMemberIdException(); // 또는 MemberNotFoundException
+			throw new IllegalMemberIdException();
 		}
 	}
 
@@ -108,10 +130,8 @@ public class FollowService {
 		if (followRepository.existsByFollowerIdAndFolloweeId(member.getId(), targetMemberId)) {
 			throw new AlreadyFollowingException();
 		}
-
 		if (Objects.equals(member.getId(), targetMemberId)) {
 			throw new SelfFollowException();
 		}
 	}
-
 }
