@@ -70,7 +70,7 @@ jobs:
             --project ${{ secrets.GCP_PROJECT_ID }} \
             --command "
               # sudo를 사용하여 스크립트를 bash로 실행
-              sudo bash ./deploy.sh
+              sudo bash ${{ secrets.DEPLOY_SCRIPT_PATH }}
 
               # 미사용 Docker 이미지 정리
               sudo docker image prune -f
